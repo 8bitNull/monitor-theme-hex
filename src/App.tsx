@@ -156,9 +156,7 @@ export default function App({ siteDefaults = defaults }: {
         return () => removeEventListener('scroll', update);
     }, [open]);
     const mapVisible = prefs.modules.map && !compactViewport;
-    const [shortDesktop,setShortDesktop]=useState(()=>innerHeight<=800);
-    useEffect(()=>{const update=()=>setShortDesktop(innerHeight<=800);addEventListener('resize',update);return()=>removeEventListener('resize',update)},[]);
-    const mapExpanded=desktop.mapExpanded??!shortDesktop;
+    const mapExpanded=desktop.mapExpanded??true;
     const toggleMap=()=>setDesktop(current=>({...current,mapExpanded:!mapExpanded}));
     useEffect(()=>{
         if(open!==null)return;

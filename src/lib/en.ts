@@ -1,4 +1,5 @@
 export const english: Record<string, string> = {
+"收起信息":"Hide information",
 "到期提醒":"Expiry reminders",
 "搜索节点…":"Search nodes…",
 "匹配节点":"Matching nodes",

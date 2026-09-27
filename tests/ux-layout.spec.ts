@@ -13,9 +13,11 @@ async function fixture(page:Page,{grouped=false,warnings=false,longName=false}:{
  await page.route('**/api/nodes/*/metrics?*',route=>route.fulfill({json:metrics()}))
 }
 
-test('short desktop starts with map collapsed, core metric visible, and region filtering survives toggle',async({page})=>{
+test('short desktop starts with map expanded and retains region filtering after collapse',async({page})=>{
  await page.setViewportSize({width:1024,height:768});await fixture(page);await page.goto('/')
  const map=page.locator('.map-frame')
+ await expect(map.getByRole('button',{name:'收起地图'})).toBeVisible()
+ await map.getByRole('button',{name:'收起地图'}).click()
  await expect(map.getByRole('button',{name:'展开地图'})).toBeVisible()
  await expect(map.locator('.home-region-bar')).toBeVisible()
  const core=page.locator('.node-card .resources').first()
@@ -32,6 +34,10 @@ test('short desktop starts with map collapsed, core metric visible, and region f
 
 test('desktop map and card density preferences survive reload while compact cards retain warnings',async({page})=>{
  await page.setViewportSize({width:1440,height:900});await fixture(page,{warnings:true});await page.goto('/')
+ await expect(page.locator('.map-frame').getByRole('button',{name:'收起地图'})).toBeVisible()
+ await page.locator('.map-frame').getByRole('button',{name:'收起地图'}).click()
+ await page.locator('.map-frame').getByRole('button',{name:'展开地图'}).click()
+ await page.reload()
  await expect(page.locator('.map-frame').getByRole('button',{name:'收起地图'})).toBeVisible()
  await page.locator('.map-frame').getByRole('button',{name:'收起地图'}).click()
  await page.getByRole('combobox',{name:'卡片密度'}).selectOption('detailed')
@@ -120,4 +126,40 @@ test('desktop and mobile layouts fit light, dark and English long-name viewports
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
   await page.screenshot({path:`tests/artifacts/ux-layout-${width}x${height}-dark-en.png`,fullPage:true})
  }
+})
+
+test('desktop supplementary information expands together below routes without moving core readings or keyboard focus',async({page})=>{
+ await fixture(page);await page.goto('/')
+ const card=page.locator('.node-card').first()
+ await expect(card.locator('.latency-reading')).toBeVisible()
+ const routeOffset=()=>card.locator('.route-matrix').evaluate(el=>el.getBoundingClientRect().top-el.closest('.node-card')!.getBoundingClientRect().top)
+ const routeBefore=await routeOffset()
+ const toggle=card.locator('.node-secondary-toggle')
+ await expect(toggle).toHaveAccessibleName('更多信息')
+ await toggle.focus();await page.keyboard.press('Enter')
+ await expect(toggle).toHaveAccessibleName('收起信息')
+ await expect(toggle).toBeFocused()
+ const panel=card.locator('.node-supplementary')
+ await expect(toggle).toHaveAttribute('aria-controls',await panel.getAttribute('id')||'missing')
+ for(const selector of ['.node-connections','.card-billing','.node-price'])await expect(panel.locator(selector)).toBeVisible()
+ const routeAfter=(await card.locator('.route-matrix').boundingBox())!
+ expect(await routeOffset()).toBeCloseTo(routeBefore,0)
+ expect((await panel.boundingBox())!.y).toBeGreaterThanOrEqual(routeAfter.y+routeAfter.height)
+ await page.keyboard.press('Enter')
+ await expect(panel).toBeHidden()
+ await expect(card.getByRole('button',{name:'更多信息',exact:true})).toBeFocused()
+})
+
+test('single-route loading keeps the card height stable when probe data arrives',async({page})=>{
+ await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:[nodes()[0]]}}))
+ let finish!:()=>void
+ const pending=new Promise<void>(resolve=>{finish=resolve})
+ await page.route('**/api/nodes/*/metrics?*',async route=>{await pending;await route.fulfill({json:metrics()})})
+ await page.goto('/')
+ const card=page.locator('.node-card')
+ await expect(card.locator('.ping-loading')).toBeVisible()
+ const before=(await card.boundingBox())!.height
+ finish()
+ await expect(card.locator('.latency-link')).toBeVisible()
+ expect(Math.abs((await card.boundingBox())!.height-before)).toBeLessThanOrEqual(4)
 })

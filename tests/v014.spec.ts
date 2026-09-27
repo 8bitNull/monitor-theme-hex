@@ -76,6 +76,8 @@ test('legacy phone columns do not alter the desktop table',async({page})=>{
  await page.reload();await expect(page.locator('thead th')).toHaveCount(11)
 })
 test('responsive visual evidence for both themes',async({page})=>{
+ // Ten viewport/theme combinations include navigation and full-page screenshots.
+ test.setTimeout(90000)
  await setup(page)
  for(const appearance of ['light','dark'])for(const width of [768,800,899,900,1440]){
   await page.setViewportSize({width,height:1000})
