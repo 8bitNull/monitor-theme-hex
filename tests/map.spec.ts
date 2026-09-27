@@ -1,7 +1,7 @@
 import {test,expect} from './desktopTest'
 test.beforeEach(async({page})=>{await page.addInitScript(()=>{if(!localStorage.getItem('monitor-next'))localStorage.setItem('monitor-next',JSON.stringify({schemaVersion:3,infoDensity:'full',modules:{map:true}}))})})
 
-test('enabled map keeps full height without a height toggle',async({page})=>{
+test('expanded map keeps full height with a persistent collapse control',async({page})=>{
  await page.setViewportSize({width:1280,height:900})
  await page.goto('/')
  const map=page.locator('.map-frame'),height=()=>map.locator('.explorer-map').evaluate(element=>element.getBoundingClientRect().height)
@@ -10,7 +10,7 @@ test('enabled map keeps full height without a height toggle',async({page})=>{
  await expect(page.locator('.desktop-results-toolbar').getByLabel('卡片视图')).toBeVisible()
  await expect(page.locator('.desktop-results-toolbar').getByLabel('表格视图')).toBeVisible()
  await expect(map.locator('.map-land')).toBeVisible()
- await expect(map.locator('.home-map-toggle')).toHaveCount(0)
+ await expect(map.getByRole('button',{name:'收起地图',exact:true})).toBeVisible()
  await expect(map.locator('.map-tools .map-close')).toHaveCount(0)
  for(const width of [721,900,1440]){
   await page.setViewportSize({width,height:900})
@@ -18,7 +18,9 @@ test('enabled map keeps full height without a height toggle',async({page})=>{
   const tools=(await map.locator('.home-map-tools .map-tools').boundingBox())!
   const regions=(await map.locator('.home-region-list').boundingBox())!
   expect(Math.abs(bar.y+bar.height/2-tools.y-tools.height/2)).toBeLessThan(2)
-  expect(bar.x+bar.width-tools.x-tools.width).toBeLessThan(15)
+  const toggle=(await map.locator('.home-map-toggle').boundingBox())!
+  expect(tools.x+tools.width).toBeLessThanOrEqual(toggle.x)
+  expect(bar.x+bar.width-toggle.x-toggle.width).toBeLessThan(15)
   expect(regions.x+regions.width).toBeLessThanOrEqual(tools.x)
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
   await map.locator('.home-region-bar').screenshot({path:`tests/artifacts/map-toolbar-row-${width}.png`})
@@ -30,7 +32,7 @@ test('enabled map keeps full height without a height toggle',async({page})=>{
  await page.reload()
  await expect(map.locator('.explorer-map')).toBeVisible()
  await expect(map.locator('.map-land')).toBeVisible()
- await expect(map.locator('.home-map-toggle')).toHaveCount(0)
+ await expect(map.getByRole('button',{name:'收起地图',exact:true})).toBeVisible()
  expect(await height()).toBe(310)
  await page.reload()
  await expect(map.locator('.explorer-map')).toBeVisible()
@@ -44,7 +46,7 @@ test('old collapsed preference no longer hides an enabled map',async({page})=>{
  await page.goto('/')
  const map=page.locator('.map-frame')
  await expect(map.locator('.explorer-map')).toBeVisible()
- await expect(map.locator('.home-map-toggle')).toHaveCount(0)
+ await expect(map.getByRole('button',{name:'收起地图',exact:true})).toBeVisible()
  await expect(map.locator('.map-close')).toHaveCount(0)
  expect(await map.locator('.explorer-map').evaluate(el=>el.getBoundingClientRect().height)).toBe(310)
  expect(await page.evaluate(()=>localStorage.getItem('monitor-next-map-open-v1'))).toBe('closed')

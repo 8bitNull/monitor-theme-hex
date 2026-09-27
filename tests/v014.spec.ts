@@ -46,7 +46,7 @@ test.skip('legacy preferences stay full; recommended preset preserves unrelated 
  await page.reload();await expect(page.locator('.node-card')).toHaveAttribute('data-density','full')
  await expect(page.locator('.latency-bars svg')).toHaveAttribute('aria-label',/175/)
 })
-test('new visitors get comfortable layout with core information and desktop height budget',async({page})=>{
+test('detailed desktop cards retain core information within the height budget',async({page})=>{
  await setup(page);await page.goto('/');await page.locator('.route-matrix').scrollIntoViewIfNeeded();await expect(page.locator('.latency-bars')).toBeVisible()
  const card=page.locator('.node-card');await expect(card).toHaveAttribute('data-density','full')
  await expect(card.locator('.traffic-summary')).toBeVisible();await expect(card.locator('.node-price')).toBeVisible()

@@ -95,7 +95,7 @@ test('live trends accumulate real reports and clear on offline state',async({pag
  await page.clock.install();await setup(page);let count=0,offline=false;const ts=Math.floor(Date.now()/1000)
  await page.unroute('**/api/nodes');await page.route('**/api/nodes',r=>{const n=nodes()[0];return r.fulfill({json:{nodes:[{...n,last_seen:ts+count*5,online:!offline,metrics:{...n.metrics,net_tx:0,net_rx:1024*count}}]}})})
  await page.goto('/node/1');const speed=page.locator('.detail-speed');await expect(speed.locator('.micro-empty')).toHaveCount(2)
- count++;await page.clock.runFor(5100);await expect(speed.locator('.micro-empty')).toHaveCount(0);await expect(speed.locator('.upload .speed-amount')).toHaveText('0')
+ count++;await page.clock.runFor(5100);await expect(speed.locator('.micro-empty')).toHaveCount(0);await expect(speed.locator('.upload .speed-amount')).toHaveText('0.0')
  expect(await speed.locator('.upload .micro-trend path').first().getAttribute('d')).toContain('L')
  offline=true;await page.clock.runFor(5100);await expect(page.locator('.overview-unavailable')).toBeVisible();await expect(speed).toHaveCount(0)
 })
@@ -123,7 +123,7 @@ test('live activity distinguishes zero, slow, missing, stale and offline reading
  await page.clock.install();const now=Math.floor(Date.now()/1000);let state='live'
  await page.route('**/api/nodes',r=>{const n=nodes()[0];return r.fulfill({json:{nodes:[{...n,online:state!=='offline',last_seen:state==='stale'?now-120:now,metrics:state==='missing'?null:{...n.metrics,net_tx:0,net_rx:1}}]}})})
  await page.goto('/');const speed=page.locator('.node-card .speed-indicators')
- await expect(speed.locator('.upload .speed-amount')).toHaveText('0');await expect(speed.locator('.download .speed-amount')).toHaveText('<0.001')
+ await expect(speed.locator('.upload .speed-amount')).toHaveText('0.0');await expect(speed.locator('.download .speed-amount')).toHaveText('<0.1')
  await expect(speed.locator('.micro-empty')).toHaveCount(2)
  for(state of ['missing','stale']){
   await page.clock.runFor(5100);await expect(speed.locator('.speed-amount')).toHaveText(['—','—']);await expect(speed.locator('.micro-trend circle')).toHaveCount(0);await expect(speed).toHaveAttribute('data-state',state)

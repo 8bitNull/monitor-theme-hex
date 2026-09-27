@@ -57,7 +57,7 @@ test('home speed curves use new reports and offline cards retain durable facts a
  await expect(card.locator('.speed-pair .micro-empty')).toHaveCount(2)
  step++;await page.clock.runFor(5100)
  await expect(card.locator('.speed-pair .micro-empty')).toHaveCount(0)
- await expect(card.locator('.upload .speed-amount')).toHaveText('0')
+ await expect(card.locator('.upload .speed-amount')).toHaveText('0.0')
  expect(await card.locator('.download .micro-trend path').getAttribute('d')).toContain('L')
  online=false;await page.clock.runFor(5100)
  await expect(card.locator('.offline-last-report time')).toHaveAttribute('datetime',/T/)

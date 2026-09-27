@@ -25,7 +25,7 @@ test('overview reminders and settings records, reset and undo preserve unrelated
  await setup(page);const nav=page.getByRole('navigation',{name:'主导航'})
  await nav.getByRole('button',{name:'概览',exact:true}).click();await expect(page.locator('.ma-region')).toHaveCount(3);await page.getByRole('button',{name:'查看全部地区',exact:true}).click();await expect(page.locator('.ma-region')).toHaveCount(6)
  await page.locator('.ma-reminder-shortcuts').getByRole('button',{name:/流量提醒/}).click();await expect(page.locator('.ma-node')).toHaveCount(1);await expect(page.getByRole('button',{name:'移除筛选：流量提醒',exact:true})).toBeVisible()
- await nav.getByRole('button',{name:'设置',exact:true}).click();await page.getByRole('button',{name:/本机负载记录/}).click();await expect(page.getByRole('dialog')).toContainText('高负载观测记录');await page.getByRole('button',{name:'关闭',exact:true}).click();await expect(nav.getByRole('button',{name:'设置',exact:true})).toHaveAttribute('aria-current','page')
+ await nav.getByRole('button',{name:/设置$/}).click();await page.getByRole('button',{name:/本机负载记录/}).click();await expect(page.getByRole('dialog')).toContainText('高负载观测记录');await page.getByRole('button',{name:'关闭',exact:true}).click();await expect(nav.getByRole('button',{name:/设置$/})).toHaveAttribute('aria-current','page')
  await page.getByLabel('明暗模式',{exact:true}).selectOption('dark');await page.getByLabel('节点列表',{exact:true}).selectOption('detailed');await page.getByLabel('默认历史范围',{exact:true}).selectOption('24');await page.getByRole('checkbox',{name:'显示资源总容量',exact:true}).uncheck()
  await page.getByRole('button',{name:/恢复手机显示默认设置/}).click();await expect(page.getByLabel('节点列表',{exact:true})).toHaveValue('compact');await expect(page.getByLabel('明暗模式',{exact:true})).toHaveValue('dark')
  await page.getByRole('button',{name:'撤销',exact:true}).click();await expect(page.getByLabel('节点列表',{exact:true})).toHaveValue('detailed');await expect(page.getByLabel('默认历史范围',{exact:true})).toHaveValue('24');await expect(page.getByRole('checkbox',{name:'显示资源总容量',exact:true})).not.toBeChecked()
@@ -36,7 +36,7 @@ test('overview reminders and settings records, reset and undo preserve unrelated
 test('long mobile lists and grouped picker fit narrow English dark mode and responsive boundaries',async({page})=>{
  await setup(page)
  const nav=page.getByRole('navigation',{name:'主导航'})
- await nav.getByRole('button',{name:'设置',exact:true}).click();await page.getByLabel('明暗模式',{exact:true}).selectOption('dark');await page.getByLabel('Language / 语言',{exact:true}).selectOption('en')
+ await nav.getByRole('button',{name:/设置$/}).click();await page.getByLabel('明暗模式',{exact:true}).selectOption('dark');await page.getByLabel('Language / 语言',{exact:true}).selectOption('en')
  await page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name:'Nodes',exact:true}).click();await page.locator('.ma-node>button').first().click()
  for(const width of [320,430,720]){
   await page.setViewportSize({width,height:844});await page.getByRole('button',{name:'Switch node',exact:true}).click();const sheet=page.getByRole('dialog')

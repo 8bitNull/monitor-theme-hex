@@ -28,6 +28,8 @@ for(const removed of [false,true])test(`return handles changed node order, remov
  await page.clock.install();await setup(page);let changed=false
  await page.unroute('**/api/nodes');await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:Array.from({length:30},(_,i)=>({...nodes()[0],id:i+1,sort:changed?30-i:i,name:`Node ${i+1}`})).filter(n=>!(changed&&removed&&n.id===20))}}))
  await page.goto('/');const target=page.locator('[data-node-id="20"]');await target.scrollIntoViewIfNeeded();await page.evaluate(()=>scrollBy(0,-100))
+ let lastY=NaN,stable=0
+ await expect.poll(async()=>{const y=(await target.boundingBox())!.y;stable=Math.abs(y-lastY)<1?stable+1:0;lastY=y;return stable},{intervals:[100,200,200]}).toBeGreaterThanOrEqual(3)
  const before=(await target.boundingBox())!.y;await target.click();await expect(page.locator('.detail-resource-charts')).toBeVisible()
  changed=true;await page.clock.fastForward(5100)
  if(removed)await expect(page.getByText('节点不存在或未公开。')).toBeVisible()
@@ -40,10 +42,10 @@ for(const removed of [false,true])test(`return handles changed node order, remov
 for(const width of [320,1440])test(`changing live units retain speed geometry at ${width}`,async({page})=>{
  await page.clock.install();await page.setViewportSize({width,height:1000});await setup(page,1)
  let value=0;await page.unroute('**/api/nodes');await page.route('**/api/nodes',r=>{const n=nodes()[0];return r.fulfill({json:{nodes:[{...n,metrics:{...n.metrics,net_tx:value,net_rx:value}}]}})})
- await page.goto('/');const speed=page.locator(width<=720?'.ma-node .ma-net':'.node-card .speed-pair'),amount=speed.locator(width<=720?'b':'.speed-amount').first();await expect(amount).toHaveText(width<=720?'0.0 Kbps':'0')
+ await page.goto('/');const speed=page.locator(width<=720?'.ma-node .ma-net':'.node-card .speed-pair'),amount=speed.locator(width<=720?'b':'.speed-amount').first();await expect(amount).toHaveText(width<=720?'0.0 Kbps':'0.0')
  const baseline=(await speed.boundingBox())!.height
  for(const next of [999,1024*999,1024**2*999,1024**3*9]){
-  value=next;await page.clock.fastForward(5100);await expect(amount).not.toHaveText(width<=720?'0.0 Kbps':'0')
+  value=next;await page.clock.fastForward(5100);await expect(amount).not.toHaveText(width<=720?'0.0 Kbps':'0.0')
   expect((await speed.boundingBox())!.height).toBe(baseline)
   expect(await speed.evaluate(el=>[...el.querySelectorAll('strong')].every(n=>n.scrollWidth<=n.clientWidth+1))).toBeTruthy()
   if(width>720)expect(await amount.evaluate(el=>getComputedStyle(el).fontSize===getComputedStyle(el.parentElement!).fontSize)).toBeTruthy()
