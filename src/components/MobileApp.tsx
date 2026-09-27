@@ -1,4 +1,4 @@
-import {useEffect,useRef,useState,useSyncExternalStore,type Dispatch,type SetStateAction} from 'react'
+import {useEffect,useLayoutEffect,useRef,useState,useSyncExternalStore,type Dispatch,type SetStateAction} from 'react'
 import {ArrowDown,ArrowUp,BarChart3,ChevronRight,LayoutGrid,Search,Server,Settings2,SlidersHorizontal,X} from 'lucide-react'
 import type {Node} from '@/lib/api'
 import type {Preferences} from '@/lib/appearance'
@@ -21,18 +21,20 @@ import {MobileSheet} from './ui/mobile-sheet'
 import {MobileUpdates,useMobileVersions,hasMobileUpdates} from './MobileUpdates'
 import '@/styles/mobile-refinement.css'
 import type {LoadAlert} from '@/lib/loadAlerts'
+import type {HomePage} from '@/lib/navigation'
 import manifest from '../../theme.json'
 
-type Page='nodes'|'overview'|'settings'
+type Page=HomePage
 type Filter={status:string;region:string;group:string;sort:string}
 const empty:Filter={status:'all',region:'all',group:'all',sort:'default'}
+function readMobileBrowse(){try{const value=JSON.parse(sessionStorage.getItem('hex-mobile-browse')||'{}');return {query:typeof value.query==='string'?value.query:'',filter:{...empty,...value.filter}}}catch{return {query:'',filter:empty}}}
 const regionLabel=(code:string)=>code===UNKNOWN_REGION?tr('未知地区'):countryName(code)
 const speed=(value:number)=>{const bits=Math.max(0,value)*8;return bits>=1e9?`${(bits/1e9).toFixed(2)} Gbps`:bits>=1e6?`${(bits/1e6).toFixed(2)} Mbps`:`${(bits/1e3).toFixed(1)} Kbps`}
 const expiring=(n:Node)=>{const days=daysUntil(n.expires_at);return days!==null&&days<=7}
 const quotaWarning=(n:Node)=>n.traffic_limit>0&&trafficUsage(n).value/n.traffic_limit>=.9
 function matches(n:Node,f:Filter,query:string){return (f.status==='all'||f.status==='online'&&n.online||f.status==='offline'&&!n.online||f.status==='high'&&(liveMetrics(n)?.cpu??0)>=85||f.status==='expiry'&&expiring(n)||f.status==='quota'&&quotaWarning(n))&&(f.region==='all'||regionKey(n.country)===f.region)&&(f.group==='all'||(n.group??'')===f.group.slice(1))&&`${n.name} ${n.group??''} ${n.os} ${regionLabel(regionKey(n.country))}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())}
 function Meter({label,value}:{label:string;value:number|null}){return <div className="ma-meter"><div><span>{label}</span><b>{value===null?'—':value.toFixed(1)}{value!==null&&<small>%</small>}</b></div><div className="ma-track" data-hot={value!==null&&value>=85}><i style={{width:`${Math.max(0,Math.min(100,value??0))}%`}}/></div></div>}
-function CompactNode({node,prefs,detailed,onOpen}:{node:Node;prefs:Preferences;detailed:boolean;onOpen:(id:number)=>void}){
+function CompactNode({node,prefs,detailed,onOpen}:{node:Node;prefs:Preferences;detailed:boolean;onOpen:(id:number,section?:'latency',probe?:number)=>void}){
  const {ref,snapshot}=usePing(node.id),choice=useNodeProbe(node.id,prefs.probe)
  const stats=snapshot?.data?summarizePing(snapshot.data):[]
  const selected=choice.probe==='auto'?stats[0]:stats.find(s=>String(s.id)===choice.probe)
@@ -41,7 +43,7 @@ function CompactNode({node,prefs,detailed,onOpen}:{node:Node;prefs:Preferences;d
  const info=prefs.mobileInfoMode==='custom'?(prefs.mobileCardInfo??prefs.cardInfo):prefs.cardInfo
  return <div ref={ref} className="ma-node" data-state={state}><button data-node-id={node.id} onClick={()=>onOpen(node.id)} aria-label={tr('查看 {0}',node.name)}>
   <div className="ma-node-head"><span className="ma-flag">{node.country?(prefs.icons?<Flag code={node.country}/>:node.country):<Server size={19}/>}</span><span className="ma-identity"><strong>{node.name}</strong><small>{osName(node.os)}{node.group&&` · ${node.group}`}</small></span><Status node={node}/></div>
-  {node.online?<><div className="ma-meters"><Meter label="CPU" value={m?.cpu??null}/><Meter label={tr('内存')} value={m?percent(m.mem_used,m.mem_total):null}/></div><div className="ma-net"><span><ArrowUp size={12}/><b>{m?speed(m.net_tx):'—'}</b></span><span><ArrowDown size={12}/><b>{m?speed(m.net_rx):'—'}</b></span><span title={selected?.name}>{recent?(selected.latest.latency===null?tr('超时'):<><b>{Math.round(selected.latest.latency)}</b><small>ms</small></>):'—'}<ChevronRight size={12}/></span></div>{selected&&<small className="ma-route-caption">{selected.name}</small>}</>:<p className="ma-notice muted">{tr('最近上报时间')}<br/>{node.last_seen>0?new Date(node.last_seen*1000).toLocaleString(locale()):tr('上次上报时间未知')}</p>}
+  {node.online?<div className="ma-meters"><Meter label="CPU" value={m?.cpu??null}/><Meter label={tr('内存')} value={m?percent(m.mem_used,m.mem_total):null}/></div>:<p className="ma-notice muted">{tr('最近上报时间')}<br/>{node.last_seen>0?new Date(node.last_seen*1000).toLocaleString(locale()):tr('上次上报时间未知')}</p>}
   {state==='stale'&&<p className="ma-notice muted">{tr('数据已过期')}</p>}{state==='missing'&&<p className="ma-notice muted">{tr('等待首次上报')}</p>}
   {node.online&&selected&&!recent&&<p className="ma-notice muted">{snapshot?.failed?tr('更新失败 · 上次数据'):tr('较旧记录')} · {tr('延迟')}</p>}
   {node.online&&!selected&&<p className="ma-notice muted">{snapshot?.failed?tr('暂不可用 · 自动重试'):snapshot?.data?tr('无该线路记录'):tr('正在读取探测记录…')}</p>}
@@ -49,17 +51,20 @@ function CompactNode({node,prefs,detailed,onOpen}:{node:Node;prefs:Preferences;d
   {info.expiry&&days!==null&&days<=7&&<p className="ma-notice">{days<0?tr('已到期'):days===0?tr('今日到期'):tr('剩余 {0} 天',days)}</p>}
   {info.traffic&&node.traffic_limit>0&&trafficUsage(node).value>=node.traffic_limit&&<p className="ma-notice">{tr('流量额度已用尽')}</p>}
   {detailed&&<div className="ma-extra">{info.traffic&&<span>{tr('本月用量')} {bytes(trafficUsage(node).value)}</span>}{info.uptime&&m&&<span>{tr('在线时长')} {uptime(m.uptime)}</span>}{info.connections&&m&&<span>TCP {m.tcp} · UDP {m.udp}</span>}</div>}
- </button></div>
+ </button>{node.online&&<div className="ma-net"><span><ArrowUp size={12}/><b>{m?speed(m.net_tx):'—'}</b></span><span><ArrowDown size={12}/><b>{m?speed(m.net_rx):'—'}</b></span>{selected?<button type="button" className="ma-network-link" title={selected.name} aria-label={tr('查看线路：{0}',selected.name)} onClick={()=>onOpen(node.id,'latency',selected.id)}>{recent?(selected.latest.latency===null?tr('超时'):<><b>{Math.round(selected.latest.latency)}</b><small>ms</small></>):'—'}<ChevronRight size={12}/></button>:<span>—</span>}</div>}{selected&&<small className="ma-route-caption">{selected.name}</small>}</div>
 }
-export function MobileApp({active,nodes,prefs,onPrefs,mobile,onMobile,siteName,authed,connection,lastUpdated,loadAlerts,onOpen,onAlert}:{
- active:boolean;nodes:Node[]|null;prefs:Preferences;onPrefs:Dispatch<SetStateAction<Preferences>>;mobile:MobilePreferences;onMobile:Dispatch<SetStateAction<MobilePreferences>>;
- siteName:string;authed:boolean;connection:string;lastUpdated:number|null;loadAlerts:{events:LoadAlert[];saved:boolean};onOpen:(id:number)=>void;onAlert:(event:LoadAlert)=>void
+export function MobileApp({active,page,onNavigate,nodes,prefs,onPrefs,mobile,onMobile,siteName,authed,connection,lastUpdated,loadAlerts,onOpen,onAlert}:{
+ active:boolean;page:Page;onNavigate:(page:Page)=>void;nodes:Node[]|null;prefs:Preferences;onPrefs:Dispatch<SetStateAction<Preferences>>;mobile:MobilePreferences;onMobile:Dispatch<SetStateAction<MobilePreferences>>;
+ siteName:string;authed:boolean;connection:string;lastUpdated:number|null;loadAlerts:{events:LoadAlert[];saved:boolean};onOpen:(id:number,section?:'latency',probe?:number)=>void;onAlert:(event:LoadAlert)=>void
 }){
- const [page,setPage]=useState<Page>('nodes'),[query,setQuery]=useState(''),[filter,setFilter]=useState<Filter>(empty),[draft,setDraft]=useState<Filter>(empty)
+ const [query,setQuery]=useState(()=>readMobileBrowse().query),[filter,setFilter]=useState<Filter>(()=>readMobileBrowse().filter),[draft,setDraft]=useState<Filter>(empty)
  const [sheet,setSheet]=useState<'filters'|'routes'|'records'|'updates'|null>(null),[routeQuery,setRouteQuery]=useState(''),[allRegions,setAllRegions]=useState(false),[undo,setUndo]=useState<MobilePreferences|null>(null)
  const versionState=useMobileVersions(authed&&active&&page==='settings')
  const updates=authed&&hasMobileUpdates(versionState.versions,nodes??[])
  const scroll=useRef<Record<Page,number>>({nodes:0,overview:0,settings:0})
+ const previousPage=useRef(page)
+ useEffect(()=>{try{sessionStorage.setItem('hex-mobile-browse',JSON.stringify({query,filter}))}catch{/* Optional storage. */}},[query,filter])
+ useLayoutEffect(()=>{if(!active)return;if(previousPage.current!==page){previousPage.current=page;requestAnimationFrame(()=>window.scrollTo(0,scroll.current[page]))}},[active,page])
  const sorted=[...(nodes??[])].sort((a,b)=>a.sort-b.sort||a.id-b.id),online=sorted.filter(n=>n.online),fresh=online.filter(n=>liveMetrics(n))
  const high=sorted.filter(n=>(liveMetrics(n)?.cpu??0)>=85),regions=groupRegions(sorted)
  const groups=[...new Set(sorted.map(n=>n.group).filter((s):s is string=>!!s))]
@@ -71,7 +76,7 @@ export function MobileApp({active,nodes,prefs,onPrefs,mobile,onMobile,siteName,a
  if(filter.sort==='cpu')shown=shown.sort((a,b)=>(liveMetrics(b)?.cpu??-1)-(liveMetrics(a)?.cpu??-1))
  if(filter.sort==='name')shown=shown.sort((a,b)=>a.name.localeCompare(b.name,locale()))
  if(filter.sort==='latency'){const value=(n:Node)=>{const snapshot=getPing(n.id);if(!snapshot?.data||snapshot.failed)return Infinity;const stats=summarizePing(snapshot.data),probe=resolveProbe(n.id,prefs.probe),s=probe==='auto'?stats[0]:stats.find(s=>String(s.id)===probe);return s&&isRecentPingSample(s.latest.ts)&&s.latest.latency!==null?s.latest.latency:Infinity};shown=shown.sort((a,b)=>value(a)-value(b))}
- const navigate=(next:Page)=>{scroll.current[page]=window.scrollY;setPage(next);requestAnimationFrame(()=>window.scrollTo(0,scroll.current[next]))}
+ const navigate=(next:Page)=>{scroll.current[page]=window.scrollY;onNavigate(next)}
  const filterStatus=(status:string)=>{setFilter(f=>({...f,status:f.status===status?'all':status}));if(page!=='nodes')navigate('nodes')}
  const statuses=[['all',tr('全部')],['online',tr('在线')],['offline',tr('离线')],['high',tr('高负载')],['expiry',tr('到期提醒')],['quota',tr('流量提醒')]]
  const sorts=[['default',tr('后台默认')],['cpu',tr('负载优先')],['latency',tr('所选线路延迟')],['name',tr('名称')]]

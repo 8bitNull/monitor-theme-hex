@@ -1,0 +1,103 @@
+import {expect,test,type Page} from '@playwright/test'
+import {metrics,nodes} from '../scripts/fixtures.mjs'
+
+async function fixture(page:Page){
+ await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:nodes()}}))
+ await page.route('**/api/nodes/*/metrics?*',route=>route.fulfill({json:metrics()}))
+}
+
+test('mobile page URL survives reload and follows browser history',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await fixture(page)
+ await page.goto('/?page=overview')
+ const nav=page.getByRole('navigation',{name:'主导航'})
+ await expect(nav.getByRole('button',{name:'概览'})).toHaveAttribute('aria-current','page')
+ await page.reload()
+ await expect(nav.getByRole('button',{name:'概览'})).toHaveAttribute('aria-current','page')
+ await nav.getByRole('button',{name:'设置'}).click()
+ await expect(page).toHaveURL(/\?page=settings$/)
+ await page.goBack()
+ await expect(nav.getByRole('button',{name:'概览'})).toHaveAttribute('aria-current','page')
+ await page.goForward()
+ await expect(nav.getByRole('button',{name:'设置'})).toHaveAttribute('aria-current','page')
+})
+
+test('mobile detail returns to its overview source after reload',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await fixture(page)
+ await page.goto('/?page=overview')
+ await page.locator('.ma-row').filter({hasText:'London'}).first().click()
+ await expect(page).toHaveURL(/\/node\/6/)
+ await page.reload()
+ await page.getByRole('button',{name:'返回总览'}).click()
+ await expect(page).toHaveURL(/\?page=overview$/)
+ await expect(page.getByRole('navigation',{name:'主导航'}).getByRole('button',{name:'概览'})).toHaveAttribute('aria-current','page')
+})
+
+test('desktop detail search offers matches and Enter switches node without changing home filter',async({page})=>{
+ await fixture(page);await page.goto('/node/1?rh=24&lh=1#latency')
+ const search=page.locator('.desktop-header-search').getByRole('searchbox',{name:'搜索节点'})
+ await search.fill('London')
+ await expect(page.getByRole('option',{name:/London/})).toBeVisible()
+ await search.press('Enter')
+ await expect(page).toHaveURL(/\/node\/6\?.*rh=24.*lh=1.*#latency$/)
+ await page.getByRole('button',{name:'返回总览'}).click()
+ await expect(page.locator('.desktop-header-search').getByRole('searchbox',{name:'搜索节点'})).toHaveValue('')
+})
+
+test('desktop detail search supports arrow selection and a useful empty result',async({page})=>{
+ await fixture(page);await page.goto('/node/1')
+ const search=page.locator('.desktop-header-search').getByRole('searchbox',{name:'搜索节点'})
+ await search.fill('nomatch')
+ await expect(page.getByRole('listbox',{name:'匹配节点'})).toContainText('没有符合条件的节点')
+ await search.fill('o')
+ await search.press('ArrowDown')
+ await search.press('Enter')
+ await expect(page).toHaveURL(/\/node\/2/)
+})
+
+test('mobile named network control opens that route while card body opens overview',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await fixture(page);await page.goto('/')
+ const card=page.locator('.ma-node').first()
+ await card.getByRole('button',{name:'查看线路：Tokyo gateway'}).click()
+ await expect(page).toHaveURL(/\/node\/1\?.*routes=1.*#latency$/)
+ await expect(page.getByLabel('查看线路',{exact:true})).toHaveAttribute('data-value','1')
+ await page.getByRole('button',{name:'返回总览'}).click()
+ await card.getByRole('button',{name:/查看 Tokyo/}).click()
+ await expect(page).toHaveURL(/\/node\/1/)
+ await expect(page).not.toHaveURL(/#latency$/)
+})
+
+test('a direct detail link returns to nodes even when another page was visited earlier',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await fixture(page)
+ await page.goto('/?page=settings')
+ await page.goto('/node/1')
+ await page.getByRole('button',{name:'返回总览'}).click()
+ await expect(page).toHaveURL(/\?page=nodes$/)
+})
+
+test('browser back after reloading detail restores its source page',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await fixture(page)
+ await page.goto('/?page=overview')
+ await page.locator('.ma-row').filter({hasText:'London'}).first().click()
+ await page.reload()
+ await page.goBack()
+ await expect(page).toHaveURL(/\?page=overview$/)
+ await expect(page.getByRole('navigation',{name:'主导航'}).getByRole('button',{name:'概览'})).toHaveAttribute('aria-current','page')
+})
+
+test('mobile filters and scroll survive a detail reload and return',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await fixture(page);await page.goto('/')
+ const last=page.locator('.ma-node').last().getByRole('button',{name:/查看 London/})
+ await last.scrollIntoViewIfNeeded()
+ const before=await page.evaluate(()=>scrollY)
+ expect(before).toBeGreaterThan(0)
+ await last.click();await page.reload()
+ await page.getByRole('button',{name:'返回总览'}).click()
+ await expect.poll(()=>page.evaluate(()=>scrollY)).toBeGreaterThan(before-90)
+ await page.getByRole('button',{name:'筛选节点'}).click()
+ await page.getByRole('dialog').getByRole('button',{name:'离线',exact:true}).click()
+ await page.getByRole('button',{name:/^显示 \d+ 个节点$/}).click()
+ await page.locator('.ma-node').getByRole('button',{name:/查看 London/}).click()
+ await page.reload()
+ await page.getByRole('button',{name:'返回总览'}).click()
+ await expect(page.locator('.ma-node:visible')).toHaveCount(1)
+})

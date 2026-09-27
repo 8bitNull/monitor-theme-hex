@@ -160,7 +160,7 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
     const retained=useRef<{key:string;value:NonNullable<typeof data>}|null>(null);
     const refresh=()=>{if(!busy.current){busy.current=true;setLoading(true);setRetry(n=>n+1);}};
     const [updated,setUpdated]=useState<number|null>(null);
-    useEffect(()=>{const q=new URLSearchParams(location.search);q.set('rh',String(ranges.resources));q.set('lh',String(ranges.latency));q.set('metric',resourceMetric);if(mobile)q.set('section',mobileSection);if(selectedProbes===null)q.delete('routes');else q.set('routes',selectedProbes==='all'?'all':selectedProbes.join(','));history.replaceState({},'',location.pathname+'?'+q+((mobile?mobileSection==='latency':tab==='latency')?'#latency':''))},[ranges,resourceMetric,selectedProbes,tab,mobile,mobileSection]);
+    useEffect(()=>{const q=new URLSearchParams(location.search);q.set('rh',String(ranges.resources));q.set('lh',String(ranges.latency));q.set('metric',resourceMetric);if(mobile)q.set('section',mobileSection);if(selectedProbes===null)q.delete('routes');else q.set('routes',selectedProbes==='all'?'all':selectedProbes.join(','));history.replaceState(history.state,'',location.pathname+'?'+q+((mobile?mobileSection==='latency':tab==='latency')?'#latency':''))},[ranges,resourceMetric,selectedProbes,tab,mobile,mobileSection]);
     // Where the brush has been dragged, so the axis reticks for the visible span
     // rather than retaining the whole window's ticks.
     const [zoomWindow, setZoomWindow] = useState<[

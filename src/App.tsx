@@ -25,6 +25,10 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api, useNodes } from "@/lib/api";
+import type {Node} from '@/lib/api';
+import {homePage,homePath,readReturnContext,saveReturnContext,type HomePage} from '@/lib/navigation';
+import {searchNodes} from '@/lib/nodeSearch';
+import '@/styles/ux-navigation.css';
 type Me = {
     authed: boolean;
     github: boolean;
@@ -43,11 +47,12 @@ const NodeDetail = lazy(loadDetail);
 function useNodeRoute() {
     const read = () => {const match=location.pathname.match(/^\/node\/(\d+)/);return match?Number(match[1]):null;};
     const [id,setId]=useState(read);
-    const home=useRef({y:0,node:0,offset:0,width:0,tableX:0,tableOffset:0,tableY:0,table:false});
+    const [page,setPage]=useState<HomePage>(()=>read()===null?homePage():readReturnContext(history.state)?.page??'nodes');
+    const home=useRef({y:readReturnContext(history.state)?.scrollY??0,node:0,offset:0,width:0,tableX:0,tableOffset:0,tableY:0,table:false});
     const pending=useRef(false);
     useEffect(()=>{
         const previous=history.scrollRestoration;history.scrollRestoration='manual';
-        const sync=()=>{pending.current=read()===null;setId(read());};
+        const sync=()=>{const next=read();pending.current=next===null;setId(next);setPage(next===null?homePage():readReturnContext(history.state)?.page??'nodes');};
         addEventListener('popstate',sync);
         return()=>{removeEventListener('popstate',sync);history.scrollRestoration=previous;};
     },[]);
@@ -77,13 +82,38 @@ function useNodeRoute() {
         frame=requestAnimationFrame(settle);const timer=setTimeout(()=>{restore();stop();},500);
         return()=>{stop();cancelAnimationFrame(frame);clearTimeout(timer);for(const event of ['wheel','touchstart','pointerdown','keydown'])removeEventListener(event,stop);};
     },[id]);
-    return [id,(next:number|null,section?:string,query='')=>{
+    const go=(next:number|null,section?:string,query='')=>{
         if(id===null && next!==null){const target=document.querySelector<HTMLElement>(`[data-node-id="${next}"]`);const table=document.querySelector<HTMLElement>('.table-scroll');home.current={y:scrollY,node:next,offset:target?.getBoundingClientRect().top || 0,width:innerWidth,table:!!table,tableX:table?.scrollLeft||0,tableY:table?.scrollTop||0,tableOffset:target&&table?target.getBoundingClientRect().top-table.getBoundingClientRect().top:0};}
+        const returning=readReturnContext(history.state);
+        const destination=next===null?returning?.page??page:page;
+        if(next===null&&returning)home.current.y=returning.scrollY;
+        const routeState=next!==null?(id===null?saveReturnContext({page,scrollY}):history.state??{}):{};
         const anchor=section ?? (id!==null && next!==null?location.hash.slice(1):'');
         pending.current=next===null;
-        history.pushState({},'',next===null?'/':`/node/${next}${query}${anchor?'#'+anchor:''}`);
+        history.pushState(routeState,'',next===null?homePath(destination):`/node/${next}${query}${anchor?'#'+anchor:''}`);
+        if(next===null)setPage(destination);
         setId(next);if(next!==null)scrollTo(0,0);
-    }] as const;
+    };
+    const navigate=(next:HomePage)=>{if(next===page&&id===null)return;history.pushState({},'',homePath(next));setPage(next);setId(null);};
+    return [id,go,page,navigate] as const;
+}
+function DetailSearch({nodes,onSelect}:{nodes:Node[];onSelect:(id:number)=>void}){
+    const [query,setQuery]=useState(''),[expanded,setExpanded]=useState(false),[index,setIndex]=useState(0);
+    const matches=searchNodes(nodes,query).slice(0,8);
+    const choose=(id:number)=>{setExpanded(false);setQuery('');setIndex(0);onSelect(id)};
+    const visible=expanded&&query.trim().length>0;
+    return <div className="detail-node-search desktop-header-search" onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))setExpanded(false)}}>
+      <div className="node-search-control"><Search size={16} aria-hidden="true"/><input type="search" value={query} onFocus={()=>setExpanded(true)} onChange={event=>{setQuery(event.target.value);setIndex(0);setExpanded(true)}} onKeyDown={event=>{
+        if(event.key==='ArrowDown'){event.preventDefault();setIndex(value=>Math.min(value+1,matches.length-1))}
+        else if(event.key==='ArrowUp'){event.preventDefault();setIndex(value=>Math.max(0,value-1))}
+        else if(event.key==='Enter'&&matches.length){event.preventDefault();choose(matches[index]?.id??matches[0].id)}
+        else if(event.key==='Escape')setExpanded(false)
+      }} aria-label={tr('搜索节点')} aria-controls="detail-node-suggestions" aria-expanded={visible} aria-autocomplete="list" aria-activedescendant={visible&&matches.length?`detail-node-option-${matches[index]?.id??matches[0].id}`:undefined} placeholder={tr('搜索节点…')}/>
+      {query&&<button type="button" className="node-search-clear" aria-label={tr('清除搜索')} onClick={()=>{setQuery('');setExpanded(false)}}><X size={15}/></button>}</div>
+      {visible&&<div id="detail-node-suggestions" className="detail-node-suggestions" role="listbox" aria-label={tr('匹配节点')}>
+        {matches.length?matches.map((node,i)=><button type="button" role="option" id={`detail-node-option-${node.id}`} aria-selected={i===index} key={node.id} onClick={()=>choose(node.id)}><span>{node.name}</span><small>{countryName(node.country)}</small></button>):<p role="status">{tr('没有符合条件的节点')}</p>}
+      </div>}
+    </div>;
 }
 export default function App({ siteDefaults = defaults }: {
     siteDefaults?: ThemePreferences;
@@ -93,7 +123,7 @@ export default function App({ siteDefaults = defaults }: {
     const [me, setMe] = useState<Me | null>(null);
     const [meError, setMeError] = useState("");
     const { nodes, error, closed, connection, lastUpdated } = useNodes();
-    const [open, go] = useNodeRoute();
+    const [open, go, homePageState, navigate] = useNodeRoute();
     const [mobileCards,setMobileCards]=useState(()=>matchMedia('(max-width:720px)').matches);
     useEffect(()=>{const media=matchMedia('(max-width:720px)');const update=()=>setMobileCards(media.matches);media.addEventListener('change',update);return()=>media.removeEventListener('change',update)},[]);
     const [prefs, setPrefs, selectDisplay] = usePreferences(siteDefaults);
@@ -227,7 +257,7 @@ export default function App({ siteDefaults = defaults }: {
             <span>{me.site_name || "HEX"}</span>
           </button>
           <div className="flex-1"/>
-          {!compactViewport && searchField("desktop-header-search")}
+          {!compactViewport && (open===null?searchField("desktop-header-search"):<DetailSearch nodes={sorted} onSelect={id=>{const q=new URLSearchParams(location.search);q.delete('eventStart');q.delete('eventEnd');q.delete('routes');go(id,location.hash.slice(1),q.size?'?'+q:'')}}/>)}
           {compactViewport && <div className="mobile-header-search-shell"><button type="button" className="mobile-header-search-toggle" aria-label={tr("搜索节点")} title={tr("搜索节点")} aria-expanded={mobileSearchOpen} onClick={()=>setMobileSearchOpen(value=>!value)}><Search size={17}/></button></div>}
           <Button variant="ghost" size="icon" onClick={() => setLanguage(language === 'zh' ? 'en' : 'zh')} title="中文 / English" aria-label="Language / 语言"><Globe /></Button>
           {/* The panel is a separate app built into the hub, not part of this
@@ -246,7 +276,7 @@ export default function App({ siteDefaults = defaults }: {
 
       <main className="mx-auto max-w-[1400px] space-y-5 px-4 py-4 sm:px-6">
         {(error || meError) && <p role="alert" className="error-banner">{tr("连接异常，正在重试。")}{error || meError}</p>}
-        {compactViewport&&<MobileApp active={open===null} nodes={nodes} prefs={prefs} onPrefs={setPrefs} mobile={mobilePreferences} onMobile={setMobilePreferences} siteName={me.site_name||'HEX'} authed={me.authed} connection={connection} lastUpdated={lastUpdated} loadAlerts={loadAlerts} onOpen={id=>go(id)} onAlert={event=>go(event.nodeId,'',`?eventStart=${event.start}&eventEnd=${event.end??event.last}`)}/>}
+        {compactViewport&&<MobileApp active={open===null} page={homePageState} onNavigate={navigate} nodes={nodes} prefs={prefs} onPrefs={setPrefs} mobile={mobilePreferences} onMobile={setMobilePreferences} siteName={me.site_name||'HEX'} authed={me.authed} connection={connection} lastUpdated={lastUpdated} loadAlerts={loadAlerts} onOpen={(id,section,probe)=>go(id,section,probe===undefined?'':`?routes=${probe}`)} onAlert={event=>go(event.nodeId,'',`?eventStart=${event.start}&eventEnd=${event.end??event.last}`)}/>}
 
         {open !== null && selected && <div className="detail-navigation">
           <Button className="detail-back" variant="ghost" aria-label={tr("返回总览")} title={tr("返回总览")} onClick={()=>go(null)}><ArrowLeft/><span>{tr("返回总览")}</span></Button>

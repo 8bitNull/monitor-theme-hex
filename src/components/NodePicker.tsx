@@ -5,6 +5,7 @@ import {tr} from '@/lib/i18n'
 import {Flag} from './NodeIcons'
 import {Status} from './NodeIdentity'
 import {countryName} from '@/lib/regionNames'
+import {searchNodes} from '@/lib/nodeSearch'
 import {MobileSheet} from './ui/mobile-sheet'
 import '../styles/mobile-facts-refinement.css'
 export function NodePicker({node,nodes,onSwitch}:{node:Node;nodes:Node[];onSwitch:(id:number)=>void}){
@@ -15,8 +16,7 @@ export function NodePicker({node,nodes,onSwitch}:{node:Node;nodes:Node[];onSwitc
  const [titleExpanded,setTitleExpanded]=useState(false),[titleLong,setTitleLong]=useState(false);
  const titleText=useRef<HTMLSpanElement>(null);
  useEffect(()=>{const el=titleText.current;if(!el)return;const measure=()=>{if(!titleExpanded)setTitleLong(el.scrollHeight>el.clientHeight+1)};measure();const observer=new ResizeObserver(measure);observer.observe(el);return()=>observer.disconnect()},[node.name,titleExpanded]);
- const term=query.toLocaleLowerCase().trim()
- const matches=nodes.filter(n=>`${n.name} ${n.country} ${countryName(n.country)} ${n.group||''}`.toLocaleLowerCase().includes(term))
+ const matches=searchNodes(nodes,query)
  const groups=new Map<string,Node[]>()
  for(const item of matches){const name=item.group?.trim()||tr('未分组');if(!groups.has(name))groups.set(name,[]);groups.get(name)!.push(item)}
  const currentGroup=node.group?.trim()||tr('未分组')
