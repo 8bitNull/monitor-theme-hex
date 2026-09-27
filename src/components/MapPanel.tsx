@@ -1,5 +1,5 @@
 import {Component,useEffect,useLayoutEffect,useMemo,useRef,useState,type ComponentType,type ReactNode} from 'react'
-import {Check,ChevronDown,Globe} from 'lucide-react'
+import {Check,ChevronDown,Globe,Map as MapIcon} from 'lucide-react'
 import type {MapNode} from './WorldMap'
 import {groupRegions} from '@/lib/groups'
 import {countryName} from '@/lib/regionNames'
@@ -13,7 +13,7 @@ class MapBoundary extends Component<{children:ReactNode;fallback:ReactNode},{fai
  static getDerivedStateFromError(){return {failed:true}}
  render(){return this.state.failed?this.props.fallback:this.props.children}
 }
-function RegionBar({nodes,region,onRegion,toolsHostRef}:{nodes:MapNode[];region:string;onRegion:(code:string)=>void;toolsHostRef:(node:HTMLDivElement|null)=>void}){
+function RegionBar({nodes,region,onRegion,toolsHostRef,expanded,onExpanded}:{nodes:MapNode[];region:string;onRegion:(code:string)=>void;toolsHostRef:(node:HTMLDivElement|null)=>void;expanded:boolean;onExpanded:()=>void}){
  const regions=useMemo(()=>groupRegions(nodes),[nodes])
  const language=locale()
  const listRef=useRef<HTMLDivElement>(null),measureRef=useRef<HTMLDivElement>(null),moreRef=useRef<HTMLButtonElement>(null),menuRef=useRef<HTMLDivElement>(null)
@@ -66,6 +66,7 @@ function RegionBar({nodes,region,onRegion,toolsHostRef}:{nodes:MapNode[];region:
    {hidden.length>0&&<button ref={moreRef} type="button" className="home-region-more" aria-haspopup="dialog" aria-expanded={moreOpen} onClick={()=>{setSearch('');setMoreOpen(value=>!value)}}>{tr('更多地区')} <small>{hidden.length}</small><ChevronDown size={14} aria-hidden="true"/></button>}
   </div>
   <div className="home-map-tools" ref={toolsHostRef}/>
+  <button type="button" className="home-map-toggle" aria-expanded={expanded} aria-controls="home-map-canvas" onClick={onExpanded}><MapIcon size={16} aria-hidden="true"/>{tr(expanded?'收起地图':'展开地图')}</button>
   <div className="home-region-measure" ref={measureRef} aria-hidden="true">
    <button tabIndex={-1}>{tr('所有地区')} <small>{nodes.length}</small></button>
    {regions.map(item=><button key={item.code} tabIndex={-1}>{item.code.length===2&&<Flag code={item.code}/>}<span>{countryName(item.code)}</span><small>{item.total}</small></button>)}
@@ -77,24 +78,25 @@ function RegionBar({nodes,region,onRegion,toolsHostRef}:{nodes:MapNode[];region:
   </div>}
  </div>
 }
-export function MapPanel({nodeSnapshot,region,onRegion,viewSwitch,pendingNodes=false}:{nodeSnapshot:string;viewSwitch:ReactNode;pendingNodes?:boolean}&Omit<MapProps,'nodes'>){
+export function MapPanel({nodeSnapshot,region,onRegion,viewSwitch,pendingNodes=false,expanded,onExpanded}:{nodeSnapshot:string;viewSwitch:ReactNode;pendingNodes?:boolean;expanded:boolean;onExpanded:()=>void}&Omit<MapProps,'nodes'>){
  const nodes=useMemo(()=>JSON.parse(nodeSnapshot) as MapNode[],[nodeSnapshot])
  const [Map,setMap]=useState<ComponentType<MapProps>|null>(null),[state,setState]=useState<'loading'|'slow'|'failed'|'ready'>('loading'),[attempt,setAttempt]=useState(0)
  const [toolsHost,setToolsHost]=useState<HTMLDivElement|null>(null)
  useEffect(()=>{
+  if(!expanded)return
   let active=true
   const slow=setTimeout(()=>{if(active)setState('slow')},3000)
   const timeout=setTimeout(()=>{if(active)setState('failed')},15000)
   loadMap().then(module=>{if(active){setMap(()=>module.WorldMap);setState('ready')}},()=>{if(active)setState('failed')}).finally(()=>{clearTimeout(slow);clearTimeout(timeout)})
   return()=>{active=false;clearTimeout(slow);clearTimeout(timeout)}
- },[attempt])
+ },[attempt,expanded])
  const fallback=(failed:boolean)=><section className="map-placeholder explorer-map" aria-label={tr('全球节点分布')}>
   <div className="map-loading-message" role={failed?'alert':'status'}><Globe size={40} aria-hidden="true"/><p>{failed?tr('地图暂时无法加载'):state==='slow'?tr('地图加载较慢，节点列表仍可使用'):tr('地图加载中…')}</p>{failed&&<div><button onClick={()=>{setMap(null);setState('loading');setAttempt(n=>n+1)}}>{tr('重试地图')}</button><button onClick={()=>location.reload()}>{tr('刷新页面')}</button></div>}</div>
   <div className="explorer-footer"><div className="region-list"><button onClick={()=>onRegion('all')} aria-label={tr('所有地区')} aria-pressed={region==='all'}><Globe size={16}/></button>{groupRegions(nodes).map(r=><button key={r.code} data-region={r.code} aria-pressed={region===r.code} onClick={()=>onRegion(r.code)}>{countryName(r.code)} <small>{r.total}</small></button>)}</div></div>
  </section>
- return <div className="map-frame">
-  <RegionBar nodes={nodes} region={region} onRegion={onRegion} toolsHostRef={setToolsHost}/>
-  <MapBoundary key={attempt} fallback={fallback(true)}>{Map&&state==='ready'?<Map nodes={nodes} region={region} onRegion={onRegion} viewSwitch={viewSwitch} toolsHost={toolsHost}/>:fallback(state==='failed')}</MapBoundary>
+ return <div className="map-frame" data-expanded={expanded}>
+  <RegionBar nodes={nodes} region={region} onRegion={onRegion} toolsHostRef={setToolsHost} expanded={expanded} onExpanded={onExpanded}/>
+  {expanded&&<div id="home-map-canvas"><MapBoundary key={attempt} fallback={fallback(true)}>{Map&&state==='ready'?<Map nodes={nodes} region={region} onRegion={onRegion} viewSwitch={viewSwitch} toolsHost={toolsHost}/>:fallback(state==='failed')}</MapBoundary></div>}
   {pendingNodes&&<span className="map-data-notice" role="status">{tr('等待节点数据')}</span>}
  </div>
 }

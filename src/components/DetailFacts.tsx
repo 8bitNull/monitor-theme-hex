@@ -19,7 +19,7 @@ function Fact({ label, value, warning=false,copy=false }: {
     const copyValue=async()=>{const id=++request.current;clearTimeout(timer.current);setNotice('');try{await navigator.clipboard.writeText(String(value));if(id!==request.current)return;setNotice(tr('已复制'));timer.current=setTimeout(()=>setNotice(''),2000)}catch{if(id===request.current)setNotice(tr('复制失败，请手动选择文本'))}};
     if (value === null || value === undefined || value === "")
         return null;
-    const stackOnMobile=String(value).length>26||label==='CPU'||label==='IPv6'||label===tr('系统');
+    const stackOnMobile=String(value).length>26;
     return (<div className={`min-w-0${String(value).length>32?" fact-long":""}${stackOnMobile?' mobile-fact-stacked':''}`}>
       <dt className="text-xs text-muted-foreground">{label}</dt>
       <dd className={`detail-fact text-sm ${warning?"detail-expiry-warning":""}`}><span className="fact-value">{value}</span>{copy&&<span className="copy-control"><button className="copy-fact" aria-label={tr("复制：{0}",label)} title={tr("复制：{0}",label)} onClick={copyValue}>{notice===tr("已复制")?<Check size={14}/>:<Copy size={14}/>}</button>{notice&&<small role="status" className="copy-notice">{notice}</small>}</span>}</dd>

@@ -101,6 +101,7 @@ export const english: Record<string, string> = {
 "名称、状态和备注固定显示，备注位于最后一列。网络质量包含延迟和丢包。":"Name, status and remarks stay visible, with remarks last. Network quality includes latency and packet loss.",
 "全选指标":"Select all metrics",
 "恢复默认列":"Reset columns",
+"其他列":"Other columns",
 
 "清除搜索筛选":"Clear search filter",
 "结束时间":"End time",

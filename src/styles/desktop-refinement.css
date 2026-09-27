@@ -7,4 +7,17 @@
   .next-theme .node-table :is(th, td)[data-column='name'],
   .next-theme .node-table .table-node-name { text-align: left; }
   .next-theme .node-table :is(.table-metric, .table-speed, .table-traffic, .table-expiry) { font-variant-numeric: tabular-nums; }
+  .map-frame[data-expanded=false] .home-region-bar { border-bottom: 1px solid var(--border); border-radius: 8px; }
+  .map-frame[data-expanded=false] .home-map-tools { display: none; }
+  .home-map-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: none; min-height: 36px; padding: 5px 9px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; color: var(--foreground); }
+  .home-map-toggle:hover { color: var(--tone); }
+  .desktop-results-toolbar .results-actions { display: flex; align-items: center; gap: 10px; flex: none; }
+  .desktop-card-density { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 12px; color: var(--muted-foreground); }
+  .desktop-card-density select { min-height: 36px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--foreground); }
+  .node-card .node-secondary-toggle { display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; min-height: 36px; border-top: 1px solid var(--border); color: var(--muted-foreground); font-size: 12px; }
+  .node-card .node-secondary-toggle[aria-expanded=true] svg { transform: rotate(180deg); }
+  .table-scroll-controls { display: flex; align-items: center; gap: 4px; }
+  .table-scroll-controls > span { font-size: 12px; color: var(--muted-foreground); white-space: nowrap; }
+  .desktop-results-toolbar .table-reset-columns { min-height: 32px; padding: 4px 7px; font-size: 12px; color: var(--muted-foreground); white-space: nowrap; }
+  @media (max-width: 1100px) { .home-region-bar { gap: 7px; } .home-map-toggle { padding-inline: 6px; } .desktop-results-toolbar .table-reset-columns { padding-inline: 4px; } }
 }

@@ -1,34 +1,40 @@
 /* Production counterpart of the reviewed demo: browsing and shared sheets. */
 @media(max-width:720px){
- .next-theme .mobile-app .ma-header{min-height:calc(42px + env(safe-area-inset-top));padding:calc(10px + env(safe-area-inset-top)) 0 0;align-items:flex-start}
+ .next-theme .mobile-app .ma-header{min-height:calc(36px + env(safe-area-inset-top));padding:calc(7px + env(safe-area-inset-top)) 0 0;align-items:flex-start}
  .next-theme .mobile-app .ma-header h1{font-size:22px;line-height:1.3}
  .next-theme .mobile-app .ma-site-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0}
  .next-theme .mobile-app .ma-logo{flex-shrink:0}
  .next-theme .mobile-app .ma-header>div{width:100%;max-width:100%}
- .next-theme .mobile-app .ma-page-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:34px;margin:16px 0 12px}
- .next-theme .mobile-app .ma-page-title{margin:0;font-size:16px;font-weight:550;line-height:1.5;color:var(--foreground)}
+ .next-theme .mobile-app .ma-page-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:28px;margin:0 0 2px}
+ .next-theme .mobile-app .ma-page-title{margin:0;font-size:20px;font-weight:600;line-height:1.35;color:var(--foreground)}
  .next-theme .mobile-app .ma-page-heading .ma-live{min-width:0;max-width:65%;overflow-wrap:anywhere}
  .next-theme .mobile-app .ma-page-heading+.ma-heading{margin-top:0}
- .next-theme .mobile-app .ma-summary{gap:8px;padding-bottom:0;margin-bottom:4px}
+ .next-theme .mobile-app .ma-summary{gap:8px;padding-bottom:0;margin-bottom:0}
  .next-theme .mobile-app .ma-summary button{min-height:44px;padding:0 5px;font-size:12px}
- .next-theme .mobile-app .ma-search{position:sticky;top:0;z-index:3;background:var(--background);padding:4px 0 8px;margin-bottom:0}
- .next-theme .mobile-app .ma-heading{margin:14px 0 10px}
+ .next-theme .mobile-app .ma-search{position:sticky;top:0;z-index:3;background:var(--background);padding:0 0 2px;margin-bottom:0}
+ .next-theme .mobile-app .ma-heading{margin:2px 0}
+ .next-theme .mobile-app .ma-heading h2{font-size:16px}
  .next-theme .mobile-app .ma-node>button{padding:15px 14px}
- .next-theme .mobile-app .ma-identity strong{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.5}
- .next-theme .mobile-app .ma-identity small{font-size:11px}
+ .next-theme .mobile-app .ma-identity strong{display:block;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.5}
+ .next-theme .mobile-app .ma-identity strong{font-size:16px;letter-spacing:0}
+ .next-theme .mobile-app .ma-identity small{font-size:12px}
  .next-theme .mobile-app .ma-meters{margin-top:15px}
  .next-theme .mobile-app .ma-net{margin-top:12px;padding-top:11px}
- .ma-route-caption{display:block;text-align:right;overflow-wrap:anywhere;font-size:10px;color:var(--muted-foreground);margin-top:5px}
- .ma-business-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;margin:4px 0 8px;padding-bottom:2px}
- .ma-business-tabs button{flex-shrink:0;max-width:80%;overflow-wrap:anywhere;min-height:44px;padding:6px 12px;border-radius:10px;font-size:12px;color:var(--muted-foreground)}
+ .ma-route-caption{display:block;text-align:right;overflow-wrap:anywhere;font-size:12px;color:var(--muted-foreground);margin-top:5px}
+ .ma-business-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;margin:0;padding-bottom:0}
+ .ma-business-tabs button{flex-shrink:0;max-width:80%;overflow-wrap:anywhere;min-height:44px;padding:6px 12px;border-radius:8px;font-size:12px;color:var(--muted-foreground)}
  .ma-business-tabs button[aria-pressed=true]{background:var(--ma-soft);color:var(--tone)}
- .ma-business-tabs small{margin-left:4px;font-size:11px}
+ .ma-business-tabs small{margin-left:4px;font-size:12px}
  .ma-filter-tags{display:flex;flex-wrap:wrap;gap:6px;padding-top:6px}
  .ma-filter-tags button{display:flex;align-items:center;gap:6px;min-height:44px;max-width:100%;overflow-wrap:anywhere;padding:6px 10px;background:var(--ma-soft);color:var(--tone);border-radius:10px;font-size:12px}
  .ma-filter-tags button:last-child{background:transparent;color:var(--muted-foreground)}
  .next-theme .mobile-app .ma-panel{padding:16px}
  .next-theme .mobile-app .ma-rows{padding:0 16px}
  .next-theme .mobile-app .ma-row{min-height:54px}
+ .next-theme .mobile-app .ma-row{font-size:14px}
+ .next-theme .mobile-app .ma-live small{font-size:12px}
+ .next-theme .mobile-app .ma-reminder-empty{margin:0;padding:7px 2px;color:var(--muted-foreground);font-size:12px;line-height:1.5}
+ .next-theme .mobile-app .ma-rows>.ma-empty{padding:8px 0;font-size:12px;line-height:1.5}
  .next-theme .mobile-app .ma-hero{padding:17px}
  .next-theme .mobile-app .ma-hero>strong{font-size:36px;margin:8px 0}
  .next-theme .mobile-app .ma-health-track{margin-top:12px}
