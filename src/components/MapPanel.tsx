@@ -15,6 +15,7 @@ class MapBoundary extends Component<{children:ReactNode;fallback:ReactNode},{fai
 }
 function RegionBar({nodes,region,onRegion,toolsHostRef,expanded,onExpanded}:{nodes:MapNode[];region:string;onRegion:(code:string)=>void;toolsHostRef:(node:HTMLDivElement|null)=>void;expanded:boolean;onExpanded:()=>void}){
  const regions=useMemo(()=>groupRegions(nodes),[nodes])
+ const selectedIndex=regions.findIndex(item=>item.code===region)
  const language=locale()
  const listRef=useRef<HTMLDivElement>(null),measureRef=useRef<HTMLDivElement>(null),moreRef=useRef<HTMLButtonElement>(null),menuRef=useRef<HTMLDivElement>(null)
  const [visibleCount,setVisibleCount]=useState(Math.min(6,regions.length)),[moreOpen,setMoreOpen]=useState(false),[search,setSearch]=useState('')
@@ -24,11 +25,13 @@ function RegionBar({nodes,region,onRegion,toolsHostRef,expanded,onExpanded}:{nod
   const update=()=>{
    const buttons=[...measure.querySelectorAll('button')]
    const widths=buttons.map(button=>button.getBoundingClientRect().width)
-   const available=list.clientWidth,gap=7,max=Math.min(6,regions.length)
+   const available=list.clientWidth,gap=window.matchMedia('(min-width: 721px) and (max-width: 800px)').matches?5:7,max=Math.min(6,regions.length)
    let count=0
    for(let candidate=max;candidate>=0;candidate--){
     const needsMore=candidate<regions.length
-    const used=widths[0]+widths.slice(1,candidate+1).reduce((sum,width)=>sum+width,0)+(needsMore?widths.at(-1)!:0)+gap*(candidate+(needsMore?1:0))
+    const regionWidths=widths.slice(1,candidate+1)
+    if(candidate>0&&selectedIndex>=candidate)regionWidths[candidate-1]=widths[selectedIndex+1]
+    const used=widths[0]+regionWidths.reduce((sum,width)=>sum+width,0)+(needsMore?widths.at(-1)!:0)+gap*(candidate+(needsMore?1:0))
     if(used<=available){count=candidate;break}
    }
    setVisibleCount(count)
@@ -38,7 +41,7 @@ function RegionBar({nodes,region,onRegion,toolsHostRef,expanded,onExpanded}:{nod
   const observer=new ResizeObserver(update)
   observer.observe(list)
   return()=>observer.disconnect()
- },[regions,language])
+ },[regions,language,selectedIndex])
  const visible=regions.slice(0,visibleCount)
  const selected=regions.find(item=>item.code===region)
  if(selected&&!visible.some(item=>item.code===region)&&visible.length)visible[visible.length-1]=selected
@@ -66,7 +69,7 @@ function RegionBar({nodes,region,onRegion,toolsHostRef,expanded,onExpanded}:{nod
    {hidden.length>0&&<button ref={moreRef} type="button" className="home-region-more" aria-haspopup="dialog" aria-expanded={moreOpen} onClick={()=>{setSearch('');setMoreOpen(value=>!value)}}>{tr('更多地区')} <small>{hidden.length}</small><ChevronDown size={14} aria-hidden="true"/></button>}
   </div>
   <div className="home-map-tools" ref={toolsHostRef}/>
-  <button type="button" className="home-map-toggle" aria-expanded={expanded} aria-controls="home-map-canvas" onClick={onExpanded}><MapIcon size={16} aria-hidden="true"/>{tr(expanded?'收起地图':'展开地图')}</button>
+  <button type="button" className="home-map-toggle" aria-label={tr(expanded?'收起地图':'展开地图')} title={tr(expanded?'收起地图':'展开地图')} aria-expanded={expanded} aria-controls="home-map-canvas" onClick={onExpanded}><MapIcon size={16} aria-hidden="true"/><span>{tr(expanded?'收起地图':'展开地图')}</span></button>
   <div className="home-region-measure" ref={measureRef} aria-hidden="true">
    <button tabIndex={-1}>{tr('所有地区')} <small>{nodes.length}</small></button>
    {regions.map(item=><button key={item.code} tabIndex={-1}>{item.code.length===2&&<Flag code={item.code}/>}<span>{countryName(item.code)}</span><small>{item.total}</small></button>)}
@@ -96,7 +99,7 @@ export function MapPanel({nodeSnapshot,region,onRegion,viewSwitch,pendingNodes=f
  </section>
  return <div className="map-frame" data-expanded={expanded}>
   <RegionBar nodes={nodes} region={region} onRegion={onRegion} toolsHostRef={setToolsHost} expanded={expanded} onExpanded={onExpanded}/>
-  {expanded&&<div id="home-map-canvas"><MapBoundary key={attempt} fallback={fallback(true)}>{Map&&state==='ready'?<Map nodes={nodes} region={region} onRegion={onRegion} viewSwitch={viewSwitch} toolsHost={toolsHost}/>:fallback(state==='failed')}</MapBoundary></div>}
+  <div id="home-map-canvas" hidden={!expanded}>{expanded&&<MapBoundary key={attempt} fallback={fallback(true)}>{Map&&state==='ready'?<Map nodes={nodes} region={region} onRegion={onRegion} viewSwitch={viewSwitch} toolsHost={toolsHost}/>:fallback(state==='failed')}</MapBoundary>}</div>
   {pendingNodes&&<span className="map-data-notice" role="status">{tr('等待节点数据')}</span>}
  </div>
 }

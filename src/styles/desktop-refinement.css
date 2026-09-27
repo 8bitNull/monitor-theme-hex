@@ -11,6 +11,7 @@
   .map-frame[data-expanded=false] .home-map-tools { display: none; }
   .home-map-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: none; min-height: 36px; padding: 5px 9px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; color: var(--foreground); }
   .home-map-toggle:hover { color: var(--tone); }
+  #home-map-canvas[hidden] { display: none; }
   .desktop-results-toolbar .results-actions { display: flex; align-items: center; gap: 10px; flex: none; }
   .desktop-card-density { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 12px; color: var(--muted-foreground); }
   .desktop-card-density select { min-height: 36px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--foreground); }
@@ -20,4 +21,12 @@
   .table-scroll-controls > span { font-size: 12px; color: var(--muted-foreground); white-space: nowrap; }
   .desktop-results-toolbar .table-reset-columns { min-height: 32px; padding: 4px 7px; font-size: 12px; color: var(--muted-foreground); white-space: nowrap; }
   @media (max-width: 1100px) { .home-region-bar { gap: 7px; } .home-map-toggle { padding-inline: 6px; } .desktop-results-toolbar .table-reset-columns { padding-inline: 4px; } }
+  @media (max-width: 800px) {
+    .home-region-bar { gap: 4px; }
+    .home-region-label { display: none; }
+    .home-region-list { gap: 5px; }
+    .home-map-tools { width: max-content; }
+    .home-map-toggle { width: 36px; min-width: 36px; padding: 0; gap: 0; }
+    .home-map-toggle span { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  }
 }
