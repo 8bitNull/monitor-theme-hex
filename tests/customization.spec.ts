@@ -1,7 +1,8 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {chooseOption} from './select'
 import {settingsCategory} from './settings'
 import {setting,settingsButton} from './settings'
-import {test,expect,type Page} from '@playwright/test'
+import {test,expect,type Page} from './desktopTest'
 import {readFile} from 'node:fs/promises'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 import {toggleSettings} from './settings'
@@ -14,7 +15,7 @@ async function setup(page:Page){
  await page.goto('/');await page.locator('.route-matrix').scrollIntoViewIfNeeded();await page.locator('.latency-reading').waitFor()
 }
 test('site card information choices remove empty rows and preserve detail information',async({page})=>{
- test.setTimeout(120000);await page.setViewportSize({width:390,height:1000})
+ test.setTimeout(120000);await page.setViewportSize({width:800,height:1000})
  let config:any={cardInfo:all,modules:{map:false}}
  await page.route('**/theme-config.json',r=>r.fulfill({json:config}))
  await page.route('**/api/themes/hex/config',r=>r.fulfill({status:404}))
@@ -32,14 +33,16 @@ test('site card information choices remove empty rows and preserve detail inform
 })
 test('site mobile card choices respect the 720px boundary and follow mode',async({page})=>{
  await page.setViewportSize({width:390,height:1000})
- let config:any={cardInfo:all,mobileInfoMode:'custom',mobileCardInfo:{...all,price:false},modules:{map:false}}
+ await page.addInitScript(()=>localStorage.setItem('hex-mobile-v1',JSON.stringify({detailed:true})))
+ let config:any={cardInfo:all,mobileInfoMode:'custom',mobileCardInfo:{...all,traffic:false},modules:{map:false}}
  await page.route('**/theme-config.json',r=>r.fulfill({json:config}))
  await page.route('**/api/themes/hex/config',r=>r.fulfill({status:404}))
- await setup(page)
- await expect(page.locator('.node-price')).toHaveCount(0)
- await page.setViewportSize({width:721,height:1000});await expect(page.locator('.node-price')).toBeVisible()
- await page.setViewportSize({width:720,height:1000});await expect(page.locator('.node-price')).toHaveCount(0)
- config={...config,mobileInfoMode:'follow'};await page.reload();await expect(page.locator('.node-price')).toBeVisible()
+ await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[nodes()[0]]}}))
+ await page.goto('/')
+ await expect(page.locator('.ma-extra')).not.toContainText('本月用量')
+ await page.setViewportSize({width:721,height:1000});await expect(page.locator('.traffic-summary')).toBeVisible()
+ await page.setViewportSize({width:720,height:1000});await expect(page.locator('.ma-extra')).not.toContainText('本月用量')
+ config={...config,mobileInfoMode:'follow'};await page.reload();await expect(page.locator('.ma-extra')).toContainText('本月用量')
 })
 test.skip('explicit equal-default display choices survive site changes, unrelated changes, export and import (removed backup controls)',async({page})=>{
  let config:any={cardInfo:all,desktopColumns:'auto'};await page.route('**/theme-config.json',r=>r.fulfill({json:config}));await setup(page);await toggleSettings(page)
@@ -53,7 +56,7 @@ test.skip('explicit equal-default display choices survive site changes, unrelate
  await (await setting(page,'导入主题配置',{exact:true})).setInputFiles({name:'prefs.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(exported))});await settingsCategory(page,'cards');await expect(group.getByLabel('价格',{exact:true})).toBeChecked();await expect((await setting(page,'桌面列数',{exact:true}))).toHaveAttribute('data-value','auto')
  await page.reload();await expect(page.locator('.node-price')).toBeVisible()
 })
-for(const width of [320,390,430,720,721,1024,1440,1920])test('site column layout stays readable at '+width,async({page})=>{
+for(const width of [768,800,850,899,721,1024,1440,1920])test('site column layout stays readable at '+width,async({page})=>{
  await page.setViewportSize({width,height:1000})
  let columns='4'
  await page.route('**/theme-config.json',r=>r.fulfill({json:{desktopColumns:columns,modules:{map:false}}}))
@@ -63,8 +66,7 @@ for(const width of [320,390,430,720,721,1024,1440,1920])test('site column layout
  for(const value of ['2','3','4','auto']){
   columns=value;await page.reload()
   const count=await grid.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length)
-  if(width<=720)expect(count).toBe(1)
-  else if(value!=='auto'){expect(count).toBeLessThanOrEqual(Number(value));expect((await card.boundingBox())!.width).toBeGreaterThanOrEqual(300)}
+  if(value!=='auto'){expect(count).toBeLessThanOrEqual(Number(value));expect((await card.boundingBox())!.width).toBeGreaterThanOrEqual(300)}
   if(width===1440&&value==='4')expect(count).toBe(4)
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
   expect(await card.evaluate(el=>[...el.querySelectorAll('.resource')].every(r=>[...r.querySelectorAll('.bar-number,.metric-ring strong,.resource small')].every(n=>{const box=n.getBoundingClientRect(),parent=r.getBoundingClientRect();return !box.width||(box.right<=parent.right+1&&box.left>=parent.left-1)})))).toBeTruthy()

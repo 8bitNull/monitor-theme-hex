@@ -1,4 +1,4 @@
-import {test,expect,type Page} from '@playwright/test'
+import {test,expect,type Page} from './desktopTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 async function setup(page:Page){
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:nodes().map((n,i)=>({...n,group:i<3?'生产环境':'备用节点'}))}}))

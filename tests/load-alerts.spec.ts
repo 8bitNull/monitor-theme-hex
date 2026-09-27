@@ -28,12 +28,13 @@ test('load overview and history fit light/dark layouts and restore keyboard focu
   await page.locator('.next-theme').evaluate((el,dark)=>{el.classList.toggle('dark',dark);document.documentElement.classList.toggle('dark',dark)},dark)
   for(const width of [1440,390,320]){
    await page.setViewportSize({width,height:1000})
+   if(width<=720)await page.locator('.ma-nav').getByRole('button',{name:'概览'}).click()
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
    if(width===1440)expect(await page.locator('.summary-grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(6)
    await page.screenshot({path:`tests/artifacts/load-alerts-home-${width}-${dark?'dark':'light'}.png`,fullPage:true})
    const trigger=page.getByRole('button',{name:'查看高负载记录',exact:true});await trigger.click()
    await expect(page.getByRole('dialog',{name:'高负载观测记录'})).toBeVisible()
-   expect(await page.locator('.load-records').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
+   expect(await page.getByRole('dialog',{name:'高负载观测记录'}).evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
    await page.screenshot({path:`tests/artifacts/load-alerts-records-${width}-${dark?'dark':'light'}.png`})
    await page.keyboard.press('Escape');await expect(trigger).toBeFocused()
   }

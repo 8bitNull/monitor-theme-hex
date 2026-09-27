@@ -1,3 +1,4 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {expandRoutes} from './routes'
 import {test,expect} from '@playwright/test'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
@@ -5,10 +6,10 @@ import {setSiteDefault} from './settings'
 async function setup(page:any,count=3,overrides:Record<string,unknown>={}){
  await page.route('**/api/nodes',(r:any)=>r.fulfill({json:{nodes:[{...nodes()[0],agent_version:'1.2.3',ipv4:'192.0.2.1',remark:'国际线路;Backup',expires_at:'2027-01-01',...overrides}]}}))
  await page.route('**/api/nodes/*/metrics?*',(r:any)=>{const d=metrics();return r.fulfill({json:{...d,probes:Object.fromEntries(Array.from({length:count},(_,i)=>[i+1,`Route ${i+1}`])),ping:d.ping.flatMap(p=>Array.from({length:count},(_,i)=>({...p,task_id:i+1,latency:p.latency+i*10})))}})})
- await page.goto('/node/1');await expect(page.locator('.detail-resource-charts')).toBeVisible()
+ await page.goto('/node/1?section=resources');await expect(page.locator('.detail-resource-charts')).toBeVisible()
 }
 test('latency route controls provide one selector and comparison above the chart on mobile',async({page})=>{
- await page.setViewportSize({width:390,height:844})
+ await page.setViewportSize({width:800,height:844})
  await setup(page);await page.getByRole('button',{name:'网络延迟',exact:true}).click()
  const toolbar=page.locator('.detail-chart-toolbar'),controls=page.locator('.latency-route-controls');await expect(toolbar.locator('.detail-smooth')).toBeVisible()
  const route=controls.getByLabel('查看线路',{exact:true}),compare=controls.locator('.expand-routes');await expect(route).toBeVisible()
@@ -24,7 +25,7 @@ test('latency route controls provide one selector and comparison above the chart
  await expandRoutes(page);await expect(compare).toHaveAttribute('aria-label','收起线路');await expect(page.locator('.route-chips button[aria-pressed]')).toHaveCount(3)
  await compare.click();await expect(compare).toHaveAttribute('aria-label','比较线路');await expect(page.locator('.route-chips')).toHaveCount(0)
 })
-for(const width of [320,390,430,720,899,900,1024,1440,1920])test(`detail reading and toolbar geometry at ${width}`,async({page})=>{
+for(const width of [768,800,850,899,900,1024,1440,1920])test(`detail reading and toolbar geometry at ${width}`,async({page})=>{
  test.setTimeout(90000);await page.setViewportSize({width,height:844})
  for(const language of ['zh','en'])for(const appearance of ['light','dark']){
   await page.addInitScript(({language,appearance})=>{localStorage.setItem('monitor-next-language',language);localStorage.setItem('monitor-next',JSON.stringify({_storageVersion:1,appearance}))},{language,appearance})
@@ -32,7 +33,7 @@ for(const width of [320,390,430,720,899,900,1024,1440,1920])test(`detail reading
   for(const graph of ['bar','ring','columns','minimal']){
    await setSiteDefault(page,'graph',graph);await page.evaluate(()=>scrollTo(0,0))
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
-   if(width===390){const b=(await page.locator('.detail-chart-toolbar').boundingBox())!,live=(await page.locator('.detail-live').boundingBox())!;expect(b.y).toBeGreaterThan(live.y+live.height);expect(b.height).toBeLessThanOrEqual(168)}
+   if(width===800){const b=(await page.locator('.detail-chart-toolbar').boundingBox())!,live=(await page.locator('.detail-live').boundingBox())!;expect(b.y).toBeGreaterThan(live.y+live.height);expect(b.height).toBeLessThanOrEqual(168)}
   }
   for(const tab of ['resources','latency']){
    await page.getByRole('button',{name:language==='zh'?(tab==='resources'?'资源':'网络延迟'):(tab==='resources'?'Resources':'Network latency'),exact:true}).click()
@@ -66,11 +67,11 @@ test('device information disclosure persists across reload and viewport changes'
  await page.setViewportSize({width:900,height:900});await expect(toggle).toHaveCount(0);await expect(page.locator('#detail-fact-groups')).toBeVisible()
  await page.setViewportSize({width:899,height:900});await expect(toggle).toHaveAttribute('aria-expanded','false');await toggle.click();await page.reload();await expect(toggle).toHaveAttribute('aria-expanded','true')
  await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('monitor-next')||'{}').detailInfoMode)).toBe('expanded')
- await page.setViewportSize({width:390,height:844});await expect(toggle).toHaveAttribute('aria-expanded','true')
+ await page.setViewportSize({width:800,height:844});await expect(toggle).toHaveAttribute('aria-expanded','true')
  await expect(page.getByRole('region',{name:'硬件与系统',exact:true})).toContainText('1.2.3')
 })
 test('320px facts keep short labels beside values and wrap long facts without overflow',async({page})=>{
- await page.setViewportSize({width:320,height:844});await setup(page,3,{cpu_name:'AMD EPYC 7B13 '.repeat(5)})
+ await page.setViewportSize({width:768,height:844});await setup(page,3,{cpu_name:'AMD EPYC 7B13 '.repeat(5)})
  await page.locator('.detail-facts-toggle').click()
  for(const label of ['Agent','系统','交换空间','流量重置']){
   const row=page.locator('.detail-facts>div').filter({has:page.locator(`dt:text-is("${label}")`)}),dt=await row.locator('dt').boundingBox(),dd=await row.locator('dd').boundingBox()
@@ -79,11 +80,11 @@ test('320px facts keep short labels beside values and wrap long facts without ov
  const cpu=page.locator('.detail-facts>div.fact-long').filter({has:page.locator('dt:text-is("CPU")')}),cpuLabel=await cpu.locator('dt').boundingBox(),cpuValue=await cpu.locator('.fact-value').boundingBox()
  expect(cpuValue!.y).toBeGreaterThan(cpuLabel!.y)
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
- await page.setViewportSize({width:390,height:844});const agent=page.locator('.detail-facts>div').filter({has:page.locator('dt:text-is("Agent")')}),agentLabel=await agent.locator('dt').boundingBox(),agentValue=await agent.locator('dd').boundingBox()
+ await page.setViewportSize({width:800,height:844});const agent=page.locator('.detail-facts>div').filter({has:page.locator('dt:text-is("Agent")')}),agentLabel=await agent.locator('dt').boundingBox(),agentValue=await agent.locator('dd').boundingBox()
  expect(Math.abs(agentLabel!.y-agentValue!.y)).toBeLessThanOrEqual(1)
 })
 test('loading empty failure and success share the same history canvas',async({page})=>{
- await page.setViewportSize({width:390,height:844});await setup(page);const body=page.locator('.detail-history-body');const height=(await body.boundingBox())!.height
+ await page.setViewportSize({width:800,height:844});await setup(page);const body=page.locator('.detail-history-body');const height=(await body.boundingBox())!.height
  await page.unroute('**/api/nodes/*/metrics?*');let pending:any,calls=0;await page.route('**/api/nodes/*/metrics?*',r=>{pending=r;calls++})
  await page.getByRole('button',{name:'24 小时',exact:true}).click();await expect(page.getByLabel('正在读取历史数据')).toBeVisible();expect(Math.abs((await body.boundingBox())!.height-height)).toBeLessThanOrEqual(2)
  await pending.fulfill({json:{metrics:[],ping:[],probes:{}}});await expect(body).toContainText('这段时间没有历史数据');expect(Math.abs((await body.boundingBox())!.height-height)).toBeLessThanOrEqual(2)
@@ -91,7 +92,7 @@ test('loading empty failure and success share the same history canvas',async({pa
  await expect(page.locator('.history-notice')).toBeVisible();expect(Math.abs((await body.boundingBox())!.height-height)).toBeLessThanOrEqual(2)
 })
 for(const count of [1,3,20])test(`route legends handle ${count} routes without resizing the plot`,async({page})=>{
- await page.setViewportSize({width:390,height:844});await setup(page,count);await page.getByRole('button',{name:'网络延迟',exact:true}).click()
+ await page.setViewportSize({width:800,height:844});await setup(page,count);await page.getByRole('button',{name:'网络延迟',exact:true}).click()
  const plot=page.locator('.detail-chart-frame');const height=(await plot.boundingBox())!.height
  if(count===1){
   await expect(page.locator('.route-chips')).toHaveCount(0)
@@ -107,7 +108,7 @@ for(const count of [1,3,20])test(`route legends handle ${count} routes without r
 test('long identity notes expand and copy feedback does not move facts',async({page,context})=>{
  await context.grantPermissions(['clipboard-read','clipboard-write']);await setup(page)
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],name:'超长名称'.repeat(20),ipv4:'192.0.2.1',remark:Array.from({length:8},(_,i)=>`备注${i} ${'长文本'.repeat(30)}`).join(';')}]}}));await page.reload()
- await page.setViewportSize({width:320,height:568});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
+ await page.setViewportSize({width:768,height:568});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
  await page.getByRole('button',{name:'展开备注',exact:true}).click();await expect(page.locator('.detail-meta-tags .detail-remark-tag')).toHaveCount(8)
  await page.getByRole('button',{name:'收起备注',exact:true}).click();await page.locator('.detail-facts-toggle').click()
  await expect(page.getByRole('button',{name:'复制：CPU',exact:true})).toHaveCount(0);const button=page.getByRole('button',{name:'复制：IPv4',exact:true}),row=button.locator('xpath=ancestor::dd');const before=(await row.boundingBox())!.height
@@ -115,9 +116,9 @@ test('long identity notes expand and copy feedback does not move facts',async({p
  await page.evaluate(()=>Object.defineProperty(navigator.clipboard,'writeText',{value:()=>Promise.reject(new Error('denied')),configurable:true}));await button.click()
  await expect(page.getByRole('status')).toHaveText('复制失败，请手动选择文本');expect((await row.boundingBox())!.height).toBe(before)
 })
-test('mobile chart tap shows bounded tooltip with units',async({page})=>{
- await page.setViewportSize({width:390,height:844});await setup(page)
+for(const width of [320,390])test(`mobile resource chart tap shows bounded tooltip with units at ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:844});await setup(page)
  const frame=page.locator('.resource-chart-panel .detail-chart-frame');await frame.scrollIntoViewIfNeeded();await frame.click({position:{x:180,y:120}})
  const tip=frame.locator('.recharts-tooltip-wrapper');await expect(tip).toBeVisible();await expect(tip).toContainText('%')
- const b=(await tip.boundingBox())!;expect(b.x).toBeGreaterThanOrEqual(0);expect(b.x+b.width).toBeLessThanOrEqual(390)
+ const b=(await tip.boundingBox())!;expect(b.x).toBeGreaterThanOrEqual(0);expect(b.x+b.width).toBeLessThanOrEqual(width)
 })

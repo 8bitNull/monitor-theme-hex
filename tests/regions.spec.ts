@@ -1,4 +1,4 @@
-import {test,expect} from '@playwright/test'
+import {test,expect} from './desktopTest'
 import {nodes} from '../scripts/fixtures.mjs'
 test.beforeEach(async({page})=>{await page.addInitScript(()=>{if(!localStorage.getItem('monitor-next'))localStorage.setItem('monitor-next',JSON.stringify({schemaVersion:3,infoDensity:'full',modules:{map:true}}))})})
 
@@ -46,15 +46,16 @@ test('desktop region bar filters nodes and disabled maps restore the region list
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
  await page.screenshot({path:'tests/artifacts/regions-flags-mobile.png'})
  mapEnabled=true;await page.reload()
- await expect(page.getByRole('button',{name:'选择地区',exact:true})).toBeVisible()
+ await expect(page.getByRole('button',{name:'筛选节点',exact:true})).toBeVisible()
  await expect(page.locator('.region-atlas')).toHaveCount(0)
- await page.getByRole('button',{name:'选择地区',exact:true}).click()
-  await page.getByRole('dialog').getByRole('button',{name:/日本/}).click()
- await expect(page.locator('.node-card')).toHaveCount(1)
- await page.screenshot({path:'tests/artifacts/regions-mobile.png'})
+ await page.getByRole('button',{name:'筛选节点',exact:true}).click()
+ await page.getByRole('dialog').getByRole('button',{name:'日本',exact:true}).click()
+ await page.getByRole('button',{name:'显示 1 个节点',exact:true}).click()
+ await expect(page.locator('.ma-node')).toHaveCount(1)
  await page.setViewportSize({width:1440,height:1000})
  await expect(regionBar).toBeVisible()
- await expect(regionBar.getByRole('button',{name:/日本/})).toHaveAttribute('aria-pressed','true')
+ // Desktop and phone retain independent browse filters.
+ await expect(regionBar.getByRole('button',{name:/日本/})).toHaveAttribute('aria-pressed','false')
  await expect(page.locator('.region-atlas')).toBeVisible()
  await page.locator('.region-atlas').screenshot({path:'tests/artifacts/regions-map-desktop.png'})
 })
@@ -96,58 +97,38 @@ test('region overflow keeps selection visible and exposes all regions',async({pa
  await bar.screenshot({path:'tests/artifacts/regions-more-desktop.png'})
 })
 
-for (const width of [320,390,720]) {
- test('mobile first visit keeps region and view controls at '+width+'px',async({page})=>{
-  await page.setViewportSize({width,height:844})
-  await page.goto('/')
-  await expect(page.locator('.region-atlas,.map-placeholder')).toHaveCount(0)
-  const regions=page.getByRole('group',{name:'地区快速筛选'})
-  await expect(regions).toBeVisible()
-  await page.getByRole('button',{name:'选择地区',exact:true}).click()
-  await page.getByRole('dialog').getByRole('button',{name:/日本/}).click()
-  await expect(page.locator('.node-card')).toHaveCount(1)
-  await page.getByLabel('表格视图').click()
-  await expect(page.locator('tbody tr')).toHaveCount(1)
-  await page.getByLabel('卡片视图').click()
-  await page.reload()
-  await expect(page.getByRole('button',{name:'选择地区',exact:true})).toContainText('日本')
-  await page.getByRole('button',{name:'选择地区',exact:true}).click()
-  await page.getByRole('dialog').getByRole('button',{name:/所有地区/}).click()
-  await expect(page.locator('.node-card')).toHaveCount(6)
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
-  await page.setViewportSize({width:721,height:844})
-  await expect(page.locator('.home-region-bar')).toBeVisible()
-  await expect(page.locator('.region-atlas')).toBeVisible()
-  await page.setViewportSize({width,height:844})
-  await expect(page.locator('.home-region-bar')).toHaveCount(0)
-  await expect(page.locator('.region-atlas,.map-placeholder')).toHaveCount(0)
- })
-}
+for(const width of [320,390,720])test('mobile region filters survive detail return at '+width,async({page})=>{
+ await page.setViewportSize({width,height:844});await page.goto('/')
+ await expect(page.locator('.region-atlas,.map-placeholder')).toHaveCount(0)
+ await page.getByRole('button',{name:'筛选节点',exact:true}).click()
+ await page.getByRole('dialog').getByRole('button',{name:'日本',exact:true}).click()
+ await page.getByRole('button',{name:'显示 1 个节点',exact:true}).click()
+ await expect(page.locator('.ma-node')).toHaveCount(1)
+ await page.locator('.ma-node [data-node-id]').click()
+ await page.getByRole('button',{name:'返回总览',exact:true}).click()
+ await expect(page.locator('.ma-node')).toHaveCount(1)
+ await page.getByRole('button',{name:'移除筛选：日本',exact:true}).click()
+ await expect(page.locator('.ma-node')).toHaveCount(6)
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+ await page.setViewportSize({width:721,height:844});await expect(page.locator('.home-region-bar')).toBeVisible()
+ await page.setViewportSize({width,height:844});await expect(page.locator('.home-region-bar')).toHaveCount(0)
+})
 
-for(const appearance of ['light','dark']){
- test('region sheet layout, dismissal and focus in '+appearance,async({page})=>{
-  await page.addInitScript(a=>localStorage.setItem('monitor-next',JSON.stringify({designVersion:1,appearance:a})),appearance)
-  for(const width of [320,390,720]){
-   await page.setViewportSize({width,height:844});await page.goto('/')
-   const trigger=page.getByRole('button',{name:'选择地区',exact:true})
-   await expect(trigger).toBeVisible()
-   const toolbar=(await page.locator('.mobile-node-toolbar').boundingBox())!
-   expect(toolbar.height).toBeLessThanOrEqual(54)
-   await trigger.click()
-   const dialog=page.getByRole('dialog',{name:'选择地区'})
-   await expect(dialog).toBeVisible()
-   const box=(await dialog.boundingBox())!
-   expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(width)
-   expect(Math.round(box.y+box.height)).toBe(844)
-   await expect(dialog.getByRole('button',{name:/所有地区/})).toHaveAttribute('aria-pressed','true')
-   expect(await page.evaluate(()=>document.body.style.overflow)).toBe('hidden')
-   await page.screenshot({path:`tests/artifacts/region-sheet-${width}-${appearance}.png`})
-   await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);await expect(trigger).toBeFocused()
-   expect(await page.evaluate(()=>document.body.style.overflow)).not.toBe('hidden')
-   await trigger.click();await dialog.getByRole('button',{name:/日本/}).click()
-   await expect(trigger).toContainText('日本');await expect(trigger).toBeFocused()
-   await trigger.click();await dialog.getByRole('button',{name:/所有地区/}).click()
-   await page.screenshot({path:`tests/artifacts/toolbar-${width}-${appearance}.png`})
-  }
- })
-}
+for(const appearance of ['light','dark'])test('filter sheet dismissal and focus in '+appearance,async({page})=>{
+ await page.addInitScript(a=>localStorage.setItem('monitor-next',JSON.stringify({designVersion:1,appearance:a})),appearance)
+ for(const width of [320,390,720]){
+  await page.setViewportSize({width,height:844});await page.goto('/')
+  const trigger=page.getByRole('button',{name:'筛选节点',exact:true})
+  await trigger.click();const dialog=page.getByRole('dialog',{name:'筛选节点'})
+  const box=(await dialog.boundingBox())!;expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(width)
+  expect(Math.round(box.y+box.height)).toBe(844)
+  await dialog.getByRole('button',{name:'日本',exact:true}).click()
+  await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);await expect(trigger).toBeFocused()
+  await expect(page.locator('.ma-node')).toHaveCount(6)
+  expect(await page.evaluate(()=>document.body.style.overflow)).not.toBe('hidden')
+  await trigger.click();await dialog.getByRole('button',{name:'日本',exact:true}).click()
+  await dialog.getByRole('button',{name:'显示 1 个节点',exact:true}).click()
+  await expect(page.locator('.ma-node')).toHaveCount(1)
+  await page.getByRole('button',{name:'移除筛选：日本',exact:true}).click()
+ }
+})

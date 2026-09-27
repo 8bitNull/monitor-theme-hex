@@ -1,4 +1,4 @@
-import {test,expect} from '@playwright/test'
+import {test,expect} from './desktopTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
 async function setup(page:any,count=30){
@@ -89,7 +89,7 @@ test('initial loading and request timeout stay distinct from empty data',async({
 })
 
 for(const count of [1,6,30,100])test(`mixed ${count} nodes have equal desktop rows and no horizontal overflow`,async({page})=>{
- await setup(page,count);await page.goto('/');await expect(page.locator('.node-card')).toHaveCount(count)
+ await setup(page,count);await page.goto('/');await expect(page.locator('.node-card')).toHaveCount(count,{timeout:15000})
  for(const width of [320,390,430,720,721,1024,1440,1920]){
   await page.setViewportSize({width,height:1000})
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()

@@ -1,6 +1,6 @@
 import {chooseOption} from './select'
 import {setting,settingsButton} from './settings'
-import {test,expect} from '@playwright/test'
+import {test,expect} from './desktopTest'
 import {nodes} from '../scripts/fixtures.mjs'
 import {toggleSettings,visualSelect} from './settings'
 

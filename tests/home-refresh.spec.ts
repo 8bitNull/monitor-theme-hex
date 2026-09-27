@@ -1,38 +1,24 @@
-import {test,expect} from '@playwright/test'
+import {test,expect} from './desktopTest'
 import {nodes} from '../scripts/fixtures.mjs'
 
-test('mobile card shows resources and supporting facts without a disclosure',async({page})=>{
- await page.setViewportSize({width:390,height:844})
+test('mobile cards retain resource, expiry and freshness feedback',async({page})=>{
  const expiry=new Date(Date.now()+3*86400000).toISOString().slice(0,10)
  let stale=false
- await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:[{...nodes()[0],last_seen:Math.floor(Date.now()/1000)-(stale?120:0),expires_at:expiry,metrics:{...nodes()[0].metrics,cpu:92}}]}}))
- await page.goto('/')
- const card=page.locator('.node-card').first()
- await expect(card.locator('.node-heading .card-issue')).toContainText('CPU 92%')
- await expect(card.locator('.node-heading .card-issue')).toContainText('剩余 3 天')
- await expect(card.locator('.node-heading .card-issue')).toContainText('即将到期')
- await card.screenshot({path:'tests/artifacts/home-status-390.png'})
- await expect(card.locator('.resources .resource')).toHaveCount(4)
- await expect(card.locator('.node-secondary-disclosure')).toHaveCount(0)
- await expect(card.locator('.card-billing')).toBeVisible()
- await expect(card.locator('.node-price')).toBeVisible()
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
- await page.setViewportSize({width:320,height:844})
- await expect(card.locator('.node-heading .card-issue')).toBeVisible()
- expect(await card.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
- await card.screenshot({path:'tests/artifacts/home-status-320.png'})
- await page.locator('.next-theme').evaluate(el=>{el.classList.add('dark');document.documentElement.classList.add('dark')})
- await card.screenshot({path:'tests/artifacts/home-status-320-dark.png'})
- stale=true
- await page.reload()
- await expect(card.locator('.node-status-group')).toContainText('数据已过期')
- await expect(card.locator('.status-pill')).toHaveAttribute('data-state','stale')
- await expect(card.locator('.card-issue')).not.toContainText('高负载')
- await expect(card.locator('.card-issue')).toContainText('剩余 3 天')
+ await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],last_seen:Math.floor(Date.now()/1000)-(stale?120:0),expires_at:expiry,metrics:{...nodes()[0].metrics,cpu:92}}]}}))
+ for(const width of [390,320]){
+  await page.setViewportSize({width,height:844});await page.goto('/')
+  const card=page.locator('.ma-node').first()
+  await expect(card).toContainText('CPU 92');await expect(card).toContainText('剩余 3 天')
+  await expect(card.locator('.ma-meter')).toHaveCount(2)
+  expect(await card.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true)
+ }
+ stale=true;await page.reload()
+ const card=page.locator('.ma-node').first()
+ await expect(card).toHaveAttribute('data-state','stale')
+ await expect(card).toContainText('数据已过期');await expect(card).not.toContainText('高负载')
+ await expect(card).toContainText('剩余 3 天');await expect(card.locator('.ma-meter b')).toHaveText(['—','—'])
  await page.setViewportSize({width:900,height:844})
- await expect(card.locator('.resources .resource')).toHaveCount(4)
- await expect(card.locator('.node-secondary-disclosure')).toHaveCount(0)
- await expect(card.locator('.card-billing')).toBeVisible()
+ await expect(page.locator('.node-card').first().locator('.resources .resource')).toHaveCount(4)
 })
 
 test('desktop expiry tag sits beside the OS label',async({page})=>{
@@ -76,74 +62,32 @@ test('four summary tiles form balanced rows at tablet widths',async({page})=>{
  }
 })
 
-test('summary filters keep feedback without marks beneath the numbers',async({page})=>{
- await page.goto('/')
- for(const width of [390,795,1440]){
-  await page.setViewportSize({width,height:900})
-  const count=page.locator('.summary-node-count button')
-  const offline=page.locator('.summary-offline-filter')
-  if(await count.first().getAttribute('aria-pressed')!=='true')await count.first().click()
-  await expect(count.first()).toHaveAttribute('aria-pressed','true')
-  await offline.hover()
-  const styles=await page.locator('.summary-grid').evaluate(grid=>[...grid.querySelectorAll('.summary-node-count button,.summary-offline-filter')].map(button=>{
-   const style=getComputedStyle(button)
-   return {decoration:style.textDecorationLine,border:style.borderBottomWidth}
-  }))
-  expect(styles).toEqual([{decoration:'none',border:'0px'},{decoration:'none',border:'0px'},{decoration:'none',border:'0px'}])
-  if(width===390){
-   await page.getByRole('button',{name:'收起总览'}).click()
-   const compact=page.locator('.summary-compact button[aria-pressed=true]')
-   await expect(compact).toHaveCount(1)
-   await expect(compact).toHaveCSS('text-decoration-line','none')
-   await page.getByRole('button',{name:'展开总览'}).click()
-  }
+test('summary filters provide selected state and matching nodes on desktop',async({page})=>{
+ for(const width of [795,1440]){
+  await page.setViewportSize({width,height:900});await page.goto('/')
+  await page.getByRole('button',{name:'筛选离线节点',exact:true}).click()
+  await expect(page.locator('.node-card')).toHaveCount(1)
+  await expect(page.locator('.node-card')).toContainText('London')
+  await page.getByRole('button',{name:'显示全部节点',exact:true}).click()
+  await expect(page.locator('.node-card')).toHaveCount(6)
  }
 })
 
-test('mobile overview aligns four metrics and keeps filters reachable',async({page})=>{
- await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:nodes()}}))
+for(const language of ['zh','en'])test(`mobile overview metrics and filters remain readable in ${language}`,async({page})=>{
+ await page.addInitScript(lang=>localStorage.setItem('monitor-next-language',lang),language)
+ await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:nodes()}}))
  for(const width of [320,390]){
   await page.setViewportSize({width,height:844});await page.goto('/')
-  const grid=page.locator('.summary-grid'),tile=grid.locator(':scope > div').first(),buttons=tile.locator('.summary-node-count button'),hint=tile.locator('.summary-offline-filter')
-  await expect(buttons.nth(0)).toContainText('在线');await expect(buttons.nth(0)).toContainText('5')
-  await expect(buttons.nth(1)).toContainText('全部');await expect(buttons.nth(1)).toContainText('6')
-  await expect(hint).toContainText('离线')
-  for(const button of [...await buttons.all(),hint]){const box=await button.boundingBox();expect(box).not.toBeNull();expect(box!.width).toBeGreaterThanOrEqual(44);expect(box!.height).toBeGreaterThanOrEqual(44)}
-  const boxes=await Promise.all([buttons.nth(0).boundingBox(),buttons.nth(1).boundingBox(),hint.boundingBox(),tile.boundingBox()])
-  expect(boxes[0]!.x+boxes[0]!.width).toBeLessThanOrEqual(boxes[1]!.x)
-  expect(boxes[2]!.y).toBeGreaterThanOrEqual(boxes[0]!.y+boxes[0]!.height)
-  expect(boxes[2]!.x+boxes[2]!.width).toBeLessThanOrEqual(boxes[3]!.x+boxes[3]!.width)
-  expect(await tile.evaluate(el=>el.scrollHeight===el.clientHeight)).toBeTruthy()
-  const layout=await grid.locator(':scope > div').evaluateAll(tiles=>tiles.map(tile=>{const box=tile.getBoundingClientRect();return {top:box.top,height:box.height}}))
-  expect(layout).toHaveLength(4)
-  expect(layout[0].height).toBe(layout[1].height)
-  expect(layout[2].height).toBe(layout[3].height)
-  expect(layout[0].height).toBe(layout[2].height)
-  const metricTops=await grid.evaluate(element=>[...element.children].map((tile,index)=>{
-   const metric=tile.querySelector(index===0?'.summary-node-count b':'.summary-total')!
-   const range=document.createRange();range.selectNode(metric.firstChild!)
-   return range.getBoundingClientRect().top
-  }))
-  expect(Math.abs(metricTops[0]-metricTops[1])).toBeLessThan(3)
-  expect(Math.abs(metricTops[2]-metricTops[3])).toBeLessThan(3)
-  await expect(grid.locator('.summary-flow')).toHaveCount(2)
-  await expect(grid.locator('.summary-flow').first()).toBeVisible()
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
-  await grid.screenshot({path:`tests/artifacts/summary-aligned-${width}.png`})
- }
-})
-
-test('English mobile overview stays within its four tiles',async({page})=>{
- await page.addInitScript(()=>localStorage.setItem('monitor-next-language','en'))
- await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:nodes()}}))
- for(const width of [320,390]){
-  await page.setViewportSize({width,height:844});await page.goto('/')
-  const grid=page.locator('.summary-grid')
-  await expect(grid.locator(':scope > div')).toHaveCount(4)
-  await expect(grid.locator('.summary-flow')).toHaveCount(2)
-  await grid.screenshot({path:`tests/artifacts/summary-aligned-en-${width}.png`})
-  expect(await grid.evaluate(element=>[...element.children].every(tile=>tile.scrollWidth<=tile.clientWidth&&tile.scrollHeight<=tile.clientHeight))).toBeTruthy()
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
+  const nav=page.getByRole('navigation',{name:language==='zh'?'主导航':'Main navigation'})
+  await nav.getByRole('button',{name:language==='zh'?'概览':'Overview',exact:true}).click()
+  await expect(page.locator('.ma-hero')).toContainText('5')
+  await expect(page.locator('.ma-stat-grid')).toContainText('54.0 GB')
+  await expect(page.locator('.ma-stat-grid')).toContainText('45.36 Mbps')
+  const offline=page.locator('.ma-attention-actions button').first()
+  expect((await offline.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+  await offline.click();await expect(page.locator('.ma-node')).toHaveCount(1)
+  await expect(page.locator('.ma-node')).toContainText('London')
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
  }
 })
 

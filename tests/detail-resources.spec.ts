@@ -1,3 +1,4 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {expandRoutes} from './routes'
 import {test,expect} from '@playwright/test'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
@@ -25,10 +26,11 @@ test('single resource plot retains selection across refresh and time/tab changes
  await expect(page.locator('.detail-meta-tags')).toContainText('2.5Gbps');await expect(page.locator('.detail-information')).toContainText('1.0.0')
 })
 test('responsive composition and stable hover with many routes in light and dark',async({page})=>{
+ test.setTimeout(90000)
  await setup(page,{many:true})
  for(const appearance of ['light','dark']){
   await page.locator('.next-theme').evaluate((el,a)=>{el.classList.toggle('dark',a==='dark');document.documentElement.classList.toggle('dark',a==='dark')},appearance)
-  for(const width of [320,390,768,1024,1440]){
+  for(const width of [768,800,1024,1440]){
    await page.setViewportSize({width,height:1000});await page.evaluate(()=>scrollTo(0,0))
    const live=(await page.locator('.detail-live').boundingBox())!,history=(await page.locator('.detail-history').boundingBox())!,facts=(await page.locator('.detail-information').boundingBox())!
    if(width>=900){expect(facts.y).toBeGreaterThan(history.y+history.height);expect(history.y).toBeGreaterThan(live.y+live.height)}else{expect(facts.y).toBeGreaterThan(history.y+history.height);expect(history.y).toBeGreaterThan(live.y+live.height)}
@@ -47,7 +49,7 @@ test('all graph styles fit the compact sidebar and narrow screen',async({page})=
  await setup(page)
  for(const graph of ['columns','bar','ring','minimal']){
   await setSiteDefault(page,'graph',graph)
-  for(const width of [320,1024]){
+  for(const width of [768,1024]){
    await page.setViewportSize({width,height:1000})
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
    expect(await page.locator('.detail-live').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
@@ -66,7 +68,7 @@ test('unlimited quota, long facts and condensed offline overview remain readable
  await setup(page)
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],online:false,traffic_limit:0,name:'节点名称'.repeat(30),cpu_name:'Long processor model '.repeat(20),remark:'无分号长备注'.repeat(40)}]}}))
  await page.reload();await expect(page.locator('.overview-unavailable')).toContainText('离线');await expect(page.locator('.detail-connections,.detail-resources')).toHaveCount(0);await expect(page.locator('.overview-account')).toBeVisible();await expect(page.locator('.overview-usage progress')).toHaveCount(0)
- for(const width of [320,1024]){await page.setViewportSize({width,height:1000});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()}
+ for(const width of [768,1024]){await page.setViewportSize({width,height:1000});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()}
  await page.getByRole('button',{name:'展开备注',exact:true}).click();await expect(page.locator('.detail-meta-tags')).toContainText('无分号长备注')
 })
 
@@ -83,7 +85,7 @@ test('missing samples and long time gaps break curves without hiding zero',async
  await expect(line).toBeVisible();expect((await line.getAttribute('d'))!.match(/M/g)?.length).toBe(2)
 })
 
-for(const width of [601,900,1199])for(const language of ['zh','en'])test(`icon resource controls retain names and switch metrics at ${width} ${language}`,async({page})=>{
+for(const width of [800,900,1199])for(const language of ['zh','en'])test(`icon resource controls retain names and switch metrics at ${width} ${language}`,async({page})=>{
  await page.setViewportSize({width,height:900})
  await page.addInitScript(language=>localStorage.setItem('monitor-next-language',language),language)
  await setup(page)

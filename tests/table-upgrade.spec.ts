@@ -1,3 +1,4 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {chooseOption} from './select'
 import {test,expect,type Page} from '@playwright/test'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
@@ -23,7 +24,7 @@ test('desktop overflow exposes directional column controls only while needed',as
  await right.click();await expect(shell).toHaveAttribute('data-left','true');await expect(right).toBeDisabled()
  await left.click();await expect(shell).toHaveAttribute('data-right','true');await expect(left).toBeDisabled()
  await page.setViewportSize({width:1440,height:820});await expect(toolbar.locator('.table-scroll-controls')).toHaveCount(0)
- await page.setViewportSize({width:390,height:820});await expect(shell.locator('.table-scroll-controls')).toHaveCount(0)
+ await page.setViewportSize({width:800,height:820});await expect(shell.locator('.table-scroll-controls')).toHaveCount(0)
 })
 test('table toolbar only keeps view controls',async({page})=>{
  await setup(page);await table(page)
@@ -36,11 +37,11 @@ test('legacy grouped columns persist without reviving a hidden direction',async(
  await expect(page.locator('.table-speed [data-direction=upload]')).toHaveCount(0);await expect(page.locator('.table-speed [data-direction=download]')).toHaveCount(6)
  await page.reload();await expect(page.locator('thead th')).toHaveCount(7)
  expect(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('monitor-next-table-v3-backup')!).columns)).toEqual(['cpu','download','latency'])
- await page.setViewportSize({width:390,height:844});await expect(page.locator('thead th')).toHaveCount(2)
+ await page.setViewportSize({width:800,height:844});await expect(page.locator('thead th')).toHaveCount(7)
 })
-test('mobile custom columns, edge hints and remark disclosure preserve desktop columns',async({page})=>{
- await setup(page);await page.setViewportSize({width:390,height:844});await table(page)
- await expect(page.locator('thead th')).toHaveCount(4);await expect(page.locator('.table-shell')).toHaveAttribute('data-right','true')
+test('compact desktop custom columns, edge hints and remark disclosure preserve desktop columns',async({page})=>{
+ await setup(page);await page.setViewportSize({width:800,height:844});await table(page)
+ await expect(page.locator('thead th')).toHaveCount(11);await expect(page.locator('.table-shell')).toHaveAttribute('data-right','true')
  await page.keyboard.press('Escape');await page.locator('.table-scroll').evaluate(el=>el.scrollLeft=el.scrollWidth)
  await expect(page.locator('.table-shell')).toHaveAttribute('data-right','false');await expect(page.locator('.table-shell')).toHaveAttribute('data-left','true')
  await page.locator('.table-remark').first().click();await expect(page.getByRole('dialog',{name:'备注',exact:true})).toContainText('备注 1 <script>文本内容</script>');await page.keyboard.press('Escape');await expect(page.locator('.table-remark').first()).toBeFocused()
@@ -69,7 +70,7 @@ test('20-row pagination, filtering, sorting and return from detail',async({page}
 })
 test('table layouts in both languages and themes at responsive boundaries',async({page})=>{
  test.setTimeout(90000);await setup(page)
- for(const language of ['zh','en'])for(const appearance of ['light','dark'])for(const width of [320,390,720,721,900,1440]){
+ for(const language of ['zh','en'])for(const appearance of ['light','dark'])for(const width of [768,800,899,721,900,1440]){
   await page.setViewportSize({width,height:1000});await page.addInitScript(({appearance,language})=>{localStorage.setItem('monitor-next',JSON.stringify({schemaVersion:3,appearance}));localStorage.setItem('monitor-next-language',language)}, {appearance,language})
   await page.goto('/');await page.getByRole('button',{name:language==='en'?'Table view':'表格视图',exact:true}).click();await page.locator('.table-ping').first().scrollIntoViewIfNeeded();await page.locator('.table-ping strong').first().waitFor();await page.locator('.table-scroll').evaluate(el=>el.scrollLeft=0)
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()

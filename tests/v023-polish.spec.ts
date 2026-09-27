@@ -1,4 +1,5 @@
-import {test,expect} from '@playwright/test'
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
+import {test,expect} from './desktopTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
 async function setup(page:any){
@@ -13,17 +14,20 @@ test('overview search and back-to-top stay compact on desktop',async({page})=>{
  await page.evaluate(()=>scrollTo(0,1200));await expect(page.getByRole('button',{name:'返回顶部',exact:true})).toBeVisible();await page.getByRole('button',{name:'返回顶部',exact:true}).click();await expect.poll(()=>page.evaluate(()=>scrollY)).toBeLessThan(10)
 })
 
-test('mobile search and visible network facts preserve the primary scan',async({page})=>{
- await page.setViewportSize({width:390,height:844});await setup(page);await page.goto('/');await page.locator('.mobile-header-search-toggle').click();const popover=page.locator('.mobile-search-panel'),search=popover.locator('input');await expect(search).toBeVisible();const popoverBox=(await popover.boundingBox())!,viewport=await page.evaluate(()=>({width:document.documentElement.clientWidth,height:innerHeight}));expect(popoverBox.x).toBeGreaterThanOrEqual(8);expect(popoverBox.x+popoverBox.width).toBeLessThanOrEqual(viewport.width);expect(popoverBox.y).toBeLessThan(120);await search.click();await expect.poll(async()=>search.evaluate(el=>{const style=getComputedStyle(el);const control=el.parentElement?getComputedStyle(el.parentElement):null;return [style.outlineStyle,style.boxShadow,control?.boxShadow]})).toEqual(['none','none','none']);await search.fill('Tokyo');await expect(page.locator('.node-card')).toHaveCount(1)
+test('compact desktop search and visible network facts preserve the primary scan',async({page})=>{
+ await page.setViewportSize({width:800,height:844});await setup(page);await page.goto('/')
+ const search=page.getByRole('searchbox',{name:'搜索节点',exact:true});await expect(search).toBeVisible()
+ const box=(await search.boundingBox())!;expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(800)
+ await search.fill('Tokyo');await expect(page.locator('.node-card')).toHaveCount(1)
  await page.getByRole('button',{name:'清除搜索',exact:true}).click();await expect(page.locator('.node-card')).toHaveCount(6)
- await page.getByRole('button',{name:'关闭搜索',exact:true}).click();const card=page.locator('.node-card').first();await expect(card.locator('.card-auxiliary-toggle')).toHaveCount(0)
+ const card=page.locator('.node-card').first();await expect(card.locator('.card-auxiliary-toggle')).toHaveCount(0)
  await expect(card.locator('.resources .resource')).toHaveCount(4);await expect(card.locator('.speed-pair')).toBeVisible();await expect(card.locator('.route-matrix')).toBeVisible()
  await expect(card.locator('.node-secondary-disclosure')).toHaveCount(0);await expect(card.locator('.node-connections')).toBeVisible()
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
 })
 
-test('mobile detail groups, alignment and history ranges are bounded',async({page})=>{
- await page.setViewportSize({width:390,height:844});await setup(page);await page.goto('/node/1');await page.locator('.detail-facts-toggle').click()
+test('compact desktop detail groups, alignment and history ranges are bounded',async({page})=>{
+ await page.setViewportSize({width:800,height:844});await setup(page);await page.goto('/node/1');await page.locator('.detail-facts-toggle').click()
  for(const label of ['硬件与系统','网络与流量'])await expect(page.getByRole('region',{name:label}).locator('.detail-fact-section-body')).toBeVisible()
  await expect(page.locator('#detail-fact-groups details')).toHaveCount(0)
  const hardware=page.locator('section[aria-label="硬件与系统"]');await expect(hardware.getByRole('button',{name:'复制：CPU',exact:true})).toHaveCount(0);await expect(hardware.locator('.fact-value').filter({hasText:'AMD EPYC'}).first()).toHaveCSS('text-align','right');await expect(page.getByRole('button',{name:'复制：IPv6',exact:true}).locator('xpath=ancestor::dd').locator('.fact-value')).toHaveCSS('text-align','right')
@@ -31,8 +35,8 @@ test('mobile detail groups, alignment and history ranges are bounded',async({pag
  await page.getByRole('button',{name:'网络延迟',exact:true}).click();await expect(toolbar).toHaveAttribute('data-range-count','3');const latencyRanges=await toolbar.locator('.detail-ranges button').evaluateAll(bs=>bs.map(b=>{const box=b.getBoundingClientRect();return {top:box.top,bottom:box.bottom,right:box.right}}));expect(new Set(latencyRanges.map(box=>Math.round(box.top))).size).toBe(1);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
 })
 
-test('mobile resource selector aligns with the toolbar right edge',async({page})=>{
- for(const width of [320,390,768]){
+test('compact desktop resource selector aligns with the toolbar right edge',async({page})=>{
+ for(const width of [768,800]){
   await page.setViewportSize({width,height:844});await setup(page);await page.goto('/node/1')
   const toolbar=page.locator('.detail-chart-toolbar[data-history-tab=resources]')
   const selector=toolbar.locator('.detail-resource-metric-mobile > summary')
@@ -45,8 +49,8 @@ test('mobile resource selector aligns with the toolbar right edge',async({page})
  }
 })
 
-test('mobile latency controls align at the toolbar right edge',async({page})=>{
- for(const width of [320,390,768]){
+test('compact desktop latency controls align at the toolbar right edge',async({page})=>{
+ for(const width of [768,800]){
   await page.setViewportSize({width,height:844});await setup(page);await page.goto('/node/1')
   await page.getByRole('button',{name:'网络延迟',exact:true}).click()
   const toolbar=page.locator('.detail-chart-toolbar[data-history-tab=latency]')

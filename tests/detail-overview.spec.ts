@@ -1,7 +1,8 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {test,expect} from '@playwright/test'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
-for(const width of [320,390,768,1024,1440])test(`overview groups and full-width history fit at ${width}`,async({page})=>{
+for(const width of [768,800,1024,1440])test(`overview groups and full-width history fit at ${width}`,async({page})=>{
  await page.setViewportSize({width,height:1000})
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],expires_at:'2026-10-07',remark:'国际线路;Backup;Production;更多备注用于检查展开后的完整内容',ipv4:'192.0.2.1',ipv6:'2001:db8::1'}]}}))
  await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:metrics()}))
@@ -23,6 +24,6 @@ for(const width of [320,390,768,1024,1440])test(`overview groups and full-width 
   if(width<900)await page.locator('.detail-facts-toggle').click()
   await expect(page.locator('.detail-fact-groups>section')).toHaveCount(2)
   await expect(page.locator('.copy-fact')).toHaveCount(2)
-  if(language==='zh'&&[390,1440].includes(width))await page.locator('.node-detail').screenshot({path:`tests/artifacts/detail-overview/${width}-${appearance}.png`,style:'header {visibility:hidden} '})
+  if(language==='zh'&&[800,1440].includes(width))await page.locator('.node-detail').screenshot({path:`tests/artifacts/detail-overview/${width}-${appearance}.png`,style:'header {visibility:hidden} '})
  }
 })

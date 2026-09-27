@@ -1,3 +1,4 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {expandRoutes} from './routes'
 import {test,expect} from '@playwright/test'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
@@ -7,7 +8,7 @@ async function setup(page:any,long=false){
  await page.route('**/api/nodes/*/metrics?*',(r:any)=>{const d=metrics();return r.fulfill({json:{...d,probes:Object.fromEntries(Array.from({length:12},(_,i)=>[i+1,`Route ${i+1}`])),ping:d.ping.flatMap(p=>Array.from({length:12},(_,i)=>({...p,task_id:i+1,latency:p.latency+i*10})))}})})
  await page.goto('/node/1');await expect(page.locator('.recharts-area-curve')).toBeVisible()
 }
-for(const width of [320,390,1024,1440])test(`primary metrics and long identity fit at ${width}`,async({page})=>{
+for(const width of [768,800,1024,1440])test(`primary metrics and long identity fit at ${width}`,async({page})=>{
  await page.setViewportSize({width,height:900});await setup(page,true)
  await expect(page.locator('.detail-resources .resource')).toHaveCount(4);await expect(page.locator('.detail-resources .resource').last()).toContainText('负载')
  const expand=page.getByRole('button',{name:'展开名称',exact:true}),heading=(await page.locator('.detail-title h2').boundingBox())!;expect((await expand.boundingBox())!.y).toBeGreaterThanOrEqual(heading.y+heading.height)
@@ -16,7 +17,7 @@ for(const width of [320,390,1024,1440])test(`primary metrics and long identity f
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();await page.getByRole('button',{name:'收起备注',exact:true}).click()
  if(width<900)await page.locator('.detail-facts-toggle').click()
  const cpuRow=page.locator('section[aria-label="硬件与系统"] .detail-facts>div').filter({hasText:'CPU'}).first();await expect(cpuRow.getByRole('button',{name:'复制：CPU',exact:true})).toHaveCount(0);await expect(cpuRow.locator('.fact-value')).toBeVisible()
- if(width<900)await page.locator('.overview-more-toggle').click()
+ await expect(page.locator('.overview-account')).toBeVisible()
  for(const graph of ['bar','ring','columns','minimal']){await setSiteDefault(page,'graph',graph);expect(await page.locator('.detail-live').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy();if(graph==='bar'){const bottoms=await page.locator('.detail-resources .resource-bar').evaluateAll(elements=>elements.map(el=>el.getBoundingClientRect().bottom));expect(Math.abs(bottoms[0]-bottoms[1])).toBeLessThanOrEqual(1);expect(Math.abs(bottoms[2]-bottoms[3])).toBeLessThanOrEqual(1)}}
 })
 test('tooltip follows route list order using stable catalog order',async({page})=>{
@@ -32,5 +33,5 @@ test('update feedback belongs to current range and retained data',async({page})=
  await page.unroute('**/api/nodes/*/metrics?*');await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({status:503}));await refresh.click();await expect(status).toContainText('上次成功更新：');await expect(refresh).toHaveAttribute('title',timestamp!);await expect(page.locator('.recharts-area-curve')).toBeVisible()
  await page.getByRole('button',{name:'24 小时',exact:true}).click();await expect(status).toHaveText('更新失败');await expect(refresh).toHaveAttribute('title','刷新历史');await expect(page.locator('.recharts-area-curve')).toHaveCount(0)
  await page.unroute('**/api/nodes/*/metrics?*');await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:metrics()}));await page.getByRole('button',{name:'重试',exact:true}).click();await expect(status).toContainText('更新于')
- await page.setViewportSize({width:390,height:844});await expect(status).toBeVisible();await expect(status).toContainText('更新于')
+ await page.setViewportSize({width:800,height:844});await expect(status).toBeVisible();await expect(status).toContainText('更新于')
 })

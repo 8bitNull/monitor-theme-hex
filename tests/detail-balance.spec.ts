@@ -1,3 +1,4 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {expandRoutes} from './routes'
 import {test,expect} from '@playwright/test'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
@@ -14,22 +15,22 @@ for(const width of [900,1024,1440,1920])test(`facts span the desktop workspace a
  expect(await page.locator('.detail-fact-groups>section').first().getAttribute('aria-label')).toBe('硬件与系统')
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
 })
-for(const count of [6,7,20])test(`mobile route legends expand to show ${count}`,async({page})=>{
- await page.setViewportSize({width:390,height:844});await setup(page,count);await page.getByRole('button',{name:'网络延迟',exact:true}).click()
+for(const count of [6,7,20])test(`compact desktop route legends expand to show ${count}`,async({page})=>{
+ await page.setViewportSize({width:800,height:844});await setup(page,count);await page.getByRole('button',{name:'网络延迟',exact:true}).click()
  const legend=page.locator('.route-chips');await expandRoutes(page)
  const options=legend.locator('button[aria-pressed]');await expect(options).toHaveCount(count);await expect(page.locator('.probe-bulk-actions,.route-search,.probe-solo,.probe-restore')).toHaveCount(0)
  const targetName=`线路 Tokyo ${Math.min(7,count)}`,target=legend.getByRole('button',{name:targetName,exact:true});await target.click();await expect(target).toHaveAttribute('aria-pressed','true');await expect(target.locator('.route-chip-check')).toHaveText('✓');await expect(legend).toBeVisible()
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();await expect(target).toBeFocused()
 })
 test('long title expands separately and copy expires without moving rows',async({page,context})=>{
- await context.grantPermissions(['clipboard-read','clipboard-write']);await page.setViewportSize({width:320,height:844});await setup(page,7,true)
+ await context.grantPermissions(['clipboard-read','clipboard-write']);await page.setViewportSize({width:768,height:844});await setup(page,7,true)
  const name=page.locator('.node-title-text'),expand=page.getByRole('button',{name:'展开名称',exact:true});await expect(expand).toBeVisible();const h=(await name.boundingBox())!.height
  await expand.click();expect((await name.boundingBox())!.height).toBeGreaterThan(h);await expect(page.getByRole('dialog')).toHaveCount(0);await page.getByRole('button',{name:'收起名称',exact:true}).click();expect((await name.boundingBox())!.height).toBe(h)
  await page.locator('.detail-facts-toggle').click();const copy=page.getByRole('button',{name:'复制：IPv6',exact:true}),row=copy.locator('xpath=ancestor::dd');const height=(await row.boundingBox())!.height
  await page.clock.install();await copy.click();await expect(row.getByRole('status')).toHaveText('已复制');expect(await page.evaluate(()=>navigator.clipboard.readText())).toBe('2001:db8:1234:5678:abcd:1234:5678:abcd');await page.clock.runFor(2001);await expect(row.getByRole('status')).toHaveCount(0,{timeout:3000});expect((await row.boundingBox())!.height).toBe(height)
  await page.evaluate(()=>{let calls=0;Object.defineProperty(navigator.clipboard,'writeText',{configurable:true,value:()=>new Promise((resolve,reject)=>setTimeout(()=>++calls===1?reject(Error('denied')):resolve(undefined),300))})});await copy.click();await copy.click();await page.clock.runFor(301);await expect(row.getByRole('status')).toHaveText('已复制');expect((await row.boundingBox())!.height).toBe(height)
 })
-for(const width of [320,390])for(const tab of ['resources','latency'])test(`mobile ${width} ${tab} tooltip closes, reopens and stays bounded`,async({page})=>{
+for(const width of [768,800])for(const tab of ['resources','latency'])test(`compact desktop ${width} ${tab} tooltip closes, reopens and stays bounded`,async({page})=>{
  await page.setViewportSize({width,height:844});await setup(page,20)
  if(tab==='latency'){await page.getByRole('button',{name:'网络延迟',exact:true}).click();await expandRoutes(page);const hidden=page.locator('.route-chips button[aria-pressed][aria-pressed="false"]');while(await hidden.count())await hidden.first().click();await page.keyboard.press('Escape');await expect(page.locator('.recharts-line-curve')).toHaveCount(20)}
  const frame=page.locator('.detail-chart-frame');await frame.scrollIntoViewIfNeeded();const height=(await frame.boundingBox())!.height,tip=frame.locator('.recharts-tooltip-wrapper')
@@ -38,7 +39,7 @@ for(const width of [320,390])for(const tab of ['resources','latency'])test(`mobi
  await page.locator('.detail-facts-toggle').click();await expect(tip).toBeHidden();await frame.click({position:{x:180,y:110}});await expect(tip).toBeVisible();await page.getByRole('button',{name:'24 小时',exact:true}).click();await expect(page.locator('.recharts-tooltip-wrapper')).toBeHidden();expect((await frame.boundingBox())!.height).toBe(height)
 })
 test('selecting a distant legend preserves catalog order and keyboard focus',async({page})=>{
- await page.setViewportSize({width:390,height:844});await setup(page,20);await page.getByRole('button',{name:'网络延迟',exact:true}).click();await expandRoutes(page)
+ await page.setViewportSize({width:800,height:844});await setup(page,20);await page.getByRole('button',{name:'网络延迟',exact:true}).click();await expandRoutes(page)
  const options=page.locator('.route-chips'),last=options.getByRole('button',{name:'线路 Tokyo 20',exact:true})
  const order=()=>options.locator('button[aria-pressed]').evaluateAll(elements=>elements.map(el=>el.getAttribute('aria-label')))
  const before=await order();await last.click();await expect(last).toHaveAttribute('aria-pressed','true');await expect(last).toBeFocused();expect(await order()).toEqual(before)

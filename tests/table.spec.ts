@@ -1,3 +1,4 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {test,expect} from '@playwright/test'
 import {nodes} from '../scripts/fixtures.mjs'
 test('table traffic follows accounting mode, follows independent network columns and hides persistently',async({page})=>{

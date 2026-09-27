@@ -1,5 +1,6 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {expandRoutes} from './routes'
-import {test,expect} from '@playwright/test'
+import {test,expect} from './desktopTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 import {toggleSettings,settingsCategory,setting} from './settings'
 
@@ -46,7 +47,7 @@ test.skip('legacy preferences stay full; recommended preset preserves unrelated 
  await expect(page.locator('.latency-bars svg')).toHaveAttribute('aria-label',/175/)
 })
 test('new visitors get comfortable layout with core information and desktop height budget',async({page})=>{
- await setup(page);await page.goto('/');await expect(page.locator('.latency-bars')).toBeVisible()
+ await setup(page);await page.goto('/');await page.locator('.route-matrix').scrollIntoViewIfNeeded();await expect(page.locator('.latency-bars')).toBeVisible()
  const card=page.locator('.node-card');await expect(card).toHaveAttribute('data-density','full')
  await expect(card.locator('.traffic-summary')).toBeVisible();await expect(card.locator('.node-price')).toBeVisible()
  await expect(card.locator('.node-connections')).toBeVisible()
@@ -54,12 +55,10 @@ test('new visitors get comfortable layout with core information and desktop heig
  await expect(card.locator('.node-connections')).toBeVisible()
  await expect(card.locator('.card-auxiliary-toggle')).toHaveCount(0)
 })
-test('mobile search closes with focus, keeps query, and detail has a single facts disclosure',async({page})=>{
- await page.setViewportSize({width:390,height:844});await setup(page);await page.goto('/')
- await page.getByRole('button',{name:'搜索节点',exact:true}).click()
- const dialog=page.getByRole('dialog',{name:'搜索节点',exact:true});await expect(dialog.getByRole('searchbox')).toBeFocused()
- await dialog.getByRole('searchbox').fill('Tokyo');await expect(dialog.getByRole('status')).toHaveText('找到 1 个节点')
- await dialog.getByRole('button',{name:'关闭搜索',exact:true}).click();await expect(page.getByRole('button',{name:'搜索节点',exact:true})).toBeFocused()
+test('compact desktop search keeps query, and detail has a single facts disclosure',async({page})=>{
+ await page.setViewportSize({width:800,height:844});await setup(page);await page.goto('/')
+ await page.getByRole('searchbox',{name:'搜索节点',exact:true}).fill('Tokyo')
+ await expect(page.locator('.node-card')).toHaveCount(1)
  await expect(page.locator('.active-filters')).toContainText('Tokyo')
  await page.locator('.node-open').click();await page.locator('.detail-facts-toggle').click()
  await expect(page.locator('#detail-fact-groups details')).toHaveCount(0)
@@ -67,21 +66,21 @@ test('mobile search closes with focus, keeps query, and detail has a single fact
  await page.getByRole('button',{name:'返回总览',exact:true}).click();await expect(page.locator('.active-filters')).toContainText('Tokyo')
  expect((await page.locator('.summary-grid').boundingBox())!.height).toBeLessThanOrEqual(260)
 })
-test('mobile and desktop table columns remain independent',async({page})=>{
+test('legacy phone columns do not alter the desktop table',async({page})=>{
  await setup(page);await page.goto('/');await page.getByRole('button',{name:'表格视图',exact:true}).click()
  await expect(page.locator('thead th')).toHaveCount(11)
- await page.setViewportSize({width:390,height:844});await expect(page.locator('thead th')).toHaveCount(4)
+ await page.setViewportSize({width:390,height:844});await expect(page.locator('.ma-node')).toHaveCount(1)
  await page.evaluate(()=>{const key='monitor-next-browse-v1',saved=JSON.parse(sessionStorage.getItem(key)!);sessionStorage.setItem(key,JSON.stringify({...saved,mobileColumns:[...saved.mobileColumns,'upload']}))});await page.reload()
- await expect(page.locator('thead th')).toHaveCount(5)
+ await expect(page.locator('.ma-node')).toHaveCount(1)
  await page.setViewportSize({width:1440,height:1000});await expect(page.locator('thead th')).toHaveCount(11)
- await page.reload();await page.setViewportSize({width:390,height:844});await expect(page.locator('thead th')).toHaveCount(5)
+ await page.reload();await expect(page.locator('thead th')).toHaveCount(11)
 })
 test('responsive visual evidence for both themes',async({page})=>{
  await setup(page)
- for(const appearance of ['light','dark'])for(const width of [320,390,720,900,1440]){
+ for(const appearance of ['light','dark'])for(const width of [768,800,899,900,1440]){
   await page.setViewportSize({width,height:1000})
   await page.addInitScript(appearance=>localStorage.setItem('monitor-next',JSON.stringify({schemaVersion:3,appearance,infoDensity:'overview',latencyScale:500,latencyWarn:150,latencyHigh:300,modules:{map:false}})),appearance)
-  await page.goto('/');await expect(page.locator('.latency-bars')).toBeVisible()
+  await page.goto('/');await page.locator('.route-matrix').scrollIntoViewIfNeeded();await expect(page.locator('.latency-bars')).toBeVisible()
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
   await page.screenshot({path:`tests/artifacts/v014/home-${appearance}-${width}.png`,fullPage:true})
   await page.getByRole('button',{name:'查看全部 3 条线路',exact:true}).click();await expect(page.locator('.route-chips')).toBeVisible();if(width>=390)expect(await page.locator('.route-chips button span').evaluateAll(els=>els.every(el=>el.scrollWidth<=el.clientWidth))).toBeTruthy()

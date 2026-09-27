@@ -1,8 +1,9 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {test,expect} from '@playwright/test'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
 test('offline detail surfaces last report and condenses unavailable live readings',async({page})=>{
- await page.setViewportSize({width:390,height:844})
+ await page.setViewportSize({width:800,height:844})
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[nodes()[5]]}}))
  await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:metrics()}))
  await page.goto('/node/6')

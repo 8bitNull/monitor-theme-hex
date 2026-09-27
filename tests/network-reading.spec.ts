@@ -1,5 +1,6 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {expandRoutes} from './routes'
-import {test,expect,type Page} from '@playwright/test'
+import {test,expect,type Page} from './desktopTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 async function setup(page:Page){
  const config={homeRoutes:3,modules:{map:false}}
@@ -9,7 +10,7 @@ async function setup(page:Page){
  await page.route('**/api/nodes/*/metrics?*',r=>{const ts=Math.floor(Date.now()/1000),d=metrics();return r.fulfill({json:{...d,probes:{1:'Tokyo primary route',2:'Hong Kong backup route',3:'No packet statistics'},loss:{1:2.5,2:0},ping:[1,2,3].flatMap(id=>[{task_id:id,ts:ts-180,latency:0,loss:id===3?undefined:0},{task_id:id,ts:ts-120,latency:21,loss:undefined},{task_id:id,ts:ts-60,latency:null,loss:id===3?undefined:100},{task_id:id,ts,latency:28,loss:id===3?undefined:25}])}})})
  return config
 }
-for(const width of [320,390,720,900,1200,1350,1360,1440])test(`network readings fit in both languages and themes at ${width}`,async({page})=>{
+for(const width of [768,800,899,900,1200,1350,1360,1440])test(`network readings fit in both languages and themes at ${width}`,async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.setViewportSize({width,height:1000});await setup(page)
  for(const language of ['zh','en'])for(const appearance of ['light','dark']){
   await page.addInitScript(({language,appearance})=>{localStorage.setItem('monitor-next-language',language);localStorage.setItem('monitor-next',JSON.stringify({_storageVersion:1,appearance}))},{language,appearance})
@@ -24,13 +25,14 @@ for(const width of [320,390,720,900,1200,1350,1360,1440])test(`network readings 
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
   if(language==='zh'&&appearance==='light')await card.screenshot({path:`tests/artifacts/v013/home-${width}.png`})
   await page.goto('/node/1?routes=1,2,3#latency');await expect(page.locator('.loss-track')).toBeVisible();await expect(page.locator('.detail-speed .micro-trend')).toHaveCount(2)
-  if(width<900)await page.locator('.overview-more-toggle').click()
+  await expect(page.locator('.overview-account')).toBeVisible()
   for(const direction of ['upload','download']){
    const reading=page.locator(`.detail-speed .${direction}`),label=await reading.locator('.speed-direction').boundingBox(),value=await reading.locator('strong').boundingBox()
    expect(label).not.toBeNull();expect(value).not.toBeNull()
    if(value!.y<label!.y+label!.height-1)expect(value!.x).toBeGreaterThanOrEqual(label!.x+label!.width+4)
    else expect(value!.y).toBeGreaterThanOrEqual(label!.y+label!.height-1)
   }
+  if(width<900)await page.locator('.overview-more-toggle').click()
   for(const reading of await page.locator('.detail-connections>div').all()){
    const label=await reading.locator('span').boundingBox(),value=await reading.locator('strong').boundingBox()
    expect(label).not.toBeNull();expect(value).not.toBeNull()
@@ -56,7 +58,7 @@ test('home route count shows the latency indicator for every selected route',asy
 }
 })
 test('single route latency indicator fills the available row',async({page})=>{
- await page.setViewportSize({width:428,height:900});await setup(page);await page.goto('/')
+ await page.setViewportSize({width:850,height:900});await setup(page);await page.goto('/')
  const reading=page.locator('.node-card .ping-probe').first().locator('.latency-reading');const label=reading;const bars=reading.locator(':scope > .latency-bars')
  const labelBox=(await label.boundingBox())!,barsBox=(await bars.boundingBox())!;expect(barsBox.x-(labelBox.x+labelBox.width)).toBeLessThanOrEqual(12);expect(barsBox.width).toBeGreaterThan(80);const valueBox=(await reading.locator(".latency-link").boundingBox())!;expect(Math.abs(valueBox.x-barsBox.x-barsBox.width-6)).toBeLessThanOrEqual(1)
  await page.setViewportSize({width:1440,height:900});await page.reload();const desktopBars=page.locator('.node-card .ping-probe').first().locator('.latency-bars');expect((await desktopBars.boundingBox())!.width).toBeGreaterThan(180);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()

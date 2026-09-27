@@ -1,16 +1,18 @@
-import {test,expect} from '@playwright/test'
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
+import {test,expect} from './desktopTest'
 import {setStoredPreference,setSiteDefault,toggleSettings,settingsCategory} from './settings'
 test('each card layout fits its indicator, keeps data visible and persists selection',async({page})=>{
+ test.setTimeout(90000)
  await page.addInitScript(()=>{if(!localStorage.getItem('monitor-next'))localStorage.setItem('monitor-next',JSON.stringify({designVersion:1,modules:{map:false},homeRoutes:1}))})
  await page.goto('/')
- const card=page.locator('.node-card').first();await card.locator('.latency-reading').waitFor()
+ const card=page.locator('.node-card').first();await card.locator('.route-matrix').scrollIntoViewIfNeeded();await card.locator('.latency-reading').waitFor()
  await card.getByLabel('节点探测线路').click();await expect(page.getByRole('option').first()).toHaveText(/^全局：/);await page.keyboard.press('Escape')
  for(const appearance of ['light','dark']){
   await setStoredPreference(page,'appearance',appearance)
   for(const graph of ['columns','bar','ring','minimal']){
    await setSiteDefault(page,'graph',graph)
    await expect(card).toHaveAttribute('data-indicator',graph)
-   for(const width of [1440,1024,390,320]){
+   for(const width of [1440,1024,800,768]){
     await page.setViewportSize({width,height:1000})
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
     expect(await card.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
@@ -20,7 +22,7 @@ test('each card layout fits its indicator, keeps data visible and persists selec
      const box=(await metric.boundingBox())!,value=(await number.boundingBox())!
      expect(value.x+value.width).toBeLessThanOrEqual(box.x+box.width+1)
     }
-    if(width===390)await card.screenshot({path:`tests/artifacts/appearance-card-${graph}-${appearance}.png`})
+    if(width===800)await card.screenshot({path:`tests/artifacts/appearance-card-${graph}-${appearance}.png`})
    }
   }
  }

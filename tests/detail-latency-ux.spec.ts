@@ -10,10 +10,11 @@ test('selected lines stay identifiable and node switching starts with its own ro
   return r.fulfill({json:{...d,probes:Object.fromEntries(ids.map(id=>[id,`线路 ${id}`])),ping:d.ping.flatMap(p=>ids.map(id=>({...p,task_id:id,latency:p.latency+id*10})))}})
  })
  await page.goto('/node/1?routes=1,2&lh=24#latency')
+ await page.getByRole('button',{name:'比较线路',exact:true}).click()
  const routes=page.locator('.latency-view>.route-chips')
  await expect(routes.locator('button[aria-pressed=true]')).toHaveCount(2)
  await expect(page.locator('.latency-view .recharts-line-curve')).toHaveCount(2)
- const list=(await routes.locator('.route-chip-list').boundingBox())!,compare=(await page.locator('.latency-route-controls .expand-routes').boundingBox())!
+ const list=(await routes.boundingBox())!,compare=(await page.getByRole('button',{name:'收起线路',exact:true}).boundingBox())!
  expect(list.y).toBeGreaterThanOrEqual(compare.y+compare.height)
  const overflow=await page.evaluate(()=>({viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,elements:[...document.querySelectorAll('*')].filter(el=>el.getBoundingClientRect().right>innerWidth+1).slice(0,10).map(el=>({tag:el.tagName,className:typeof el.className==='string'?el.className:'',right:el.getBoundingClientRect().right}))}))
  expect(overflow.scrollWidth,JSON.stringify(overflow)).toBeLessThanOrEqual(overflow.viewport)
@@ -59,20 +60,17 @@ test('history failure gives a localized retry message',async({page})=>{
  await expect(page.locator('.latency-view .recharts-line-curve')).toBeVisible()
 })
 
-test('touch can zoom the latency brush and restore the full range',async({browser})=>{
- const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true})
+test('touch can zoom the mobile time sliders and restore the full range',async({browser,baseURL})=>{
+ const context=await browser.newContext({baseURL,viewport:{width:390,height:844},isMobile:true,hasTouch:true})
  const page=await context.newPage()
  try{
   await page.goto('/node/1#latency')
-  const handle=page.locator('.latency-view .recharts-brush-traveller').last()
-  await handle.waitFor()
-  const box=(await handle.boundingBox())!,x=box.x+box.width/2,y=box.y+box.height/2
-  const cdp=await context.newCDPSession(page)
-  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]})
-  for(let step=1;step<=8;step++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x-step*10,y}]})
-  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]})
-  await expect(page.getByRole('button',{name:'恢复范围'})).toBeVisible()
-  await page.getByRole('button',{name:'恢复范围'}).click()
-  await expect(page.getByRole('button',{name:'恢复范围'})).toHaveCount(0)
+  await page.getByRole('button',{name:'缩放时间范围',exact:true}).click()
+  const slider=page.getByRole('slider',{name:'结束时间',exact:true})
+  await slider.scrollIntoViewIfNeeded();const box=(await slider.boundingBox())!
+  await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2)
+  await expect(page.getByRole('button',{name:'恢复全范围',exact:true})).toBeVisible()
+  await page.getByRole('button',{name:'恢复全范围',exact:true}).click()
+  await expect(slider).toHaveValue(await slider.getAttribute('max')||'')
  }finally{await context.close()}
 })

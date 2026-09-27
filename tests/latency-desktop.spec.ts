@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
-for(const width of [320,390,900,1024,1440])test(`latency chart and route controls fit at ${width}`,async({page})=>{
+for(const width of [768,800,900,1024,1440])test(`latency chart and route controls fit at ${width}`,async({page})=>{
  await page.setViewportSize({width,height:1000})
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[nodes()[0]]}}))
  await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:{...metrics(),probes:{1:'浙江电信 Primary long route',2:'浙江联通 Backup long route',3:'浙江移动 Mobile route'}}}))

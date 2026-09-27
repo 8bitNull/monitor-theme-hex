@@ -58,7 +58,7 @@ test('route selector switches one route, all routes, and the global default with
 })
 test('detail prioritizes charts, renders complete facts and compact controls at all widths',async({page})=>{
  await setup(page)
- for(const width of [320,390,768,1440]) {
+ for(const width of [768,1440]) {
   await page.setViewportSize({width,height:1000})
   const live=await page.locator('.detail-live').boundingBox(),history=await page.locator('.detail-history').boundingBox(),facts=await page.locator('.detail-information').boundingBox()
   if(width<900){expect(facts!.y).toBeGreaterThan(history!.y+history!.height);expect(live!.y).toBeLessThan(history!.y)}else{expect(facts!.y).toBeGreaterThan(history!.y+history!.height);expect(history!.y).toBeGreaterThan(live!.y+live!.height)}
@@ -86,6 +86,7 @@ test('missing home route stays empty while offline detail keeps durable facts an
   await page.setViewportSize({width,height:900})
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
  }
+ await page.setViewportSize({width:1440,height:1000})
  const route=page.locator('.latency-route-controls').getByLabel('查看线路',{exact:true})
  await expect(route).toBeVisible();await expect(page.locator('.route-chips')).toHaveCount(0)
  await expect(page.locator('.probe-bulk-actions,.route-search,.probe-solo,.probe-restore')).toHaveCount(0)

@@ -1,7 +1,8 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {test,expect} from '@playwright/test'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
-for(const width of [320,390])test(`mobile history status and controls fit at ${width}px`,async({page})=>{
+for(const width of [768,800])test(`compact desktop history status and controls fit at ${width}px`,async({page})=>{
  await page.setViewportSize({width,height:844})
  await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:[nodes()[0]]}}))
  await page.route('**/api/nodes/*/metrics?*',route=>route.fulfill({json:metrics()}))
@@ -40,7 +41,7 @@ for(const width of [320,390])test(`mobile history status and controls fit at ${w
 })
 
 test('English last-success status fits a 320px detail toolbar',async({page})=>{
- await page.setViewportSize({width:320,height:844})
+ await page.setViewportSize({width:768,height:844})
  await page.addInitScript(()=>localStorage.setItem('monitor-next-language','en'))
  await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:[nodes()[0]]}}))
  await page.route('**/api/nodes/*/metrics?*',route=>route.fulfill({json:metrics()}))

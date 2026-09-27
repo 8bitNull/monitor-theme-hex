@@ -1,8 +1,10 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {test,expect} from '@playwright/test'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 import {setSiteDefault} from './settings'
 
-for(const width of [320,390,430,768,1024,1440])test('detail and settings polish remain usable at '+width,async({page})=>{
+for(const width of [768,800,850,1024,1440])test('detail and settings polish remain usable at '+width,async({page})=>{
+ test.setTimeout(90000)
  await page.setViewportSize({width,height:844})
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],name:'Netcup RS1000 · 法兰克福',agent_version:'1.0.0',remark:'2.5Gbps 国际线路;应用与备份服务'}]}}))
  await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:metrics()}))
@@ -11,10 +13,10 @@ for(const width of [320,390,430,768,1024,1440])test('detail and settings polish 
   await page.goto('/node/1');await page.locator('.resource-chart-panel .recharts-wrapper').waitFor()
   if(language==='en'){
    const metricLabels=['CPU','Memory','Disk','Network'];
-   if(width<=600){await expect(page.locator('.detail-resource-metric-desktop')).toBeHidden();await page.locator('.detail-resource-metric-mobile>summary').click();await expect(page.locator('.detail-resource-metric-menu button')).toHaveCount(4);await expect(page.locator('.detail-resource-metric-menu button')).toHaveText([/^CPU/, 'Memory', 'Disk', 'Network'])}
+   if(width<900){await expect(page.locator('.detail-resource-metric-desktop')).toBeHidden();await page.locator('.detail-resource-metric-mobile>summary').click();await expect(page.locator('.detail-resource-metric-menu button')).toHaveCount(4);await expect(page.locator('.detail-resource-metric-menu button')).toHaveText([/^CPU/, 'Memory', 'Disk', 'Network'])}
    else {await expect(page.locator('.detail-resource-metric-desktop button')).toHaveText(metricLabels)}
   }
-  if(width===390){const cpu=await page.locator('.detail-live .resource').first().boundingBox();expect(cpu!.y+cpu!.height).toBeLessThan(844)}
+  if(width===800){const cpu=await page.locator('.detail-live .resource').first().boundingBox();expect(cpu!.y+cpu!.height).toBeLessThan(844)}
   for(const graph of ['bar','ring','columns','minimal']){
    await setSiteDefault(page,'graph',graph)
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()

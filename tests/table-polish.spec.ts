@@ -1,3 +1,4 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {expect,test} from '@playwright/test'
 import {nodes} from '../scripts/fixtures.mjs'
 
@@ -23,6 +24,7 @@ test('desktop table keeps clipped headers out of view while retaining horizontal
  await expect(clipped).toHaveCount(0)
 
  await page.setViewportSize({width:390,height:844})
- await expect(page.locator('.node-table[data-mobile=true]')).toBeVisible()
+ await expect(page.locator('.ma-node')).toHaveCount(6)
+ await expect(page.locator('.node-table')).toHaveCount(0)
  await expect(clipped).toHaveCount(0)
 })

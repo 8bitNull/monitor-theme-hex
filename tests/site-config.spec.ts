@@ -1,4 +1,4 @@
-import {test, expect} from '@playwright/test'
+import {test, expect} from './desktopTest'
 import {readFileSync} from 'node:fs'
 import {applySiteConfig} from '../src/lib/siteConfig'
 import {defaults,parsePreferences} from '../src/lib/appearance'

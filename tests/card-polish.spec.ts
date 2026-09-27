@@ -1,14 +1,16 @@
-import {test,expect} from '@playwright/test'
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
+import {test,expect} from './desktopTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
 test('card keeps stable placeholders while live metrics and probe records load',async({page})=>{
- await page.setViewportSize({width:390,height:844})
+ await page.setViewportSize({width:800,height:844})
  await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:[{...nodes()[0],metrics:null}]}}))
  let finishProbe:((value:void)=>void)|undefined
  const probeHeld=new Promise<void>(resolve=>{finishProbe=resolve})
  await page.route('**/api/nodes/*/metrics?*',async route=>{await probeHeld;await route.fulfill({json:metrics()})})
  await page.goto('/')
  const card=page.locator('.node-card').first()
+ await card.locator('.route-matrix').scrollIntoViewIfNeeded()
  await expect(card).toHaveAttribute('data-metric-state','missing')
  await expect(card.locator('.ping-loading')).toBeVisible()
  await expect(card.locator('.route-matrix')).toHaveAttribute('data-loading','true')

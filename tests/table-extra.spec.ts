@@ -1,3 +1,4 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {test,expect} from '@playwright/test'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 import {availableTableColumns} from '../src/lib/browse'
@@ -17,17 +18,17 @@ test('all extra metrics preserve zero, offline and missing values',async({page})
  await cell('loss').scrollIntoViewIfNeeded();await expect(cell('loss')).toContainText('0.0%');await expect(cell('probe')).toContainText('Tokyo gateway');await expect(cell('latency')).not.toContainText('Tokyo gateway');await expect(cell('latency')).not.toContainText('丢包')
 })
 
-test('mobile can show only packet loss or only the probe route and retains selection',async({page})=>{
- await page.setViewportSize({width:390,height:844});await page.addInitScript(()=>{if(!sessionStorage.getItem('monitor-next-browse-v1'))sessionStorage.setItem('monitor-next-browse-v1',JSON.stringify({columnsVersion:5,mobileColumns:['loss'],view:'table',mobileTableLayout:'grouped'}))})
- await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:{...metrics(),loss:{1:0}}}));await page.goto('/');await expect(page.locator('thead th')).toHaveCount(2);await expect(page.locator('td[data-column=loss]').first()).toContainText('0.0%')
- await page.evaluate(()=>localStorage.setItem('monitor-next-table-columns-v1',JSON.stringify({columnsVersion:5,columns:['cpu','latency'],mobileColumns:['probe'],tableLayout:'grouped',mobileTableLayout:'grouped'})))
+test('compact desktop can show only packet loss or only the probe route and retains selection',async({page})=>{
+ await page.setViewportSize({width:800,height:844});await page.addInitScript(()=>{if(!sessionStorage.getItem('monitor-next-browse-v1'))sessionStorage.setItem('monitor-next-browse-v1',JSON.stringify({columnsVersion:5,columns:['loss'],view:'table',tableLayout:'grouped'}))})
+ await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:{...metrics(),loss:{1:0}}}));await page.goto('/');await expect(page.locator('thead th')).toHaveCount(3);await expect(page.locator('td[data-column=loss]').first()).toContainText('0.0%')
+ await page.evaluate(()=>localStorage.setItem('monitor-next-table-columns-v1',JSON.stringify({columnsVersion:5,columns:['probe'],mobileColumns:['probe'],tableLayout:'grouped',mobileTableLayout:'grouped'})))
  await page.reload()
- await expect(page.locator('thead [data-column=loss]')).toHaveCount(0);await expect(page.locator('td[data-column=probe]').first()).toContainText('Tokyo gateway');await expect(page.locator('thead th')).toHaveCount(2)
+ await expect(page.locator('thead [data-column=loss]')).toHaveCount(0);await expect(page.locator('td[data-column=probe]').first()).toContainText('Tokyo gateway');await expect(page.locator('thead th')).toHaveCount(3)
  await page.reload();await expect(page.locator('thead [data-column=probe]')).toHaveCount(1);await expect(page.locator('thead [data-column=latency]')).toHaveCount(0)
 })
 
-test('mobile hides an empty remark column and keeps remark details when current results contain one',async({page})=>{
- await page.setViewportSize({width:390,height:844})
+test('compact desktop hides an empty remark column and keeps remark details when current results contain one',async({page})=>{
+ await page.setViewportSize({width:800,height:844})
  await page.addInitScript(()=>sessionStorage.setItem('monitor-next-browse-v1',JSON.stringify({columnsVersion:5,mobileColumns:['cpu','latency'],view:'table',mobileTableLayout:'grouped'})))
  await page.route('**/api/nodes',route=>{const node=nodes()[0];return route.fulfill({json:{nodes:[{...node,remark:''},{...node,id:2,name:'With note',remark:'first detail；second detail'}]}})})
  await page.goto('/')
@@ -44,5 +45,6 @@ test('mobile hides an empty remark column and keeps remark details when current 
 test('legacy network columns expand without restoring hidden metrics',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('monitor-next-table-columns-v1',JSON.stringify({columnsVersion:4,columns:['latency'],mobileColumns:['cpu','latency'],tableLayout:'grouped',mobileTableLayout:'grouped'})))
  await page.goto('/');await page.getByLabel('表格视图',{exact:true}).click();await expect(page.locator('thead th')).toHaveCount(5);await expect(page.locator('thead [data-column=loss]')).toHaveCount(1);await expect(page.locator('thead [data-column=cpu]')).toHaveCount(0)
- await page.setViewportSize({width:390,height:844});await expect(page.locator('thead th')).toHaveCount(3);await expect(page.locator('thead [data-column=loss]')).toHaveCount(0)
+ await page.setViewportSize({width:390,height:844});await expect(page.locator('.ma-node')).toHaveCount(6);await expect(page.locator('table')).toHaveCount(0)
+ await page.setViewportSize({width:800,height:844});await expect(page.locator('thead th')).toHaveCount(5);await expect(page.locator('thead [data-column=cpu]')).toHaveCount(0)
 })

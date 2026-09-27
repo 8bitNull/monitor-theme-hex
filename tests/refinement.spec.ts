@@ -1,8 +1,9 @@
-import {test,expect} from '@playwright/test'
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
+import {test,expect} from './desktopTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 import {setSiteDefault} from './settings'
 
-for(const [width,height] of [[320,844],[390,844],[430,932],[768,1024],[1440,1000]]){
+for(const [width,height] of [[768,844],[800,844],[850,932],[1024,768],[1440,1000]]){
  test('refined cards keep readable metrics in every style at '+width,async({page})=>{
   test.setTimeout(90000)
   await page.setViewportSize({width,height})
@@ -33,8 +34,8 @@ for(const [width,height] of [[320,844],[390,844],[430,932],[768,1024],[1440,1000
     expect(faults).toEqual([])
     const baselines=await card.locator('.speed-pair strong').evaluateAll(elements=>elements.map(el=>{const range=document.createRange();range.selectNodeContents(el.firstChild!);return range.getBoundingClientRect().top}))
     expect(Math.abs(baselines[0]-baselines[1])).toBeLessThanOrEqual(1)
-    if(width===390&&graph==='bar'){
-     for(const value of await card.locator('.resource').all().then(rs=>rs.slice(0,2))){const box=(await value.boundingBox())!;expect(box.y+box.height).toBeLessThan(height)}
+    if(width===800&&graph==='bar'){
+     for(const value of await card.locator('.resource').all().then(rs=>rs.slice(0,2))){await value.scrollIntoViewIfNeeded();const box=(await value.boundingBox())!;expect(box.y+box.height).toBeLessThan(height)}
     }
    }
   }
@@ -53,7 +54,7 @@ test('site graph defaults update and legacy browser graph choices are ignored',a
 })
 
 test('zero, unavailable, warning, long facts and failed latency retain honest states',async({page})=>{
- await page.setViewportSize({width:320,height:844})
+ await page.setViewportSize({width:768,height:844})
  await page.route('**/theme-config.json',r=>r.fulfill({json:{modules:{map:false}}}))
  let fleet:any[]=nodes();const base=fleet[0]
  fleet=[
@@ -72,7 +73,7 @@ test('zero, unavailable, warning, long facts and failed latency retain honest st
  await expect(cards.nth(1).locator('.offline-last-report')).toBeVisible();await expect(cards.nth(1).locator('.resources,.card-network,.card-uptime')).toHaveCount(0);await expect(cards.nth(1).locator('.card-billing,.route-matrix')).toHaveCount(2)
  for(const i of [2,3])await expect(cards.nth(i).locator('.bar-number').first()).toHaveText('—')
  await expect(cards.nth(4).locator('.resource').first()).toHaveClass(/danger/)
- await expect(cards.nth(4).locator('.card-issue')).toContainText('已到期')
+ await expect(cards.nth(4).locator('.card-issue').filter({hasText:'已到期'})).toBeVisible()
  await expect(cards.nth(4).locator('.node-secondary-disclosure')).toHaveCount(0)
  await expect(cards.nth(4).locator('.card-expiry')).toBeVisible()
  await expect(cards.nth(4).locator('.expiring')).toContainText('已到期');await expect(cards.nth(4).locator('.card-expiry')).toHaveAttribute('data-expiry-state','expired')

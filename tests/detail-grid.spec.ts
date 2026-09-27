@@ -1,3 +1,4 @@
+// Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {test,expect} from '@playwright/test'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
@@ -26,7 +27,7 @@ test('detail page uses a light modular reading order',async({page})=>{
  await expect(page.locator('.detail-live')).not.toContainText('负载 1 / 5 / 15')
 })
 
-for(const width of [320,390])test(`detail modules stay readable at ${width}px`,async({page})=>{
+for(const width of [768,800])test(`detail modules stay readable at ${width}px`,async({page})=>{
  await page.setViewportSize({width,height:844});await setup(page)
  const facts=(await page.locator('.detail-information').boundingBox())!
  const live=(await page.locator('.detail-live').boundingBox())!

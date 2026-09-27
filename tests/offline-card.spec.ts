@@ -1,4 +1,4 @@
-import {test,expect,type Page} from '@playwright/test'
+import {test,expect,type Page} from './desktopTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
 async function setup(page:Page){
@@ -25,6 +25,7 @@ test('offline card condenses live readings while retaining report, billing, and 
 test('offline card fits a narrow homepage viewport',async({page})=>{
  await page.setViewportSize({width:320,height:844})
  await setup(page)
- await expect(page.locator('.node-card.node-offline .offline-last-report')).toBeVisible()
+ await expect(page.locator('.ma-node[data-state=offline]')).toContainText('离线')
+ await expect(page.locator('.ma-node[data-state=offline] .ma-notice')).toBeVisible()
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBeTruthy()
 })

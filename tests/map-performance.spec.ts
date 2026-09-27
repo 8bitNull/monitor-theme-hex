@@ -1,4 +1,4 @@
-import {test,expect} from '@playwright/test'
+import {test,expect} from './desktopTest'
 import {nodes} from '../scripts/fixtures.mjs'
 
 test('enabled map loads while node data is pending',async({page})=>{
@@ -51,7 +51,7 @@ for(const mode of ['mobile','disabled','detail'])test(`does not fetch map in ${m
  let requests=0;page.on('request',r=>{if(r.url().includes('/WorldMap-'))requests++})
  if(mode==='mobile')await page.setViewportSize({width:390,height:844})
  if(mode==='disabled')await page.route('**/api/themes/hex/config',r=>r.fulfill({json:{module_map:false}}))
- await page.goto(mode==='detail'?'/node/1':'/');await expect(page.locator(mode==='detail'?'.node-detail':'.node-card').first()).toBeVisible();expect(requests).toBe(0)
+ await page.goto(mode==='detail'?'/node/1':'/');await expect(page.locator(mode==='detail'?'.node-detail':mode==='mobile'?'.ma-node':'.node-card').first()).toBeVisible();expect(requests).toBe(0)
 })
 
 test('metric updates leave geometry untouched; status, zoom and view switching stay current',async({page})=>{

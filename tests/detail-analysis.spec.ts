@@ -5,7 +5,7 @@ async function setup(page:any,width:number,routes='1,3'){
  await page.setViewportSize({width,height:900})
  await page.route('**/api/nodes',(r:any)=>r.fulfill({json:{nodes:[{...nodes()[0],cpu_name:'AMD EPYC Processor '.repeat(8),ipv6:'2001:db8:1234:5678:abcd:1234:5678:abcd',remark:'Remark;'.repeat(8)}]}}))
  await page.route('**/api/nodes/*/metrics?*',(r:any)=>{const d=metrics();return r.fulfill({json:{...d,probes:Object.fromEntries(Array.from({length:12},(_,i)=>[i+1,`Route ${i+1}`])),ping:d.ping.flatMap(p=>Array.from({length:12},(_,i)=>({...p,task_id:i+1,latency:i===0?0:12.34567+i,loss:undefined})))}})})
- await page.goto(`/node/1${routes==='inherit'?'':`?routes=${routes}`}#latency`);await expect(page.locator('.route-chips')).toBeVisible()
+ await page.goto(`/node/1${routes==='inherit'?'':`?routes=${routes}`}#latency`);await expandRoutes(page)
 }
 for(const width of [320,390,1440])test(`route legends expand and support keyboard toggles at ${width}`,async({page})=>{
  await setup(page,width,'1,3');await expandRoutes(page)
@@ -36,7 +36,7 @@ test('mobile retained data shows successful timestamp, new range does not',async
  await page.getByRole('button',{name:'24 小时',exact:true}).click();await expect(page.locator('.history-notice')).toContainText('读取历史数据失败');await expect(page.locator('.history-retained-time')).toHaveCount(0)
 })
 test('mobile long facts use full row and copy full value',async({page,context})=>{
- await context.grantPermissions(['clipboard-read','clipboard-write']);await setup(page,320);await page.locator('.detail-facts-toggle').click()
+ await context.grantPermissions(['clipboard-read','clipboard-write']);await setup(page,320);await page.getByRole('navigation',{name:'详情分区'}).getByRole('button',{name:'资料',exact:true}).click()
  await expect(page.getByRole('button',{name:'复制：CPU',exact:true})).toHaveCount(0);for(const label of ['IPv6']){const copy=page.getByRole('button',{name:`复制：${label}`,exact:true}),row=copy.locator('xpath=ancestor::dd/..'),dt=(await row.locator('dt').boundingBox())!,dd=(await row.locator('dd').boundingBox())!;expect(dd.y).toBeGreaterThanOrEqual(dt.y+dt.height);expect(Math.abs(dd.x-dt.x)).toBeLessThanOrEqual(1);await copy.click();expect(await page.evaluate(()=>navigator.clipboard.readText())).toBe(await row.locator('.fact-value').textContent());expect((await copy.boundingBox())!.width).toBeGreaterThanOrEqual(44)}
- await page.getByRole('button',{name:'展开备注',exact:true}).focus();await page.keyboard.press('Enter');await expect(page.getByRole('button',{name:'收起备注',exact:true})).toBeFocused()
+ await expect(page.locator('.ma-remarks')).toContainText('Remark')
 })
