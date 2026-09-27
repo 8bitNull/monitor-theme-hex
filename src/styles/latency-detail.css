@@ -137,3 +137,6 @@
 @media(max-width:359px){
  .node-detail .latency-view>.route-chips[data-expanded=true] .route-chip-list {grid-template-columns:minmax(0,1fr)}
 }
+/* The below-chart tooltip changes page height; root anchoring otherwise moves
+   the SVG under a second tap after Escape dismisses the tooltip. */
+@media(max-width:899px){html:has(.node-detail .latency-view){overflow-anchor:none}}

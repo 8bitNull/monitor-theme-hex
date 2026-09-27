@@ -48,6 +48,28 @@ export function axisBytes(v: number): string {
 export function rate(n: number): string {
     return `${mbpsAmount(n)} Mbps`;
 }
+/** Compact live readings use adaptive bit-rate units; history and tables use Mbps. */
+export function adaptiveRateParts(n: number): {amount:string;unit:string} {
+    if (!Number.isFinite(n) || n < 0) return {amount:'—',unit:''};
+    const bits=n*8;
+    if (!Number.isFinite(bits)) return {amount:'—',unit:''};
+    if (bits >= 1_000_000_000) return {amount:(bits/1_000_000_000).toFixed(2),unit:'Gbps'};
+    if (bits >= 1_000_000) return {amount:(bits/1_000_000).toFixed(2),unit:'Mbps'};
+    if (bits > 0 && bits < 100) return {amount:'<0.1',unit:'Kbps'};
+    return {amount:(bits/1000).toFixed(1),unit:'Kbps'};
+}
+export function adaptiveRate(n:number):string {
+    const {amount,unit}=adaptiveRateParts(n);
+    return unit?`${amount} ${unit}`:amount;
+}
+export function relativeTime(timestampSeconds:number,nowSeconds=Date.now()/1000):string {
+    if (!Number.isFinite(timestampSeconds) || timestampSeconds<=0) return tr('上次上报时间未知');
+    const seconds=Math.max(0,nowSeconds-timestampSeconds);
+    if (seconds<60) return tr('刚刚');
+    if (seconds<3600) return tr('{0} 分钟前',Math.floor(seconds/60));
+    if (seconds<86400) return tr('{0} 小时前',Math.floor(seconds/3600));
+    return tr('{0} 天前',Math.floor(seconds/86400));
+}
 /** Agent rates are bytes/second; network readings use decimal megabits/second. */
 export function mbpsAmount(n: number): string {
     if (!Number.isFinite(n) || n < 0) return '—';

@@ -3,7 +3,7 @@
 // requires no runner, framework or dependency.
 //
 // Nothing imports it, so the bundle never includes it.
-import { rate, mbpsAmount, axisBytes, axisTop, bytes, cpuName, daysUntil, osName, pair, quarters, timeTicks, uptime } from "./format.ts"
+import { rate, mbpsAmount, adaptiveRate, relativeTime, axisBytes, axisTop, bytes, cpuName, daysUntil, osName, pair, quarters, timeTicks, uptime } from "./format.ts"
 
 let failed = 0
 function eq(got: unknown, want: unknown, what: string) {
@@ -21,6 +21,13 @@ eq(rate(125), '0.001 Mbps', 'low speed precision')
 eq(mbpsAmount(NaN), '—', 'invalid speed is missing')
 eq(mbpsAmount(-1), '—', 'negative speed is missing')
 eq(rate(125000000000), '1.0e+6 Mbps', 'very high rate stays bounded')
+eq(adaptiveRate(0), '0.0 Kbps', 'idle adaptive rate remains known zero')
+eq(adaptiveRate(125000), '1.00 Mbps', 'card and detail share adaptive megabit rate')
+eq(adaptiveRate(125000000), '1.00 Gbps', 'adaptive rate scales to gigabits')
+eq(adaptiveRate(NaN), '—', 'unknown adaptive rate is not zero')
+eq(adaptiveRate(-1), '—', 'negative adaptive rate is invalid')
+eq(relativeTime(600, 660), '1 分钟前', 'relative report uses seconds')
+eq(relativeTime(0, 660), '上次上报时间未知', 'missing report remains unknown')
 
 // bytes: the significant-digit ladder, and the sub-byte case that would
 // otherwise print "512 undefined".
