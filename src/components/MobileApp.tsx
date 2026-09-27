@@ -21,7 +21,7 @@ import {MobileSheet} from './ui/mobile-sheet'
 import {MobileUpdates,useMobileVersions,hasMobileUpdates} from './MobileUpdates'
 import '@/styles/mobile-refinement.css'
 import type {LoadAlert} from '@/lib/loadAlerts'
-import type {HomePage} from '@/lib/navigation'
+import {homePage,type HomePage} from '@/lib/navigation'
 import manifest from '../../theme.json'
 
 type Page=HomePage
@@ -64,6 +64,7 @@ export function MobileApp({active,page,onNavigate,nodes,prefs,onPrefs,mobile,onM
  const scroll=useRef<Record<Page,number>>({nodes:0,overview:0,settings:0})
  const previousPage=useRef(page)
  useEffect(()=>{try{sessionStorage.setItem('hex-mobile-browse',JSON.stringify({query,filter}))}catch{/* Optional storage. */}},[query,filter])
+ useEffect(()=>{if(!active)return;const record=()=>{if(location.pathname==='/'&&homePage()===page)scroll.current[page]=window.scrollY};addEventListener('scroll',record,{passive:true});return()=>removeEventListener('scroll',record)},[active,page])
  useLayoutEffect(()=>{if(!active)return;if(previousPage.current!==page){previousPage.current=page;requestAnimationFrame(()=>window.scrollTo(0,scroll.current[page]))}},[active,page])
  const sorted=[...(nodes??[])].sort((a,b)=>a.sort-b.sort||a.id-b.id),online=sorted.filter(n=>n.online),fresh=online.filter(n=>liveMetrics(n))
  const high=sorted.filter(n=>(liveMetrics(n)?.cpu??0)>=85),regions=groupRegions(sorted)
