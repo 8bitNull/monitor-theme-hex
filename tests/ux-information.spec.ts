@@ -34,7 +34,7 @@ test('zoom quick ranges follow returned sample timestamps and keep full-range P9
  expect(calls).toBe(0)
 })
 
-test('short and empty histories do not offer invalid zoom controls',async({page})=>{
+test('single-sample history does not offer invalid zoom controls',async({page})=>{
  const now=Math.floor(Date.now()/1000)
  await detail(page,[{task_id:1,ts:now,latency:12}])
  await expect(page.getByRole('button',{name:'缩放时间范围',exact:true})).toHaveCount(0)
