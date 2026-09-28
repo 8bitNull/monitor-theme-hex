@@ -1,5 +1,5 @@
 import {readFileSync,writeFileSync} from 'node:fs'
-import {geoNaturalEarth1,geoPath,geoCentroid} from 'd3-geo'
+import {geoNaturalEarth1,geoPath,geoCentroid,geoGraticule10} from 'd3-geo'
 import {feature} from 'topojson-client'
 import {gzipSync} from 'node:zlib'
 import {featureCode,regionCodes} from './map-regions.mjs'
@@ -31,4 +31,4 @@ for(const [code,ll] of Object.entries({
 for(const code of Object.values(regionCodes).filter(code=>code!=='AQ')){
  if(!points[code]||points[code].length!==2||!points[code].every(Number.isFinite))throw new Error(`Missing map location: ${code}`)
 }
-const json=JSON.stringify({shapes,points});writeFileSync(new URL('../src/data/map-paths.json',import.meta.url),json+'\n');console.log(`Map: ${shapes.length} shapes, ${Buffer.byteLength(json)} bytes, gzip ${gzipSync(json).length} bytes`)
+const json=JSON.stringify({shapes,points,graticule:path(geoGraticule10())});writeFileSync(new URL('../src/data/map-paths.json',import.meta.url),json+'\n');console.log(`Map: ${shapes.length} shapes, ${Buffer.byteLength(json)} bytes, gzip ${gzipSync(json).length} bytes`)

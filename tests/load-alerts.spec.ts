@@ -30,7 +30,10 @@ test('load overview and history fit light/dark layouts and restore keyboard focu
    await page.setViewportSize({width,height:1000})
    if(width<=720)await page.locator('.ma-nav').getByRole('button',{name:'概览'}).click()
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
-   if(width===1440)expect(await page.locator('.summary-grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(6)
+   if(width===1440){
+    const tiles=await page.locator('.summary-grid > div').evaluateAll(els=>els.map(el=>el.getBoundingClientRect().top))
+    expect(tiles.length).toBeGreaterThan(0);expect(new Set(tiles).size).toBe(1)
+   }
    await page.screenshot({path:`tests/artifacts/load-alerts-home-${width}-${dark?'dark':'light'}.png`,fullPage:true})
    const trigger=page.getByRole('button',{name:'查看高负载记录',exact:true});await trigger.click()
    await expect(page.getByRole('dialog',{name:'高负载观测记录'})).toBeVisible()

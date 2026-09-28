@@ -1,3 +1,4 @@
+import {chooseOption} from './select'
 import {expect,test,type Page} from '@playwright/test'
 import {metrics,nodes} from '../scripts/fixtures.mjs'
 
@@ -23,13 +24,13 @@ test('short desktop starts with map expanded and retains region filtering after 
  const core=page.locator('.node-card .resources').first()
  await expect(core).toBeVisible()
  expect((await core.boundingBox())!.y).toBeLessThan(768)
- await map.getByRole('button',{name:'日本',exact:false}).first().click()
+ await chooseOption(page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true}),'JP')
  await expect(page.locator('.node-card')).toHaveCount(1)
  await map.getByRole('button',{name:'展开地图'}).click()
  await expect(map.getByRole('button',{name:'收起地图'})).toBeVisible()
  await expect(page.locator('.node-card')).toHaveCount(1)
  await map.getByRole('button',{name:'收起地图'}).click()
- await expect(map.getByRole('button',{name:'日本',exact:false}).first()).toHaveAttribute('aria-pressed','true')
+ await expect(page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true})).toHaveAttribute('data-value','JP')
 })
 
 test('desktop map and card density preferences survive reload while compact cards retain warnings',async({page})=>{
@@ -40,12 +41,12 @@ test('desktop map and card density preferences survive reload while compact card
  await page.reload()
  await expect(page.locator('.map-frame').getByRole('button',{name:'收起地图'})).toBeVisible()
  await page.locator('.map-frame').getByRole('button',{name:'收起地图'}).click()
- await page.getByRole('combobox',{name:'卡片密度'}).selectOption('detailed')
+ await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'detailed')
  await expect(page.locator('.node-card').first().locator('.card-billing')).toBeVisible()
  await page.reload()
  await expect(page.locator('.map-frame').getByRole('button',{name:'展开地图'})).toBeVisible()
- await expect(page.getByRole('combobox',{name:'卡片密度'})).toHaveValue('detailed')
- await page.getByRole('combobox',{name:'卡片密度'}).selectOption('compact')
+ await expect(page.getByRole('combobox',{name:'卡片密度'})).toHaveAttribute('data-value','detailed')
+ await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'compact')
  const card=page.locator('.node-card').first()
  await expect(card).toContainText('高负载')
  await expect(card).toContainText('即将到期')
@@ -94,15 +95,27 @@ test('mobile overview puts warnings before routine statistics and compresses emp
  await expect(page.locator('.ma-reminder-empty')).toContainText('暂无到期或流量提醒')
 })
 
-test('mobile facts align short values right and long values left without overflow',async({page})=>{
- await page.setViewportSize({width:390,height:844});await fixture(page,{longName:true});await page.goto('/node/1')
+for (const width of [320,390]) test(`mobile facts keep long values right aligned at ${width}px`,async({page,context})=>{
+ await page.setViewportSize({width,height:844});await fixture(page,{longName:true})
+ await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:nodes().map((node,index)=>index===0?{
+  ...node,os:'Debian GNU/Linux 12',kernel:'6.1.0-28-cloud-amd64-production',
+  cpu_name:'Intel Xeon Platinum 8488C Production Processor',
+  ipv6:'2001:0db8:85a3:0000:0000:8a2e:0370:7334',
+ }:node)}}))
+ await page.goto('/node/1')
  await page.getByRole('navigation',{name:'详情分区'}).getByRole('button',{name:'资料'}).click()
  const facts=page.locator('.detail-information')
- const short=facts.locator('.detail-facts > div').filter({hasText:'Agent'}).locator('dd')
- const long=facts.locator('.detail-facts > div').filter({hasText:'IPv6'}).locator('dd')
- await expect(short).toBeVisible();await expect(long).toBeVisible()
- expect(await short.evaluate(el=>getComputedStyle(el).textAlign)).toBe('right')
- expect(await long.evaluate(el=>getComputedStyle(el).textAlign)).toBe('left')
+ for(const label of ['Agent','系统','CPU','IPv6']){
+  const row=facts.locator('.detail-facts > div').filter({has:page.locator('dt').filter({hasText:new RegExp(`^${label}$`)})})
+  await expect(row.locator('dd')).toBeVisible()
+  await expect(row.locator('dd')).toHaveCSS('text-align','right')
+  await expect(row.locator('.fact-value')).toHaveCSS('text-align','right')
+  expect(await row.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true)
+ }
+ await context.grantPermissions(['clipboard-read','clipboard-write'])
+ await facts.getByRole('button',{name:'复制：IPv6',exact:true}).click()
+ await expect(facts.getByRole('status')).toHaveText('已复制')
+ expect(await page.evaluate(()=>navigator.clipboard.readText())).toBe('2001:0db8:85a3:0000:0000:8a2e:0370:7334')
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
 })
 

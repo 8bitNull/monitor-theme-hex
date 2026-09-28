@@ -16,7 +16,7 @@ function SheetSelect({value='',onChange,children,displayValue,className,...props
 }
 export function Select({sheet=false,value='',onChange,children,displayValue,className,...props}:Props){
  const [container,setContainer]=useState<Element|null>(null)
- const anchor=useCallback((el:HTMLButtonElement|null)=>{if(el)setContainer(el.closest('dialog')??el.closest('.next-theme'))},[])
+ const anchor=useCallback((el:HTMLButtonElement|null)=>{if(el)setContainer(el.closest('dialog, :fullscreen')??el.closest('.next-theme'))},[])
  const [pointerFocus,setPointerFocus]=useState(false)
  const options=optionsOf(children),current=String(value),selected=options.find(o=>o.value===current)
  if(sheet)return <SheetSelect {...props} value={value} onChange={onChange} displayValue={displayValue} className={className}>{children}</SheetSelect>

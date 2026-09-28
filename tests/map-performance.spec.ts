@@ -1,3 +1,4 @@
+import {chooseOption} from './select'
 import {test,expect} from './desktopTest'
 import {nodes} from '../scripts/fixtures.mjs'
 
@@ -9,6 +10,8 @@ test('enabled map loads while node data is pending',async({page})=>{
  await expect.poll(()=>mapRequested).toBe(true);expect(detailRequested).toBe(false)
  await expect(page.getByText('等待节点数据',{exact:true})).toBeVisible()
  await expect(page.locator('.map-frame .explorer-map')).toBeVisible()
+ await expect(page.locator('.region-atlas')).toBeVisible()
+ await expect(page.locator('.map-empty-state')).toHaveCount(0)
  finish();await expect(page.locator('.node-card')).toHaveCount(6);await expect(page.locator('.region-atlas')).toBeVisible()
 })
 
@@ -18,10 +21,10 @@ test('slow map keeps filters and view switching usable without layout jump',asyn
  await page.goto('/');const mapFrame=page.locator('.map-frame');await expect(page.locator('.home-region-bar')).toBeVisible();await expect(mapFrame).toBeVisible()
  await expect(page.locator('.map-placeholder')).toBeVisible();const before=await mapFrame.boundingBox()
  await page.clock.runFor(3100);await expect(page.getByText('地图加载较慢，节点列表仍可使用')).toBeVisible()
- await page.locator('.home-region-list').getByRole('button',{name:/日本/}).click();await expect(page.locator('.node-card')).toHaveCount(1)
+ await chooseOption(page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true}),'JP');await expect(page.locator('.node-card')).toHaveCount(1)
  await page.locator('.desktop-results-toolbar').getByLabel('表格视图',{exact:true}).click();await expect(page.locator('tbody tr')).toHaveCount(1)
  finish();await expect(page.locator('.region-atlas')).toBeVisible();expect((await page.locator('.map-frame').boundingBox())!.height).toBe(before!.height)
- await expect(page.locator('.home-region-list').getByRole('button',{name:/日本/})).toHaveAttribute('aria-pressed','true')
+ await expect(page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true})).toHaveAttribute('data-value','JP')
 })
 
 test('loading map can collapse while region filters remain available',async({page})=>{
@@ -42,7 +45,7 @@ test('loading map can collapse while region filters remain available',async({pag
 test('missing map chunk is contained and reload recovers while preserving filters',async({page})=>{
  await page.route('**/assets/WorldMap-*.js',r=>r.fulfill({status:404,body:'Not found'}));await page.goto('/')
  await expect(page.locator('.home-region-bar')).toBeVisible()
- await page.locator('.home-region-list').getByRole('button',{name:/日本/}).click()
+ await chooseOption(page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true}),'JP')
  await expect(page.getByText('地图暂时无法加载',{exact:true})).toBeVisible();await expect(page.locator('.node-card')).toHaveCount(1)
  await page.getByRole('button',{name:'重试地图',exact:true}).click()
  await expect(page.getByText('地图暂时无法加载',{exact:true})).toBeVisible();await expect(page.locator('.node-card')).toHaveCount(1)
@@ -65,8 +68,8 @@ test('metric updates leave geometry untouched; status, zoom and view switching s
  await page.locator('.map-land').evaluate(el=>{(window as any).landChanges=0;(window as any).mapLand=el;new MutationObserver(records=>{(window as any).landChanges+=records.length}).observe(el,{attributes:true,subtree:true,childList:true,characterData:true})})
  cpu=80;await page.clock.runFor(5200);expect(await page.evaluate(()=>(window as any).landChanges)).toBe(0)
  online=false;await page.clock.runFor(5200);await expect(page.locator('.map-land [data-region="JP"]')).toHaveAttribute('data-tone','offline')
- await page.getByLabel('放大地图',{exact:true}).click();await page.clock.runFor(32);const scale=await page.locator('.map-scale').innerText()
- await page.locator('.desktop-results-toolbar').getByLabel('表格视图',{exact:true}).click();await expect(page.locator('.map-scale')).toHaveText(scale);expect(await page.locator('.map-land').evaluate(el=>el===(window as any).mapLand)).toBe(true)
+ await page.getByRole('button',{name:'放大查看',exact:true}).click();await page.getByLabel('放大地图',{exact:true}).click();await page.clock.runFor(32);const scale=await page.locator('.map-scale').innerText()
+ await page.locator('.region-atlas').getByLabel('表格视图',{exact:true}).click();await expect(page.locator('.map-scale')).toHaveText(scale);expect(await page.locator('.map-land').evaluate(el=>el===(window as any).mapLand)).toBe(true)
  await page.getByLabel('世界节点分布地图',{exact:true}).focus();await page.keyboard.press('ArrowRight');await page.clock.runFor(32)
  await expect(page.locator('.map-land')).not.toHaveAttribute('transform',/translate\(-363 /)
 })
@@ -83,7 +86,7 @@ test('network timeout offers recovery without hiding nodes',async({page})=>{
 test('fullscreen retains view switching and exits cleanly',async({page})=>{
  await page.goto('/');await expect(page.locator('.home-region-bar')).toBeVisible()
  await expect(page.locator('.region-atlas')).toBeVisible()
- await page.getByLabel('全屏地图',{exact:true}).click()
+ await page.getByRole('button',{name:'放大查看',exact:true}).click()
  await expect(page.locator('.region-atlas')).toHaveClass(/is-fullscreen/)
  await page.locator('.region-atlas').getByLabel('表格视图',{exact:true}).click()
  await expect(page.locator('.region-atlas')).toHaveClass(/is-fullscreen/)

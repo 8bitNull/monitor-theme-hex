@@ -40,7 +40,8 @@
  .next-theme .mobile-app .ma-health-track{margin-top:12px}
  .ma-attention-actions,.ma-reminder-shortcuts{display:flex;gap:8px;margin:8px 0}
  .ma-attention-actions button,.ma-reminder-shortcuts button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:6px 12px;border-radius:10px;background:var(--card);font-size:12px}
- .ma-reminder-shortcuts button{flex:1;background:var(--ma-soft);color:var(--tone)}
+ .ma-hero .ma-attention-actions button{background:var(--muted)}
+ .ma-reminder-shortcuts button{flex:1;background:var(--card);color:var(--foreground)}
  .next-theme .mobile-app .ma-stat-grid strong{font-size:22px}
  .next-theme .mobile-app .ma-expand{justify-content:center;color:var(--tone);font-size:12px}
  .ma-app-info{text-align:center;padding:20px 10px 0;color:var(--muted-foreground);font-size:12px;line-height:1.9}

@@ -3,7 +3,7 @@
 .overview-heading .page-heading h1 {font-size:var(--text-page);font-weight:600}
 .summary-grid {border-color:var(--home-line);border-radius:14px}
 .summary-grid>div {padding:16px 20px;border-left-color:var(--home-line)}
-.summary-grid .text-xl,.summary-grid .summary-total {font-size:24px;font-weight:600;line-height:1.35;margin:6px 0}
+.summary-grid .text-xl,.summary-grid .summary-total {color:var(--foreground);font-size:24px;font-weight:600;line-height:1.35;margin:6px 0}
 .summary-grid .h-7 {height:12px;opacity:.55}
 .node-grid {gap:18px}
 .node-card {--card-pad:18px;border-color:var(--home-line);border-radius:14px;box-shadow:0 2px 8px #13243a04;transition:border-color .16s ease,box-shadow .16s ease}

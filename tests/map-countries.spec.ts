@@ -18,7 +18,7 @@ test('all mapped regions render and France filters its nodes',async({page})=>{
   await expect(map.locator(`.map-land [data-region="${code}"]`)).toHaveAttribute('data-tone','good')
  }
  for(const code of ['GF','GI','TV','CC','CX','YT'])await expect(map.locator(`.map-cluster[data-region="${code}"]`)).toBeAttached()
- const france=map.locator('.map-land [data-region="FR"]')
+ const france=map.locator('.map-cluster[data-region="FR"][role="button"]')
  await france.focus()
  await france.press('Enter')
  await expect(france).toHaveAttribute('aria-pressed','true')

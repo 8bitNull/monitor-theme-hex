@@ -1,0 +1,33 @@
+/* A quiet overview; navigation controls are reserved for the expanded map. */
+@media (min-width:721px) {
+ .map-frame .region-atlas {display:block;isolation:isolate}
+ .map-frame .region-atlas .explorer-stage {position:absolute;inset:0;height:100%;border-radius:inherit;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--tone) 3%,var(--card)),var(--card))}
+ .map-frame .region-atlas:not(.is-fullscreen) .explorer-stage>svg {cursor:default;touch-action:pan-y}
+ .map-frame .region-atlas .map-grid,.map-frame .region-atlas .map-land {pointer-events:none}
+ .map-frame .region-atlas .map-graticule {fill:none;stroke:color-mix(in srgb,var(--tone) 9%,transparent);stroke-width:.65;vector-effect:non-scaling-stroke}
+ .map-frame .region-atlas .map-land path {fill:color-mix(in srgb,var(--muted-foreground) 14%,var(--card));stroke:color-mix(in srgb,var(--muted-foreground) 25%,var(--card));stroke-width:.65}
+ .map-frame .region-atlas .map-land .populated-region {fill:color-mix(in srgb,var(--tone) 15%,var(--card))}
+ .map-frame .region-atlas .map-land .populated-region[data-tone=mixed] {fill:color-mix(in srgb,var(--warn) 15%,var(--card))}
+ .map-frame .region-atlas .map-land .populated-region[data-tone=offline] {fill:color-mix(in srgb,var(--destructive) 12%,var(--card))}
+ .map-frame .region-atlas .map-land .populated-region[data-selected=true] {fill:color-mix(in srgb,var(--tone) 26%,var(--card));stroke:var(--tone)}
+ .map-frame .region-atlas[data-filtered=true] .map-cluster[aria-pressed=false] {opacity:.6}
+ .map-frame .region-atlas[data-filtered=true] .map-cluster:hover,.map-frame .region-atlas[data-filtered=true] .map-cluster:focus-visible {opacity:1}
+ .map-frame .region-atlas .map-cluster {--marker-color:var(--tone)}
+ .map-frame .region-atlas .map-cluster[data-tone=offline] {--marker-color:var(--destructive)}
+ .map-frame .region-atlas .map-cluster[data-tone=mixed] {--marker-color:var(--warn)}
+ .map-frame .region-atlas .map-cluster .region-ring {fill:var(--card);fill-opacity:.7;stroke:var(--marker-color);stroke-width:1;filter:none}
+ .map-frame .region-atlas .map-cluster .region-core {fill:var(--marker-color);stroke:none;filter:none}
+ .map-frame .region-atlas .map-cluster[aria-pressed=true] .region-ring,
+ .map-frame .region-atlas .map-cluster:focus-visible .region-ring {stroke-width:2;fill-opacity:1;filter:drop-shadow(0 0 2px var(--marker-color))}
+ .map-frame .region-atlas .map-cluster .small-region-hit {fill:transparent;stroke:none;filter:none}
+ .map-region-tooltip,.map-open-error {position:absolute;left:12px;bottom:12px;max-width:calc(100% - 24px);padding:7px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card);color:var(--foreground);font-size:12px;overflow-wrap:anywhere;pointer-events:none}
+ .map-empty-state {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;padding:10px 14px;max-width:calc(100% - 32px);width:max-content;border-radius:5px;background:var(--card);color:var(--muted-foreground);font-size:13px;line-height:1.6;text-align:center;pointer-events:none}
+ .map-region-tooltip {bottom:auto;max-width:calc(100% - 16px);z-index:4}
+ .map-frame .region-atlas:fullscreen {display:block;width:100vw;height:100dvh}
+ .map-frame .region-atlas:fullscreen .explorer-stage {bottom:64px;height:auto}
+ .map-frame .region-atlas:fullscreen .section-heading {background:var(--card);max-width:calc(100% - 260px)}
+ .map-frame .region-atlas:fullscreen .map-scale {bottom:12px}
+ .map-expanded-footer {position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;gap:16px;padding:10px 16px;min-height:64px;border-top:1px solid var(--border);background:var(--card)}
+ .map-expanded-footer svg {width:17px;height:17px;max-height:none;margin:0}
+ .map-expanded-footer>span {margin-left:auto;font-size:12px;color:var(--muted-foreground)}
+}

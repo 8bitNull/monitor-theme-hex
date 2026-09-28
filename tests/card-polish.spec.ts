@@ -22,7 +22,14 @@ test('card keeps stable placeholders while live metrics and probe records load',
  })
  expect(loading.metric).toBe('38px')
  expect(loading.route).toBe('68px')
- expect(loading.probe).toBeGreaterThanOrEqual(65)
+ // A single desktop route uses two 10px skeleton lines with a 6px gap.
+ expect(loading.probe).toBeGreaterThanOrEqual(26)
+ for(const line of await card.locator('.ping-loading-line').all()){
+  const bounds=(await line.boundingBox())!,container=(await card.locator('.ping-loading').boundingBox())!
+  expect(bounds.height).toBeGreaterThanOrEqual(10)
+  expect(bounds.y).toBeGreaterThanOrEqual(container.y)
+  expect(bounds.y+bounds.height).toBeLessThanOrEqual(container.y+container.height)
+ }
  expect(loading.overflow).toBeFalsy()
  finishProbe?.()
  await expect(card.locator('.ping-loading')).toHaveCount(0)
