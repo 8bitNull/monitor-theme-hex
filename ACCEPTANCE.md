@@ -195,3 +195,10 @@ npm run test:e2e
 - 修正返回列表时对滚出视口的标题坐标的依赖，验证宽度切换后恢复节点位置。稳定性测试先等待异步卡片布局稳定，再测量返回偏移；重试测试去除会改变页面可见性/布局的中途全页截图。
 - README、主题预览及分端截图由最终构建配合本地演示数据重新生成。原始线上巡检快照、历史临时截图与私有 docs 继续留在本地，不作为发布材料。
 - 手机快捷方式完成图标尺寸、浏览器链接和元数据验证，尚无 iOS/Android 实机安装验收。发布 GitHub 安装包不等于部署线上网站。
+
+## Desktop expiry and usage reminders (2026-09-28)
+
+- Desktop overview heading shows a reminder entry only for expired/within-7-day nodes or nodes at >=90% of a positive traffic quota. Counts are unique per node; the list shows both reasons when applicable and opens the existing node detail route. Desktop and mobile share the same predicates; no new history requests are introduced.
+- `npm test` (946 literal translation calls), `npm run lint`, `npm run build` and diff whitespace checks passed. Targeted Chromium regression: 31 passed across desktop-reminders, mobile-app and settings-layout. After correcting a global CSS override of the entry's touch target, the 8 reminder tests passed again on the rebuilt output. The regression was reproduced at 36px before the 44px fix; assertions were not relaxed.
+- Eight local screenshots cover 1440px light/Chinese, 900px dark/English, 721px light/English and 390px mobile/Chinese. Verified focus return, Escape, detail navigation, live resolution of reminders, long names, layout resize and no-warning absence. Independent review and scoped style follow-up approved.
+- Evidence stays local at `artifacts/desktop-reminders/`. This is targeted Chromium coverage, not a new full-suite or Safari/physical-device certification. No release/version bump or deployment accompanies this change.

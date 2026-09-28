@@ -1,3 +1,4 @@
+import {expiring,quotaWarning} from '@/lib/billingReminders'
 import {useCallback,useEffect,useLayoutEffect,useRef,useState,useSyncExternalStore,type Dispatch,type SetStateAction} from 'react'
 import {ArrowLeft,ArrowDown,ArrowUp,BarChart3,ChevronRight,LayoutGrid,Search,Server,Settings2,SlidersHorizontal,X} from 'lucide-react'
 import type {Node} from '@/lib/api'
@@ -31,8 +32,6 @@ type Filter={status:string;region:string;group:string;sort:string}
 const empty:Filter={status:'all',region:'all',group:'all',sort:'default'}
 function readMobileBrowse(){try{const value=JSON.parse(sessionStorage.getItem('hex-mobile-browse')||'{}');return {query:typeof value.query==='string'?value.query:'',filter:{...empty,...value.filter}}}catch{return {query:'',filter:empty}}}
 const regionLabel=(code:string)=>code===UNKNOWN_REGION?tr('未知地区'):countryName(code)
-const expiring=(n:Node)=>{const days=daysUntil(n.expires_at);return days!==null&&days<=7}
-const quotaWarning=(n:Node)=>n.traffic_limit>0&&trafficUsage(n).value/n.traffic_limit>=.9
 function matches(n:Node,f:Filter,query:string){return (f.status==='all'||f.status==='online'&&n.online||f.status==='offline'&&!n.online||f.status==='high'&&(liveMetrics(n)?.cpu??0)>=85||f.status==='expiry'&&expiring(n)||f.status==='quota'&&quotaWarning(n))&&(f.region==='all'||regionKey(n.country)===f.region)&&(f.group==='all'||(n.group??'')===f.group.slice(1))&&`${n.name} ${n.group??''} ${n.os} ${regionLabel(regionKey(n.country))}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())}
 function Meter({label,value}:{label:string;value:number|null}){return <div className="ma-meter"><div><span>{label}</span><b>{value===null?'—':value.toFixed(1)}{value!==null&&<small>%</small>}</b></div><div className="ma-track" data-hot={value!==null&&value>=85}><i style={{width:`${Math.max(0,Math.min(100,value??0))}%`}}/></div></div>}
 function CompactNode({node,prefs,detailed,onOpen}:{node:Node;prefs:Preferences;detailed:boolean;onOpen:(id:number,section?:'latency',probe?:number)=>void}){

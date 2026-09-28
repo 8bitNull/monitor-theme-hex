@@ -1,0 +1,23 @@
+/* Desktop account reminders occupy the existing overview heading, not another tile. */
+.overview-heading:has(.billing-reminders) {align-items:center}
+.billing-reminders {margin-left:auto}
+.billing-reminders .billing-reminder-trigger {display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius-control);background:var(--card);color:var(--muted-foreground);font-size:13px}
+.billing-reminder-trigger>b {display:grid;place-items:center;min-width:22px;min-height:22px;padding:0 5px;border-radius:5px;background:color-mix(in srgb,var(--warn) 10%,var(--card));color:var(--warn);font-variant-numeric:tabular-nums;font-size:12px;font-weight:600}
+.billing-reminder-trigger:hover {border-color:var(--tone);color:var(--foreground)}
+.billing-reminder-dialog {position:fixed;inset:0;margin:auto;width:min(480px,calc(100vw - 40px));max-height:calc(100dvh - 64px);padding:0;border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--card);color:var(--foreground);box-shadow:0 20px 60px #0003;overflow:auto}
+.billing-reminder-dialog::backdrop {background:#0005}
+.billing-reminder-heading {display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 12px 0 20px}
+.billing-reminder-heading h2 {margin:0;font-size:16px;font-weight:600}
+.billing-reminder-heading button {display:grid;place-items:center;flex-shrink:0;width:44px;height:44px;border-radius:var(--radius-control);color:var(--muted-foreground)}
+.billing-reminder-heading button:hover {background:var(--muted);color:var(--foreground)}
+.billing-reminder-note {margin:4px 20px 16px;font-size:12px;line-height:1.6;color:var(--muted-foreground)}
+.billing-reminder-list {max-height:60dvh;overflow:auto;padding:0 12px 12px}
+.billing-reminder-dialog .billing-reminder-node {display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;min-height:64px;padding:12px 8px;border-radius:0;border-top:1px solid var(--border);text-align:left}
+.billing-reminder-node:hover {background:var(--muted)}
+.billing-reminder-node>span {min-width:0}
+.billing-reminder-node>svg {flex-shrink:0;color:var(--muted-foreground)}
+.billing-reminder-node strong {display:block;font-size:14px;font-weight:600;line-height:1.5;overflow-wrap:anywhere}
+.billing-reminder-reasons {display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:4px;color:var(--warn);font-size:12px;line-height:1.5;font-variant-numeric:tabular-nums}
+.billing-reminder-reasons [data-expired=true] {color:var(--destructive)}
+.billing-reminder-empty {padding:16px 8px;color:var(--muted-foreground);font-size:13px}
+.billing-reminder-trigger:focus-visible,.billing-reminder-dialog button:focus-visible {outline:2px solid var(--ring);outline-offset:-2px}

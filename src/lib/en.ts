@@ -1,4 +1,6 @@
 export const english: Record<string, string> = {
+"到期与用量 · {0} 个节点需要关注":"Expiry and usage · {0} nodes need attention",
+"已到期或 7 天内到期，或流量已使用至少 90%。":"Expired, expiring within 7 days, or at least 90% of the traffic quota used.",
 "查看全球":"View world",
 "{0} 个地区":"{0} regions",
 "方向键平移，加减键缩放，Home 查看全球":"Arrow keys to pan, plus/minus to zoom, Home to view the world",

@@ -1,3 +1,4 @@
+import {BillingReminders} from './components/BillingReminders';
 import {MapPanel} from './components/MapPanel';
 import {MobileApp} from './components/MobileApp';
 import {useMobilePreferences} from './lib/mobilePreferences';
@@ -295,6 +296,7 @@ export default function App({ siteDefaults = defaults }: {
             {[0, 1, 2].map((i) => (<div key={i} className="loading-card" aria-hidden="true"><Skeleton className="loading-title"/><div className="loading-metrics">{[0,1,2,3].map(n=><Skeleton key={n}/>)}</div><Skeleton className="loading-speed"/><Skeleton className="loading-route"/></div>))}
           </div></>) : (<>
             <section className="overview-heading"><div className="page-heading"><h1>{tr("服务器总览")}</h1><span className={`live-label connection-${connection}`} role="status" title={[{connecting:tr("正在连接"),realtime:tr("实时连接"),polling:tr("轮询更新"),disconnected:tr("连接中断 \u00B7 数据可能已过期")}[connection],lastUpdated ? new Date(lastUpdated).toLocaleString(locale()) : tr("等待首次数据")].join(" · ")}><Radio size={14}/><span>{{ connecting: tr("正在连接"), realtime: tr("实时连接"), polling: tr("轮询更新"), disconnected: tr("连接中断 \u00B7 数据可能已过期") }[connection]}</span></span></div>
+            <BillingReminders nodes={sorted} onOpen={id=>go(id)}/>
             <p className="update-time">{lastUpdated ? tr("最后更新：{0}", new Date(lastUpdated).toLocaleString(locale())) : tr("等待首次数据")}</p></section>
             <Summary status={status} onStatus={setStatus} onCollapse={summaryCollapsed=>setPrefs(prev=>({...prev,summaryCollapsed}))} nodes={sorted} prefs={prefs} loadAlerts={loadAlerts} onAlert={event=>go(event.nodeId,"",`?eventStart=${event.start}&eventEnd=${event.end??event.last}`)}/>
             <>{compactViewport&&<div className="mobile-node-toolbar"><div className="mobile-toolbar-main"><RegionPicker nodes={sorted} region={region} onChange={setRegion}/></div></div>}</>
