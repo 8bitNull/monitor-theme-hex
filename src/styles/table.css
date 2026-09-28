@@ -104,6 +104,10 @@
  .table-scroll {max-height:none}
  .node-table th {position:sticky;top:0;z-index:3}
  .node-table th:first-child {z-index:4}
+ .next-theme .node-table[data-mobile=false] :is(th,td)[data-group-start=true] {border-left:1px solid var(--border)}
+ /* The sticky name column already borders the next column. */
+ .next-theme .node-table[data-mobile=false] :is(th,td)[data-column=name] {border-right:0}
+ .next-theme .node-table[data-mobile=false] .table-speed>span {font-variant-numeric:tabular-nums}
 }
 @media(max-width:720px) {
  .table-scroll {scrollbar-gutter:auto}
