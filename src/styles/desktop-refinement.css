@@ -118,3 +118,12 @@
   .next-theme .summary-grid > div > .mt-auto { margin-top: 0; padding-top: 0; }
   .next-theme .summary-grid .h-7 { height: 8px; }
 }
+
+@media (min-width: 721px) {
+  .next-theme .node-card[data-card-density=compact] .node-heading { padding-block: 10px 8px; }
+  .next-theme .node-card[data-card-density=compact] .resources { column-gap: 20px; row-gap: 6px; padding-bottom: 6px; }
+  .next-theme .node-card[data-card-density=compact] .card-network { padding-block: 4px; }
+  .next-theme .node-card[data-card-density=compact] .speed-indicators strong { line-height: 1.25; font-variant-numeric: tabular-nums; }
+  .next-theme .node-card[data-card-density=compact] .resource small { line-height: 1.35; }
+  .next-theme .node-card[data-card-density=compact] .node-secondary-toggle { min-height: 32px; margin-block: 0 4px; }
+}
