@@ -64,3 +64,37 @@ test('English last-success status fits a 320px detail toolbar',async({page})=>{
  expect(text.y).toBeGreaterThanOrEqual((await toolbar.locator('.detail-ranges').boundingBox())!.y+ranges.height)
  expect(await toolbar.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
 })
+
+for(const width of [900,1199])test(`failed refresh remains visible on medium desktop at ${width}px`,async({page})=>{
+ await page.setViewportSize({width,height:844})
+ let fail=false
+ await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:[nodes()[0]]}}))
+ await page.route('**/api/nodes/*/metrics?*',route=>route.fulfill(fail?{status:503}:{json:metrics()}))
+ await page.goto('/node/1')
+ const toolbar=page.locator('.detail-chart-toolbar'),status=toolbar.locator('.detail-update')
+ await expect(status).toContainText(/更新于 \d{2}:\d{2}:\d{2}/)
+ const normalHeight=(await toolbar.boundingBox())!.height
+ for(const tab of ['resources','latency'] as const){
+  if(tab==='latency')await page.getByRole('button',{name:'网络延迟',exact:true}).click()
+  fail=true
+  await toolbar.getByRole('button',{name:'刷新历史'}).click()
+  await expect(status).toHaveAttribute('data-failed','true')
+  await expect(status).toBeVisible()
+  await expect(status).toContainText(/上次成功更新：\d{2}:\d{2}:\d{2}/)
+  const bar=(await toolbar.boundingBox())!,message=(await status.boundingBox())!
+  const controls=await toolbar.locator('.detail-tabs,.detail-ranges,.detail-refresh').all()
+  for(const control of controls){
+   const box=(await control.boundingBox())!
+   expect(message.y).toBeGreaterThanOrEqual(box.y+box.height)
+  }
+  expect(message.x).toBeGreaterThanOrEqual(bar.x)
+  expect(message.x+message.width).toBeLessThanOrEqual(bar.x+bar.width)
+  expect(message.y+message.height).toBeLessThanOrEqual(bar.y+bar.height)
+  expect(await toolbar.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
+  fail=false
+  await toolbar.getByRole('button',{name:'刷新历史'}).click()
+  await expect(status).toHaveAttribute('data-failed','false')
+  await expect(status).toBeHidden()
+  expect((await toolbar.boundingBox())!.height).toBe(normalHeight)
+ }
+})

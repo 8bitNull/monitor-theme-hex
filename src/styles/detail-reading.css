@@ -373,7 +373,26 @@ main:has(>.node-detail)>.detail-navigation {margin-bottom:4px}
 .detail-chart-toolbar .detail-refresh {display:grid;place-items:center;flex:0 0 40px;width:40px;min-width:40px;height:40px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--tone)}
 .detail-chart-toolbar .detail-refresh:hover {background:var(--muted)}
 
+@media(min-width:721px){
+ .next-theme .detail-chart-toolbar .detail-tabs button {font-weight:600}
+ .next-theme .detail-chart-toolbar .detail-tabs button[aria-pressed=false] {color:var(--muted-foreground)}
+ .next-theme .detail-chart-toolbar .detail-tabs button[aria-pressed=true] {color:var(--foreground)}
+ .next-theme .detail-chart-toolbar .detail-resource-metric-desktop button[aria-pressed=true] {background:var(--tone-soft);color:var(--tone);box-shadow:none}
+ .next-theme .detail-chart-toolbar .detail-ranges button {font-variant-numeric:tabular-nums;font-weight:400}
+ .next-theme .detail-chart-toolbar .detail-ranges button[aria-pressed=true] {font-weight:600;color:var(--foreground)}
+ .next-theme .detail-chart-toolbar :is(button,summary):focus-visible {outline:2px solid var(--tone);outline-offset:2px}
+}
+@media(min-width:1200px){
+ .next-theme .detail-chart-toolbar .detail-tabs button {font-size:13px}
+ .next-theme .detail-chart-toolbar .detail-resource-metric-desktop button {font-size:12px}
+ .next-theme .detail-chart-toolbar .detail-ranges button {font-size:12px}
+}
+
 @media(min-width:1200px){.detail-chart-toolbar .detail-update {display:block}}
+@media(min-width:900px) and (max-width:1199px){
+ .next-theme .detail-chart-toolbar:has(.detail-update[data-failed=true]) {flex-wrap:wrap}
+ .next-theme .detail-chart-toolbar .detail-update[data-failed=true] {display:block;order:10;flex:0 0 100%;margin:0;padding:0;white-space:normal}
+}
 @media(min-width:601px) and (max-width:1199px){.detail-resource-metric-desktop button span {display:none}.detail-resource-metric-desktop button {min-width:30px;justify-content:center;padding-inline:4px}}
 @media(max-width:600px){
  .detail-chart-toolbar {gap:1px;min-height:44px;padding-inline:3px}
