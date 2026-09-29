@@ -4,6 +4,7 @@ import geometry from '@/data/map-paths.json'
 import {groupRegions} from '@/lib/groups'
 import {countryName} from '@/lib/regionNames'
 import {boundCamera,immersiveMobileMap,placeMobileMapLabels,worldMobileMap,zoomMobileMap,type MapCamera} from '@/lib/mobileMap'
+import {mobileMapLabel} from '@/lib/mobileMapLabel'
 import {tr} from '@/lib/i18n'
 import type {Node} from '@/lib/api'
 
@@ -59,11 +60,11 @@ export default function MobileMapCanvas({nodes,pending,region,camera,onCamera,on
  const zoom=(factor:number)=>publish(zoomMobileMap(live.current,factor,0,0,size.width))
  const world=()=>publish(worldMobileMap(size.width,freeHeight+48))
  const screenPoints=points.map(r=>({...r,x:center.x+(r.point[0]-view.x)*scale,y:center.y+(r.point[1]-view.y)*scale})).filter(p=>p.x>=22&&p.x<=size.width-22&&p.y>=top+22&&p.y<=size.height-bottom-70)
- const names=new Map(screenPoints.map(p=>[p.code,countryName(p.code)]))
+ const names=new Map<string,string>()
  const labelAnchors=[...screenPoints].sort((a,b)=>Number(b.code===region)-Number(a.code===region)).filter(p=>view.k>1.3||p.code===region).map(p=>{
-  const name=names.get(p.code)!,short=name.length>18?name.slice(0,17)+'…':name
-  names.set(p.code,short)
-  return {code:p.code,x:p.x,y:p.y,width:Math.min(150,22+Array.from(short).reduce((sum,c)=>sum+(c.charCodeAt(0)>255?12:7),0))}
+  const label=mobileMapLabel(countryName(p.code),tr('{0}/{1} 在线',p.online,p.total),p.code===region,Math.min(190,size.width-24))
+  names.set(p.code,label.text)
+  return {code:p.code,x:p.x,y:p.y,width:label.width}
  })
  const labels=placeMobileMapLabels(labelAnchors,size.width,top,size.height-bottom-66)
  const choose=(code:string)=>onRegion(region===code?'all':code)
@@ -116,7 +117,7 @@ export default function MobileMapCanvas({nodes,pending,region,camera,onCamera,on
      <circle className="mm-hit" r={22}/><circle className="mm-halo" r={20}/><circle className="mm-ring" r={9}/><circle className="mm-core" r={4}/>
     </g>
    })}
-   {labels.map(l=><g className="mm-region-label" key={l.code} transform={`translate(${l.x} ${l.y})`} aria-hidden="true"><rect width={l.width} height={28} rx={9}/><text x={11} y={18}>{names.get(l.code)}</text></g>)}
+   {labels.map(l=><g className="mm-region-label" key={l.code} data-region={l.code} transform={`translate(${l.x} ${l.y})`} aria-hidden="true"><rect width={l.width} height={28} rx={9}/><text x={11} y={18}>{names.get(l.code)}</text></g>)}
   </svg>
   <span id="mm-keyboard-help" className="sr-only">{tr('方向键平移，加减键缩放，Home 查看全球')}</span>
   <div className="mm-vignette" aria-hidden="true"/>

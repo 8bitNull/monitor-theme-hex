@@ -721,6 +721,7 @@ export const english: Record<string, string> = {
   "个地区 ·": " regions · ",
   "世界节点分布地图": "World node distribution map",
   "{0}：{1} / {2} 在线": "{0}: {1} / {2} online",
+  "{0}/{1} 在线": "{0}/{1} online",
   "地区节点详情": "Region node details",
   "筛选此地区": "Filter this region",
   "绿色：全部在线 · 橙色：部分离线 · 灰色：全部离线。未知地区单独列出；小地区可从列表选择。标记仅代表国家或地区，不是机房精确位置。": "Green: all online · Orange: partly offline · Gray: all offline. Unknown regions are listed separately; small regions can be selected from the list. Markers represent countries or regions, not precise datacenter locations.",
