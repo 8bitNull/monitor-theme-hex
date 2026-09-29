@@ -1,5 +1,15 @@
 # HEX 检查说明
 
+## v0.3.6 上线后最终全量复核（2026-09-29）
+
+- 被测产品提交为 `c0db069`，正式站 `https://dash.688600.xyz/` 页脚0.3.6；实际加载的5个JS/CSS资源SHA-256与已交付正式包一致。本轮未改产品代码、版本或安装包。
+- npm test（955处翻译调用）、lint、build通过；最终完整Chromium回归453项，**436通过、17原有跳过、0失败**，用时15.2分钟。原始日志 `artifacts/release-036-final-verification/full-chromium.log`；该结果补齐前一阶段尚无最终全量通过记录的缺口，旧阶段首轮失败记录仍保留。
+- 三引擎兼容首轮与全量并行执行时157通过、2失败：Chromium刷新详情后返回出现URL已回主页但DOM仍为详情；WebKit前进后设置页滚动为0。相关两项在两引擎单独复查4/4通过；全量完成后不改代码、不改断言，顺序运行完整三引擎集 **159/159通过**（4.7分钟）。精确时序原因未证实，不能据此宣称修复了导航根因。日志 `compat.log`、`nav-isolated.log`、`compat-sequential.log`。
+- 线上短时观察确认WebSocket前台更新及667×375／390×844四分区横竖切换无横溢。首次恢复脚本过严地只允许WebSocket恢复，25秒等待超时，但日志已有HTTP轮询200。补查按产品明确支持的HTTP回退验证：断网后显示过期并隐藏实时值，恢复约5033ms后重新显示，90秒会话内后续11次HTTP200更新、历史刷新成功、零pageerror。保留原始脚本失败，未改产品代码或过滤错误；见 `online-assessment.md`、`recovery-results.json`。
+- 当前环境切换真实标签页后visibilityState仍为visible，所以没有把它记作真实后台验收。三个引擎的session-continuity用例已覆盖模拟隐藏恢复去重及模拟一小时轮询；模拟时钟不等同一小时实测。实体iPhone／Android、系统后台冻结／杀进程、软键盘与安全区仍需实机确认。
+- 全部证据位于 `artifacts/release-036-final-verification/`；本轮只追加验收说明，原暂存私有文档逐字节保留。没有推送仓库或发布远程Release。
+
+
 ## v0.3.6 正式包验收（2026-09-29）
 
 - 产品代码来自已审查的 `2ac1207` 详情优化分支；本轮只更新版本、README、发布说明与本节，不改产品行为。package.json、package-lock根版本及theme.json统一为0.3.6。
