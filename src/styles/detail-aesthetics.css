@@ -45,6 +45,12 @@
  .node-detail .detail-toolbar-actions{flex-basis:100%;justify-content:flex-end}
 }
 @media (min-width:1280px){.node-detail .desktop-detail-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (min-width:900px){
+ .node-detail .detail-information .detail-fact-groups{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}
+ .node-detail .detail-information .detail-facts>div{grid-template-columns:96px minmax(0,1fr);min-height:24px;align-items:start}
+ .node-detail .detail-information .detail-facts dd{min-width:0;text-align:right;line-height:1.5;overflow-wrap:anywhere}
+ .node-detail .detail-information .detail-facts .fact-value{min-width:0;text-align:right;overflow-wrap:anywhere}
+}
 @media (max-width:720px){
  .next-theme .node-detail .ma-panel,.next-theme .node-detail .detail-history{border-radius:16px}
  .next-theme .node-detail .ma-big-grid{gap:20px 16px;align-items:start}

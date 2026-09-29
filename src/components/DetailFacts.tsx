@@ -46,7 +46,7 @@ export function DetailFacts({node,mode,compact,onMode}:{node:Node;mode:Preferenc
      <dl className="detail-facts">
        <Fact copy label="IPv4" value={node.ipv4}/><Fact copy label="IPv6" value={node.ipv6}/><Fact label={tr("流量重置")} value={Number.isInteger(node.traffic_reset_day) && node.traffic_reset_day >= 1 && node.traffic_reset_day <= 31 ? tr("每月 {0} 日",node.traffic_reset_day) : tr("未知")}/>
        <Fact label={tr("累计流量")} value={`↑ ${bytes(node.total_tx)} · ↓ ${bytes(node.total_rx)}`}/>
-       <Fact label={tr("今日流量")} value={`↓ ${bytes(node.day_rx)} · ↑ ${bytes(node.day_tx)}`}/>
+       <Fact label={tr("今日流量")} value={`↑ ${bytes(node.day_tx)} · ↓ ${bytes(node.day_rx)}`}/>
      </dl>
    </FactSection>
  </div></div>;
