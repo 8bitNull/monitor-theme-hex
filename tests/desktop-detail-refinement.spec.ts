@@ -16,7 +16,13 @@ test('history preview exposes an action on keyboard focus',async({page})=>{
  await detailFixture(page)
  await page.goto('/node/1')
  const button=page.getByRole('button',{name:'查看硬盘历史趋势',exact:true})
- await button.focus()
+ let tabs=0
+ while(tabs<80 && !await button.evaluate(element=>document.activeElement===element)){
+  await page.keyboard.press('Tab')
+  tabs++
+ }
+ expect(tabs).toBeGreaterThan(1)
+ await expect(button).toBeFocused()
  await expect(button.locator('.resource-trend-action')).toHaveCSS('opacity','1')
  await expect(button.locator('.resource-trend-action')).toHaveText('查看硬盘历史趋势')
  await page.keyboard.press('Enter')

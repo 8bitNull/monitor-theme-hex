@@ -99,3 +99,33 @@ for(const width of [900,1199])test(`failed refresh remains visible on medium des
   expect(await toolbar.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
  }
 })
+
+test('English failed update stays clear of controls at 1200px',async({page})=>{
+ await page.setViewportSize({width:1200,height:844})
+ await page.addInitScript(()=>localStorage.setItem('monitor-next-language','en'))
+ let fail=false
+ await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:[nodes()[0]]}}))
+ await page.route('**/api/nodes/*/metrics?*',route=>route.fulfill(fail?{status:503}:{json:metrics()}))
+ await page.goto('/node/1')
+ const toolbar=page.locator('.detail-chart-toolbar')
+ await expect(toolbar.locator('.detail-update')).toContainText('Updated')
+ for(const tab of ['resources','latency'] as const){
+  if(tab==='latency')await page.getByRole('button',{name:'Network latency',exact:true}).click()
+  fail=true
+  await toolbar.getByRole('button',{name:'Refresh history'}).click()
+  const status=toolbar.locator('.detail-update')
+  await expect(status).toHaveAttribute('data-failed','true')
+  await expect(status).toContainText('Last successful update:')
+  const bounds=await toolbar.evaluate(element=>{
+   const rect=(selector:string)=>element.querySelector(selector)!.getBoundingClientRect()
+   const status=rect('.detail-update'),range=rect('.detail-ranges'),refresh=rect('.detail-refresh'),bar=element.getBoundingClientRect()
+   const overlaps=(a:DOMRect,b:DOMRect)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top
+   return {statusInside:status.left>=bar.left&&status.right<=bar.right&&status.bottom<=bar.bottom,
+    rangeOverlap:overlaps(status,range),refreshOverlap:overlaps(status,refresh),overflow:element.scrollWidth>element.clientWidth||document.documentElement.scrollWidth>innerWidth}
+  })
+  expect(bounds).toEqual({statusInside:true,rangeOverlap:false,refreshOverlap:false,overflow:false})
+  fail=false
+  await toolbar.getByRole('button',{name:'Refresh history'}).click()
+  await expect(status).toHaveAttribute('data-failed','false')
+ }
+})

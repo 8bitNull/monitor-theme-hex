@@ -53,8 +53,18 @@ for(const width of [768,800,850,899,900,1024,1440,1920])test(`detail reading and
    const all=await page.locator('.detail-ranges button').evaluateAll(buttons=>buttons.map(button=>{const box=button.getBoundingClientRect();return {top:box.top,x:box.x,right:box.right}}));expect(new Set(all.map(box=>Math.round(box.top))).size).toBe(1)
    expect(all.length).toBe(tab==='resources'?4:3);if(tab==='resources')expect(all[3].x).toBeGreaterThan(all[2].x)
    expect(refresh.x+refresh.width).toBeLessThanOrEqual(width+1)
-   if(width<900){await expect(page.locator('.detail-tabs button>span')).toHaveCount(2);for(const span of await page.locator('.detail-tabs button>span').all())await expect(span).toBeVisible();if(tab==='resources'){await expect(page.locator('.detail-resource-metric-mobile')).toBeVisible();await expect(page.locator('.detail-resource-metric-desktop')).toBeHidden()}}
-   else if(tab==='resources')await expect(page.locator('.detail-resource-metric-desktop')).toBeVisible()
+   if(width<900){await expect(page.locator('.detail-tabs button>span')).toHaveCount(2);for(const span of await page.locator('.detail-tabs button>span').all())await expect(span).toBeVisible()}
+   if(tab==='resources'){
+    await expect(page.locator('.detail-resource-metric-mobile')).toBeHidden()
+    const metrics=toolbar.locator('.detail-resource-metric-desktop')
+    await expect(metrics).toBeVisible()
+    for(const button of await metrics.locator('button').all()){
+     await expect(button.locator('span')).toBeVisible()
+     const box=(await button.boundingBox())!
+     expect(box.width).toBeGreaterThanOrEqual(44)
+     expect(box.height).toBeGreaterThanOrEqual(44)
+    }
+   }
    expect(tabs.x).toBeGreaterThanOrEqual(selection.x-1)
    expect(await page.locator('.detail-history').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
   }
