@@ -47,6 +47,9 @@
  .node-detail .detail-chart-toolbar .detail-update{display:block;margin:0;padding:0}
  .node-detail .detail-chart-toolbar .detail-update[data-failed=true]{color:var(--warn);white-space:normal;overflow-wrap:anywhere}
  .node-detail .detail-chart-toolbar .detail-ranges{order:-1;margin:0}
+ .dark .node-detail .detail-latency-band .recharts-area-area{fill-opacity:.12}
+ .dark .node-detail .detail-latency-line .recharts-line-curve{stroke-width:2px}
+ .dark .node-detail .latency-band-key{opacity:.12}
 }
 @media (min-width:721px) and (max-width:1199px){
  .node-detail .detail-toolbar-selection{flex-basis:100%}
