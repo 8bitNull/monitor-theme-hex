@@ -13,22 +13,20 @@ for(const width of [768,800])test(`compact desktop history status and controls f
   if(tab==='latency')await page.getByRole('button',{name:'网络延迟',exact:true}).click()
   const control=tab==='resources'?toolbar.locator('.detail-resource-metric-mobile>summary'):toolbar.getByRole('checkbox',{name:'抑制尖峰'})
   await expect(control).toBeVisible()
-  const top=(await toolbar.locator('.detail-tabs').boundingBox())!,right=(await control.boundingBox())!,time=(await status.boundingBox())!
-  if(tab==='resources'){
-   expect(right.x).toBeGreaterThanOrEqual(top.x+top.width)
-   expect(time.y).toBeGreaterThanOrEqual(right.y+right.height)
-  }else{
-   const ranges=(await toolbar.locator('.detail-ranges').boundingBox())!,refresh=(await toolbar.getByRole('button',{name:'刷新历史'}).boundingBox())!,bar=(await toolbar.boundingBox())!
+  const selection=(await toolbar.locator('.detail-toolbar-selection').boundingBox())!,actions=(await toolbar.locator('.detail-toolbar-actions').boundingBox())!,top=(await toolbar.locator('.detail-tabs').boundingBox())!,right=(await control.boundingBox())!,time=(await status.boundingBox())!
+  const ranges=(await toolbar.locator('.detail-ranges').boundingBox())!,refresh=(await toolbar.getByRole('button',{name:'刷新历史'}).boundingBox())!,bar=(await toolbar.boundingBox())!
+  expect(right.x).toBeGreaterThanOrEqual(top.x+top.width)
+  expect(right.x+right.width).toBeLessThanOrEqual(selection.x+selection.width+1)
+  expect(actions.y).toBeGreaterThanOrEqual(selection.y+selection.height)
+  expect(time.x).toBeGreaterThanOrEqual(actions.x)
+  expect(refresh.x+refresh.width).toBeLessThanOrEqual(actions.x+actions.width+1)
+  expect(ranges.x).toBeGreaterThanOrEqual(time.x+time.width)
+  expect(ranges.x+ranges.width).toBeLessThanOrEqual(refresh.x)
+  if(tab==='latency'){
    const route=(await page.locator('.latency-route-controls').getByLabel('查看线路',{exact:true}).boundingBox())!
-   expect(Math.abs(time.y+time.height/2-refresh.y-refresh.height/2)).toBeLessThanOrEqual(2)
-   expect(time.x).toBeGreaterThanOrEqual(top.x+top.width)
-   expect(time.x+time.width).toBeLessThanOrEqual(refresh.x)
    expect(route.y).toBeGreaterThanOrEqual(bar.y+bar.height)
    expect(route.x).toBeGreaterThanOrEqual(bar.x)
    expect(route.x+route.width).toBeLessThanOrEqual(bar.x+bar.width+1)
-   expect(ranges.y).toBeGreaterThanOrEqual(top.y+top.height)
-   expect(Math.abs(ranges.y+ranges.height/2-right.y-right.height/2)).toBeLessThanOrEqual(2)
-   expect(ranges.x+ranges.width).toBeLessThanOrEqual(right.x)
   }
   expect(time.x+time.width).toBeLessThanOrEqual(width)
   expect(await toolbar.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
@@ -40,7 +38,7 @@ for(const width of [768,800])test(`compact desktop history status and controls f
  expect(await toolbar.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
 })
 
-test('English last-success status fits a 320px detail toolbar',async({page})=>{
+test('English last-success status fits compact desktop toolbar',async({page})=>{
  await page.setViewportSize({width:768,height:844})
  await page.addInitScript(()=>localStorage.setItem('monitor-next-language','en'))
  await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:[nodes()[0]]}}))
@@ -49,10 +47,11 @@ test('English last-success status fits a 320px detail toolbar',async({page})=>{
  const toolbar=page.locator('.detail-chart-toolbar'),status=toolbar.locator('.detail-update')
  await expect(status).toContainText('Updated')
  await page.getByRole('button',{name:'Network latency',exact:true}).click()
- const checkbox=(await toolbar.getByRole('checkbox',{name:'Suppress spikes'}).boundingBox())!,route=(await page.locator('.latency-route-controls').getByLabel('View route',{exact:true}).boundingBox())!,toolbarBox=(await toolbar.boundingBox())!,ranges=(await toolbar.locator('.detail-ranges').boundingBox())!
+ const checkbox=(await toolbar.getByRole('checkbox',{name:'Suppress spikes'}).boundingBox())!,route=(await page.locator('.latency-route-controls').getByLabel('View route',{exact:true}).boundingBox())!,toolbarBox=(await toolbar.boundingBox())!,selection=(await toolbar.locator('.detail-toolbar-selection').boundingBox())!,actions=(await toolbar.locator('.detail-toolbar-actions').boundingBox())!,ranges=(await toolbar.locator('.detail-ranges').boundingBox())!
  expect(route.y).toBeGreaterThanOrEqual(toolbarBox.y+toolbarBox.height)
- expect(Math.abs(checkbox.y+checkbox.height/2-ranges.y-ranges.height/2)).toBeLessThanOrEqual(2)
- expect(ranges.x+ranges.width).toBeLessThanOrEqual(checkbox.x)
+ expect(checkbox.x+checkbox.width).toBeLessThanOrEqual(selection.x+selection.width+1)
+ expect(actions.y).toBeGreaterThanOrEqual(selection.y+selection.height)
+ expect(ranges.x).toBeGreaterThanOrEqual(actions.x)
  expect(route.x+route.width).toBeLessThanOrEqual(toolbarBox.x+toolbarBox.width)
  await page.unroute('**/api/nodes/*/metrics?*')
  await page.route('**/api/nodes/*/metrics?*',route=>route.fulfill({status:503}))
@@ -61,7 +60,8 @@ test('English last-success status fits a 320px detail toolbar',async({page})=>{
  const bar=(await toolbar.boundingBox())!,text=(await status.boundingBox())!
  expect(text.x).toBeGreaterThanOrEqual(bar.x)
  expect(text.x+text.width).toBeLessThanOrEqual(bar.x+bar.width)
- expect(text.y).toBeGreaterThanOrEqual((await toolbar.locator('.detail-ranges').boundingBox())!.y+ranges.height)
+ expect(text.x).toBeGreaterThanOrEqual(actions.x)
+ expect(text.y+text.height).toBeLessThanOrEqual(bar.y+bar.height)
  expect(await toolbar.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
 })
 
@@ -82,11 +82,10 @@ for(const width of [900,1199])test(`failed refresh remains visible on medium des
   await expect(status).toBeVisible()
   await expect(status).toContainText(/上次成功更新：\d{2}:\d{2}:\d{2}/)
   const bar=(await toolbar.boundingBox())!,message=(await status.boundingBox())!
-  const controls=await toolbar.locator('.detail-tabs,.detail-ranges,.detail-refresh').all()
-  for(const control of controls){
-   const box=(await control.boundingBox())!
-   expect(message.y).toBeGreaterThanOrEqual(box.y+box.height)
-  }
+  const actions=(await toolbar.locator('.detail-toolbar-actions').boundingBox())!
+  expect(message.x).toBeGreaterThanOrEqual(actions.x)
+  expect(message.y).toBeGreaterThanOrEqual(actions.y)
+  expect(message.y+message.height).toBeLessThanOrEqual(actions.y+actions.height+1)
   expect(message.x).toBeGreaterThanOrEqual(bar.x)
   expect(message.x+message.width).toBeLessThanOrEqual(bar.x+bar.width)
   expect(message.y+message.height).toBeLessThanOrEqual(bar.y+bar.height)
@@ -94,7 +93,7 @@ for(const width of [900,1199])test(`failed refresh remains visible on medium des
   fail=false
   await toolbar.getByRole('button',{name:'刷新历史'}).click()
   await expect(status).toHaveAttribute('data-failed','false')
-  await expect(status).toBeHidden()
+  await expect(status).toBeVisible()
   expect((await toolbar.boundingBox())!.height).toBe(normalHeight)
  }
 })

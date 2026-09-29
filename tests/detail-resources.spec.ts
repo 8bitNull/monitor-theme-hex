@@ -22,7 +22,7 @@ test('single resource plot retains selection across refresh and time/tab changes
  await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric','network')
  await page.getByRole('button',{name:'网络延迟',exact:true}).click();await page.getByRole('button',{name:'资源',exact:true}).click()
  await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric','network')
- await expect(page.locator('.detail-connections')).toContainText('102')
+ await expect(page.locator('.detail-metric-network .detail-metric-note').first()).toContainText('TCP 102 · UDP 24')
  await expect(page.locator('.detail-meta-tags')).toContainText('2.5Gbps');await expect(page.locator('.detail-information')).toContainText('1.0.0')
 })
 test('responsive composition and stable hover with many routes in light and dark',async({page})=>{

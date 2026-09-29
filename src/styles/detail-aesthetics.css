@@ -25,5 +25,16 @@
  .node-detail .detail-overview-grid .overview-account{margin-top:12px;padding:12px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card);display:flex;flex-wrap:wrap;gap:12px 24px}
  .node-detail .overview-remarks,.node-detail .overview-remarks.remarks-expanded{margin-top:12px;padding:12px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card)}
  .node-detail .overview-unavailable{padding:20px;border:1px solid var(--border);border-radius:8px;background:var(--card)}
+ .node-detail .detail-history{padding:20px;border-radius:12px}
+ .node-detail .detail-history .detail-chart-toolbar[data-history-tab]{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px 20px;min-height:0;padding:0 0 12px}
+ .node-detail .detail-toolbar-selection,.node-detail .detail-toolbar-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0}
+ .node-detail .detail-toolbar-actions{margin-left:auto;justify-content:flex-end}
+ .node-detail .detail-chart-toolbar .detail-submenu-divider{display:none}
+ .node-detail .detail-chart-toolbar .detail-update{display:block;margin:0;padding:0}
+ .node-detail .detail-chart-toolbar .detail-update[data-failed=true]{color:var(--warn)}
+ .node-detail .detail-chart-toolbar .detail-ranges{margin:0}
+}
+@media (min-width:721px) and (max-width:1023px){
+ .node-detail .detail-toolbar-actions{flex-basis:100%}
 }
 @media (min-width:1280px){.node-detail .desktop-detail-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}}

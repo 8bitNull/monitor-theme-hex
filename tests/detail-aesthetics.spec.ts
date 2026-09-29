@@ -2,6 +2,22 @@ import {test,expect} from '@playwright/test'
 import {detailFixture} from './detail-aesthetics-fixture'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
+test('desktop toolbar groups controls and retains failed-update feedback',async({page})=>{
+ await page.setViewportSize({width:900,height:1000})
+ await detailFixture(page)
+ await page.goto('/node/1')
+ const toolbar=page.locator('.detail-chart-toolbar')
+ await expect(toolbar.locator('.detail-toolbar-selection')).toBeVisible()
+ await expect(toolbar.locator('.detail-toolbar-actions')).toBeVisible()
+ await toolbar.getByRole('button',{name:'内存',exact:true}).click()
+ await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric','mem_used')
+ await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({status:503}))
+ await toolbar.getByRole('button',{name:'刷新历史',exact:true}).click()
+ await expect(page.locator('.history-notice')).toBeVisible()
+ await expect(toolbar.locator('.detail-update')).toBeVisible()
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+})
+
 for(const width of [721,900,1279,1280,1440])test(`desktop metrics ${width}`,async({page})=>{
  await page.setViewportSize({width,height:1000})
  const counts=await detailFixture(page)
