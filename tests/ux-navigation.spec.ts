@@ -30,7 +30,7 @@ test('mobile Back and Forward retain both tab scroll positions',async({page})=>{
  await expect.poll(()=>page.evaluate(()=>scrollY)).toBeGreaterThan(200)
  const overviewScroll=await page.evaluate(()=>scrollY)
  await nav.getByRole('button',{name:'设置'}).click()
- await expect(page.getByLabel('默认历史范围')).toBeVisible()
+ await expect(page.getByLabel('新详情页默认历史范围')).toBeVisible()
  await page.evaluate(()=>scrollTo(0,240))
  await expect.poll(()=>page.evaluate(()=>scrollY)).toBeGreaterThan(120)
  const settingsScroll=await page.evaluate(()=>scrollY)
