@@ -1,3 +1,4 @@
+.resource-trend-action{display:none}
 @media (min-width:721px){
  .node-detail .detail-live[data-layout="metric-cards"]{padding:0;border:0;background:transparent;box-shadow:none}
  .node-detail .detail-live[data-layout="metric-cards"] .detail-module-heading{position:absolute;width:1px;height:1px;min-height:0;margin:0;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
@@ -13,7 +14,9 @@
  .node-detail .detail-metric-track[data-level=warning] i{background:var(--warn)}
  .node-detail .detail-metric-track[data-level=danger] i{background:var(--destructive)}
  .node-detail .detail-metric-card .resource-trend{margin-top:auto;padding-top:8px;min-height:62px;grid-column:auto;grid-row:auto}
- .node-detail .detail-metric-card .resource-trend-caption{min-height:24px;flex:0 0 auto}
+ .node-detail .detail-metric-card .resource-trend-caption{min-height:24px;flex:0 0 auto;align-items:center}
+ .node-detail .resource-trend-action{display:block;flex:1;min-width:0;text-align:right;font-size:11px;opacity:0;color:var(--tone);overflow-wrap:anywhere}
+ .node-detail .resource-trend:is(:hover,:focus-visible) .resource-trend-action{opacity:1}
  .node-detail .detail-metric-card .resource-trend svg{height:30px}
  .node-detail .detail-identity{padding-bottom:8px}
  .node-detail .detail-metric-network .detail-speed{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -23,7 +26,12 @@
  .node-detail .detail-metric-network .detail-speed>div>svg:first-child{grid-column:1;grid-row:1;transform:none}
  .node-detail .detail-metric-network .detail-speed .speed-trend{display:block;grid-column:1/-1;grid-row:3;margin-top:6px}
  .node-detail .detail-metric-network .speed-trend .micro-trend{height:24px}
- .node-detail .detail-overview-grid .overview-account{margin-top:12px;padding:12px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card);display:flex;flex-wrap:wrap;gap:12px 24px}
+ .node-detail .detail-overview-grid .overview-account{margin-top:12px;padding:12px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card);display:flex;flex-wrap:wrap;gap:12px 32px}
+ .node-detail .overview-billing{flex-wrap:wrap;gap:12px 32px}
+ .node-detail .overview-billing>div{flex-wrap:wrap;gap:4px 8px}
+ .node-detail .overview-billing b,.node-detail .overview-billing small{white-space:normal;overflow-wrap:anywhere}
+ .node-detail .overview-account-footer{margin-left:auto;min-width:0;max-width:100%}
+ .node-detail .overview-account-footer .overview-price{display:block;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
  .node-detail .overview-remarks,.node-detail .overview-remarks.remarks-expanded{margin-top:12px;padding:12px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card)}
  .node-detail .overview-unavailable{padding:20px;border:1px solid var(--border);border-radius:8px;background:var(--card)}
  .node-detail .detail-history{padding:20px;border-radius:12px}

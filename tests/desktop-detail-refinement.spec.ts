@@ -12,6 +12,67 @@ test('daily traffic reads upload before download',async({page})=>{
  await expect(row.locator('dd')).toHaveText(`↑ ${bytes(node.day_tx)} · ↓ ${bytes(node.day_rx)}`)
 })
 
+test('history preview exposes an action on keyboard focus',async({page})=>{
+ await detailFixture(page)
+ await page.goto('/node/1')
+ const button=page.getByRole('button',{name:'查看硬盘历史趋势',exact:true})
+ await button.focus()
+ await expect(button.locator('.resource-trend-action')).toHaveCSS('opacity','1')
+ await expect(button.locator('.resource-trend-action')).toHaveText('查看硬盘历史趋势')
+ await page.keyboard.press('Enter')
+ await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric','disk_used')
+})
+
+for(const width of [900,1280])for(const language of ['zh','en'])test(`history action fits ${width}px ${language} without hover shift`,async({page})=>{
+ await page.setViewportSize({width,height:1000})
+ await page.addInitScript(language=>localStorage.setItem('monitor-next-language',language),language)
+ await detailFixture(page)
+ await page.goto('/node/1')
+ const button=page.locator('.resource-trend[data-metric=disk_used]')
+ const caption=button.locator('.resource-trend-caption')
+ const action=button.locator('.resource-trend-action')
+ await expect(action).toHaveCSS('opacity','0')
+ const before=await caption.boundingBox()
+ await button.hover()
+ await expect(action).toHaveCSS('opacity','1')
+ const hovered=await caption.boundingBox()
+ await button.focus()
+ const focused=await caption.boundingBox()
+ expect(hovered).toEqual(before)
+ expect(focused).toEqual(before)
+ const layout=await caption.evaluate(element=>{
+  const [range,action,arrow]=Array.from(element.children) as HTMLElement[]
+  const bounds=(node:HTMLElement)=>node.getBoundingClientRect()
+  const r=bounds(range),a=bounds(action),i=bounds(arrow),c=bounds(element)
+  return {rangeRight:r.right,actionLeft:a.left,actionRight:a.right,arrowLeft:i.left,actionBottom:a.bottom,captionBottom:c.bottom,actionFits:action.scrollWidth<=action.clientWidth,documentFits:document.documentElement.scrollWidth<=innerWidth}
+ })
+ expect(layout.rangeRight).toBeLessThanOrEqual(layout.actionLeft)
+ expect(layout.actionRight).toBeLessThanOrEqual(layout.arrowLeft)
+ expect(layout.actionBottom).toBeLessThanOrEqual(layout.captionBottom)
+ expect(layout.actionFits).toBe(true)
+ expect(layout.documentFits).toBe(true)
+})
+
+test('long billing values wrap inside the desktop account row',async({page})=>{
+ await page.setViewportSize({width:900,height:1000})
+ await page.addInitScript(()=>localStorage.setItem('monitor-next-language','en'))
+ await detailFixture(page)
+ const node={...nodes()[0],currency:'LONGCURRENCYWITHOUTSPACES'.repeat(8),billing_cycle:'LONGPERIODWITHOUTSPACES'.repeat(8),expires_at:'2020-01-01'}
+ await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[node]}}))
+ await page.goto('/node/1')
+ const account=page.locator('.overview-account')
+ await expect(account.locator('.overview-price')).toContainText('LONGCURRENCYWITHOUTSPACES')
+ const layout=await account.evaluate(element=>{
+  const card=element.getBoundingClientRect()
+  const price=element.querySelector('.overview-price')!.getBoundingClientRect()
+  const priceElement=element.querySelector('.overview-price') as HTMLElement
+  return {cardRight:card.right,priceRight:price.right,priceFits:priceElement.scrollWidth<=priceElement.clientWidth,documentFits:document.documentElement.scrollWidth<=innerWidth}
+ })
+ expect(layout.priceRight).toBeLessThanOrEqual(layout.cardRight)
+ expect(layout.priceFits).toBe(true)
+ expect(layout.documentFits).toBe(true)
+})
+
 for(const width of [721,900,1199])test(`named desktop metric controls at ${width}px`,async({page})=>{
  await page.setViewportSize({width,height:1000})
  await detailFixture(page)
