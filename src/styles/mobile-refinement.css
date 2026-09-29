@@ -21,6 +21,10 @@
  .next-theme .mobile-app .ma-meters{margin-top:15px}
  .next-theme .mobile-app .ma-net{margin-top:12px;padding-top:11px}
  .ma-route-caption{display:block;text-align:right;overflow-wrap:anywhere;font-size:12px;color:var(--muted-foreground);margin-top:5px}
+ .next-theme .mobile-app .ma-network-placeholder{display:flex;align-items:center;justify-content:flex-end;min-width:52px;min-height:44px;margin:-15px -8px -13px 0;padding:7px 8px}
+ .next-theme .mobile-app .ma-route-caption{min-height:18px;line-height:18px}
+ .next-theme .mobile-app .ma-route-retry{display:block;min-height:44px;margin:0 16px 8px auto;padding:8px;color:var(--tone);font-size:12px}
+ .next-theme .mobile-app .ma-route-retry:focus-visible{outline:2px solid var(--tone);outline-offset:2px}
  .ma-business-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;margin:0;padding-bottom:0}
  .ma-business-tabs button{flex-shrink:0;max-width:80%;overflow-wrap:anywhere;min-height:44px;padding:6px 12px;border-radius:8px;font-size:12px;color:var(--muted-foreground)}
  .ma-business-tabs button[aria-pressed=true]{background:var(--ma-soft);color:var(--tone)}
