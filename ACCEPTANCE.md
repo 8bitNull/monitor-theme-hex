@@ -1,5 +1,14 @@
 # HEX 检查说明
 
+## v0.3.6 正式包验收（2026-09-29）
+
+- 产品代码来自已审查的 `2ac1207` 详情优化分支；本轮只更新版本、README、发布说明与本节，不改产品行为。package.json、package-lock根版本及theme.json统一为0.3.6。
+- 对已安装预览包的 `https://dash.688600.xyz/` 做只读检查：16个真实在线节点在1440px浅色下四卡与资源图正常、无页面横溢或pageerror；最长名称节点在1440/900/390/320px暗色下完成截图、真实3条线路中选择2条比较，资源1/24/6小时切换和刷新响应200。900/390px网络范围切换后资源仍保留6小时、网络保留24小时。记录位于根目录 `artifacts/release-036-acceptance/online-results.json` 与 `online-followup.json`。
+- 线上当时没有离线节点或公开备注字段，不能将这些状态记为线上通过。本地 `detail-aesthetics`、`detail-resources`、`mobile-remarks`、`detail-focus`、`defaults-and-freshness` 专项38通过、1原有跳过，补验长备注、长资料、离线、过期、空历史、503重试及流量显示偏好。原始日志 `boundaries.log`。
+- npm test通过（955翻译调用），lint与0.3.6 package构建通过。正式归档317项均符合发布允许范围，SHA-256校验通过，解压文件与构建逐字节一致。直接服务正式包解压dist的详情专项14/14通过；768px真实HTTP硬导航在Chromium/Firefox/WebKit各1项，共3/3通过，保留零pageerror断言。日志为 `package-detail.log`、`package-hard-navigation.log`。
+- 包目录 `artifacts/packages/2026-09-29-v0.3.6/`；完整SHA及大小见 `package-info.json`。此次没有重新跑完整452项套件；前阶段的首次失败与专项复测记录继续保留如下。实体iPhone、软键盘、安全区未验收。本地合并和正式包交付不代表已上传0.3.6或发布远程Release。
+
+
 ## 详情阅读层级优化验收（2026-09-29，本地分支）
 
 - 基线为 `4b2528c` 的生产构建，固定数据基线采集提交为 `7c7cc41`；最终产品代码提交为 `8de99d3`，本节随测试与验收提交记录。手机断点仍为 720/721px，单图资源/延迟历史继续使用原数据生命周期；未改版本、接口、全局色板或后台设置。静态双图评估建议保留单图，详见根目录证据中的 `dual-review.md`。
