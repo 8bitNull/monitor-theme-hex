@@ -38,3 +38,19 @@
  .node-detail .detail-toolbar-actions{flex-basis:100%}
 }
 @media (min-width:1280px){.node-detail .desktop-detail-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:720px){
+ .next-theme .node-detail .ma-panel,.next-theme .node-detail .detail-history{border-radius:16px}
+ .next-theme .node-detail .ma-big-grid{gap:20px 16px;align-items:start}
+ .next-theme .node-detail .ma-big-metric strong{font-size:26px;line-height:1.25;font-variant-numeric:tabular-nums}
+ .next-theme .node-detail .ma-big-metric strong small{font-size:12px;font-weight:400}
+ .next-theme .node-detail .ma-big-metric p{font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+ .next-theme .node-detail .ma-history-tools .detail-resource-metric-desktop{background:transparent;padding:0;gap:0}
+ .next-theme .node-detail .ma-history-tools .detail-resource-metric-desktop button{min-height:44px;border-radius:0;border-bottom:2px solid transparent;background:transparent;box-shadow:none}
+ .next-theme .node-detail .ma-history-tools .detail-resource-metric-desktop button[aria-pressed=true]{border-bottom-color:var(--tone);color:var(--tone)}
+ .next-theme .node-detail .ma-chart-heading{align-items:center;gap:12px}
+ .next-theme .node-detail .ma-chart-scope{gap:8px;flex-wrap:wrap}
+ .next-theme .node-detail .ma-network-summary .ma-network-stats{margin:12px 0}
+ .next-theme .node-detail .ma-history-tools{margin:12px 0}
+ .next-theme .node-detail .detail-facts>div{border-bottom-color:color-mix(in srgb,var(--border) 55%,transparent)}
+ .next-theme .node-detail .detail-fact-groups>section+section{margin-top:20px}
+}

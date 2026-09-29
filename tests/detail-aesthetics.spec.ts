@@ -2,6 +2,32 @@ import {test,expect} from '@playwright/test'
 import {detailFixture} from './detail-aesthetics-fixture'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
+for(const width of [320,390,430])test(`mobile detail stays usable at ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:844})
+ await detailFixture(page)
+ await page.goto('/node/1')
+ await expect(page.locator('.ma-big-metric[data-kind=cpu]')).toBeVisible()
+ await expect(page.locator('.ma-big-metric[data-kind=load]')).toBeVisible()
+ await expect(page.locator('.desktop-detail-metrics')).toHaveCount(0)
+ for(const name of ['资源','网络','资料','总览']){
+  await page.getByRole('button',{name,exact:true}).click()
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+ }
+ await page.getByRole('button',{name:'流量与账单',exact:false}).click()
+ await expect(page.locator('#ma-billing-details')).toBeVisible()
+})
+
+test('mobile resource totals preference preserves CPU and load context',async({page})=>{
+ await page.setViewportSize({width:320,height:844})
+ await page.addInitScript(()=>localStorage.setItem('hex-mobile-v1',JSON.stringify({totals:false})))
+ await detailFixture(page)
+ await page.goto('/node/1')
+ for(const kind of ['cpu','load'])await expect(page.locator(`.ma-big-metric[data-kind=${kind}] p`)).toBeVisible()
+ for(const kind of ['mem_used','disk_used'])await expect(page.locator(`.ma-big-metric[data-kind=${kind}] p`)).toHaveCount(0)
+ await expect(page.locator('.ma-big-metric[data-kind=load] .ma-track')).toHaveCount(0)
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+})
+
 test('desktop toolbar groups controls and retains failed-update feedback',async({page})=>{
  await page.setViewportSize({width:900,height:1000})
  await detailFixture(page)
