@@ -56,7 +56,7 @@
  .next-theme .node-detail .detail-history .detail-chart-toolbar[data-history-tab] .detail-update{order:4;flex:0 0 100%;margin:0}
  .next-theme :is(.ma-nav,.ma-detail-tabs,.detail-ranges,.detail-resource-metric-desktop) button{border-bottom:0;box-shadow:none}
  .next-theme :is(.ma-nav,.ma-detail-tabs,.detail-ranges,.detail-resource-metric-desktop) button::after{border:0;box-shadow:none}
- .next-theme .mobile-app .ma-row select{border:0;background:transparent;padding:8px 0;border-radius:0;box-shadow:none;font-size:13px;min-height:44px}
+ .next-theme .mobile-app .ma-row select{flex-shrink:0;border:0;background:transparent;padding:8px 0;border-radius:0;box-shadow:none;font-size:13px;min-height:44px}
  .next-theme .mobile-app .ma-nav button,.next-theme .mobile-app .ma-nav button:hover,.next-theme .mobile-app .ma-nav button[aria-current=page]{background:transparent;border:0;border-radius:0;box-shadow:none}
  .next-theme .mobile-app .ma-nav button[aria-current=page]>span{background:var(--ma-soft);border-radius:10px}
  .next-theme .mobile-app .ma-row{border-radius:0;background:transparent;box-shadow:none}
