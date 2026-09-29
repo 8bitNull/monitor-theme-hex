@@ -46,10 +46,14 @@ export function applySiteConfig(saved: unknown, base: Preferences): Preferences 
   return normalizePreferences(patch, base)
 }
 
-export async function loadSiteConfig(base: Preferences): Promise<Preferences> {
+export async function fetchSiteConfig(): Promise<unknown | null> {
   try {
     const response = await fetch(url, {signal: AbortSignal.timeout(3000), cache: 'no-cache'})
-    if (response.ok) return applySiteConfig(await response.json(), base)
+    if (response.ok) return await response.json()
   } catch { /* An unavailable hub config does not block the public page. */ }
-  return base
+  return null
+}
+
+export async function loadSiteConfig(base: Preferences, config = fetchSiteConfig()): Promise<Preferences> {
+  return applySiteConfig(await config, base)
 }
