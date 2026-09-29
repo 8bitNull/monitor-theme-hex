@@ -1,3 +1,5 @@
+import {ResourceTrend,type ResourcePreview} from './ResourceTrend'
+import type {ResourceTrendMetric} from '@/lib/resourceTrend'
 import type {Node} from '@/lib/api'
 import {liveMetrics,nodeState} from '@/lib/freshness'
 import {tr,locale} from '@/lib/i18n'
@@ -20,7 +22,7 @@ export function DetailIdentity({node,nodes,onSwitch}:{node:Node;nodes:Node[];onS
       </div>
 )
 }
-export function DetailLiveOverview({node}:{node:Node}){
+export function DetailLiveOverview({node,preview,onSelectResource}:{node:Node;preview:ResourcePreview;onSelectResource:(metric:ResourceTrendMetric)=>void}){
  const m=liveMetrics(node)
  const state=nodeState(node)
  const remarkTags=(node.remark??'').split(/[;；]/).map(text=>text.trim()).filter(Boolean)
@@ -35,6 +37,8 @@ export function DetailLiveOverview({node}:{node:Node}){
    {m?<><section className="overview-resources"><h3>{tr("资源使用")}</h3><div className="detail-resources">
     <ResourceMetric label="CPU" value={m?.cpu??null} foot={tr("{0} 核",node.cpu_cores)}/>
     <ResourceMetric label={tr("内存")} value={m?percent(m.mem_used,m.mem_total):null} foot={m?pair(m.mem_used,m.mem_total):tr("容量 {0}",bytes(node.mem_total))}/>
+    <ResourceTrend metric="cpu" preview={preview} onSelect={onSelectResource}/>
+    <ResourceTrend metric="mem_used" preview={preview} onSelect={onSelectResource}/>
     <div className="overview-extra-metrics"><div className="overview-extra-metrics-grid">
      <ResourceMetric label={tr("硬盘")} value={m?percent(m.disk_used,m.disk_total):null} foot={m?pair(m.disk_used,m.disk_total):tr("容量 {0}",bytes(node.disk_total))}/>
      <ResourceMetric label={tr("负载")} value={m&&node.cpu_cores>0?m.load[0]/node.cpu_cores*100:null} displayValue={m?m.load[0].toFixed(2):'—'} foot={tr("1 分钟 · {0} 核",node.cpu_cores)}/>

@@ -144,6 +144,7 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
     const [highlightProbe, setHighlightProbe] = useState<number | null>(null);
     const [selectedProbes, setSelectedProbes] = useState<RouteSelection>(()=>readRouteSelection(params.get("routes")));
     const [data, setData] = useState<{
+        key: string;
         metrics: Point[];
         ping: PingPoint[];
         probes: Probes;
@@ -200,7 +201,7 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
             probes: Probes;
             loss?: Loss;
         }>(`/nodes/${node.id}/metrics?hours=${hours}&points=${points}&series=${series}`, { signal: controller.signal, cache: 'no-store' })
-            .then((next) => { clearTimeout(timeout); if (active) {retained.current={key,value:next};setData(next);setUpdated(Date.now());busy.current=false;setLoading(false);} })
+            .then((next) => { clearTimeout(timeout); if (active) {const snapshot={...next,key};retained.current={key,value:snapshot};setData(snapshot);setUpdated(Date.now());busy.current=false;setLoading(false);} })
             .catch((e: Error) => {
             // `|| "..."` as in App.tsx: HTTP/2 dropped statusText, so a bodiless
             // failure from a proxy arrives as the empty string and renders as no
@@ -208,7 +209,7 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
             clearTimeout(timeout);
             if (active) {
                 setFailed(historyError(e));
-                setData(previous || { metrics: [], ping: [], probes: {} });
+                setData(previous || { key, metrics: [], ping: [], probes: {} });
                 busy.current=false;setLoading(false);
             }
         });
@@ -334,14 +335,20 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
         const loss=data?.loss&&Object.hasOwn(data.loss,String(route.id))?data.loss[route.id]:undefined;
         return {...route,latest,p95:values.length?values[Math.ceil(values.length*.95)-1]:null,loss:typeof loss==='number'&&Number.isFinite(loss)&&loss>=0&&loss<=100?loss:null};
     });
+    const previewActive=tab==='resources';
+    const previewMatches=data?.key===`${node.id}:${ranges.resources}:resources`;
+    const selectPreview=(metric:'cpu'|'mem_used')=>{
+        setTab('resources');setResourceMetric(metric);
+        requestAnimationFrame(()=>{const section=document.querySelector<HTMLElement>('.detail-history');section?.focus({preventScroll:true});section?.scrollIntoView({block:'start'});});
+    };
     const mobileUpdate=loading?tr('正在更新'):failed?tr('更新失败'):updated?new Date(updated).toLocaleTimeString(locale(),{hour:'2-digit',minute:'2-digit',hour12:false}):tr('等待数据');
     return (<div className="node-detail" data-mobile-section={mobileSection}>
       {mobile?<div className="ma-detail-header"><button className="ma-icon" onClick={onBack??(()=>history.back())} aria-label={tr('返回总览')}><ArrowLeft size={20}/></button><div><NodePicker node={node} nodes={nodes} onSwitch={onSwitch}/></div></div>:<DetailIdentity node={node} nodes={nodes} onSwitch={onSwitch}/>}
       {mobile&&<nav className="ma-detail-tabs" aria-label={tr('详情分区')}>{([{key:'overview',label:tr('总览')},{key:'resources',label:tr('资源')},{key:'latency',label:tr('网络')},{key:'info',label:tr('资料')}] as const).map(({key,label})=><button key={key} aria-pressed={mobileSection===key} onClick={()=>changeSection(key)}>{label}</button>)}</nav>}
       <div className="detail-workspace">
       {mobile&&mobileSection==='overview'&&<div className="ma-detail-status"><Status node={node}/><small>{node.last_seen>0?tr('上次上报：{0}',new Date(node.last_seen*1000).toLocaleTimeString(locale())):tr('等待首次上报')}</small></div>}
-      {!mobile?<DetailLiveOverview node={node}/>:mobileSection==='overview'?<MobileDetailOverview node={node} totals={mobilePreferences.totals} onNetwork={()=>changeSection('latency')}/>:null}
-      {(!mobile||mobileSection==='resources'||mobileSection==='latency')&&<section className="detail-history" aria-label={tr("历史图表")}>
+      {!mobile?<DetailLiveOverview node={node} preview={{rows:previewActive&&previewMatches?metricRows:[],hours:ranges.resources,loading:previewActive&&(loading||!previewMatches),failed:previewActive&&previewMatches&&!!failed,active:previewActive,updated:previewMatches?updated:null}} onSelectResource={selectPreview}/>:mobileSection==='overview'?<MobileDetailOverview node={node} totals={mobilePreferences.totals} onNetwork={()=>changeSection('latency')}/>:null}
+      {(!mobile||mobileSection==='resources'||mobileSection==='latency')&&<section className="detail-history" tabIndex={-1} aria-label={tr("历史图表")}>
        {mobile&&<div className="ma-chart-heading"><h2>{tr(tab==='latency'?'网络质量':'资源历史')}</h2><small title={updated?new Date(updated).toLocaleString(locale()):undefined} data-failed={!!failed}>{mobileUpdate}</small></div>}
        {mobile&&tab==='latency'&&<div className="ma-network-summary"><div className="latency-route-controls">{routeControl}</div>
          <table className="ma-route-statistics"><caption className="sr-only">{tr('完整范围线路统计')}</caption><thead><tr><th scope="col">{tr('线路')}</th><th scope="col">{tr('最新')}</th><th scope="col"><button aria-label={tr('统计口径')} onClick={()=>setChartSheet('statistics')}>P95 ⓘ</button></th><th scope="col"><button onClick={()=>setChartSheet('statistics')}>{tr('丢包')} ⓘ</button></th></tr></thead><tbody>{mobileStats.map(route=><tr key={route.id}><th scope="row"><span className="ma-route-dot" style={{background:style(route.id).stroke}}/>{route.name}</th><td>{!route.latest?'—':route.latest.latency===null?tr('超时'):Number.isFinite(route.latest.latency)?<>{route.latest.latency.toFixed(1)}<small> ms</small></>:'—'}</td><td>{route.p95===null?'—':<>{route.p95.toFixed(1)}<small> ms</small></>}</td><td>{route.loss===null?<span className="ma-unknown-loss">{tr('未统计')}</span>:`${route.loss.toFixed(1)}%`}</td></tr>)}</tbody></table>
