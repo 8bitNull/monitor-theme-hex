@@ -419,7 +419,7 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
           </div>)) : (data.metrics ?? []).length === 0 ? (<HistoryState message={tr("这段时间没有历史数据")} action={tr("调整时间范围")} onAction={chooseRange}/>) : (<ResourceHistory compact={compact} mobile={mobile} rows={metricRows} node={node} hours={hours} metric={resourceMetric}/>)}
       </div></section>}
 
-      {(!mobile||mobileSection==='info')&&<DetailFacts node={node} compact={mobile?false:compact} mode={detailInfoMode} onMode={onDetailInfoMode}/>}
+      {(!mobile||mobileSection==='info')&&<DetailFacts node={node} compact={mobile?false:compact} mobile={mobile} mode={detailInfoMode} onMode={onDetailInfoMode}/>}
       {mobile&&mobileSection==='info'&&<section className="ma-panel ma-info-extra"><div className="ma-row"><span>{tr('名称')}</span><small>{node.name}</small></div><div className="ma-row"><span>{tr('节点分组')}</span><small>{node.group||tr('未分组')}</small></div>{node.remark&&<MobileRemarks text={node.remark}/>}</section>}
       </div>
       {mobile&&chartSheet&&<ChartSettingsSheet kind={chartSheet} onClose={()=>setChartSheet(null)} smooth={smooth} onSmooth={setSmooth}/>}

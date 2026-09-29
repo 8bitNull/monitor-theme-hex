@@ -28,17 +28,22 @@ function Fact({ label, value, warning=false,copy=false }: {
 function FactSection({label,Icon,children}:{label:string;Icon:ComponentType<{size?:number}>;children:ReactNode}){
     return <section aria-label={label}><div className="detail-fact-disclosure"><div className="fact-section-heading"><h3><Icon size={15}/>{label}</h3></div><div className="detail-fact-section-body">{children}</div></div></section>;
 }
-export function DetailFacts({node,mode,compact,onMode}:{node:Node;mode:Preferences['detailInfoMode'];compact:boolean;onMode:(mode:Preferences['detailInfoMode'])=>void}){
+export function DetailFacts({node,mode,compact,mobile=false,onMode}:{node:Node;mode:Preferences['detailInfoMode'];compact:boolean;mobile?:boolean;onMode:(mode:Preferences['detailInfoMode'])=>void}){
  const expanded=!compact || mode==='expanded';
  const m=liveMetrics(node)
+ const hardware=[
+   {key:'agent',label:'Agent',value:node.agent_version},
+   {key:'system',label:tr('系统'),value:[osName(node.os),node.kernel].filter(Boolean).join(' · ')},
+   {key:'cpu',label:'CPU',value:node.cpu_name?`${node.cpu_name} × ${node.cpu_cores}`:tr('{0} 核',node.cpu_cores)},
+   {key:'capacity',label:tr('内存 / 硬盘'),value:`${bytes(node.mem_total)} / ${bytes(node.disk_total)}`},
+   {key:'arch',label:tr('架构 / 虚拟化'),value:[node.arch,node.virt!=='none'?node.virt:''].filter(Boolean).join(' · ')},
+   {key:'swap',label:tr('交换空间'),value:m?`${bytes(m.swap_used)} / ${bytes(m.swap_total)}`:'—'},
+ ]
+ const orderedHardware=mobile?['cpu','capacity','system','arch','swap','agent'].map(key=>hardware.find(item=>item.key===key)!):hardware
  return <div className="detail-information">{compact&&<button className="detail-facts-toggle" aria-expanded={expanded} aria-controls="detail-fact-groups" onClick={()=>onMode(expanded?'collapsed':'expanded')}><span className="detail-facts-title"><Database size={15}/>{tr("设备资料")}</span><ChevronDown size={16}/></button>}<div id="detail-fact-groups" className="detail-fact-groups" hidden={!expanded}>
    <FactSection label={tr("硬件与系统")} Icon={Cpu}>
      <dl className="detail-facts">
-       <Fact label="Agent" value={node.agent_version}/><Fact label={tr("系统")} value={[osName(node.os), node.kernel].filter(Boolean).join(" · ")}/>
-       <Fact label="CPU" value={node.cpu_name ? `${node.cpu_name} × ${node.cpu_cores}` : tr("{0} 核", node.cpu_cores)}/>
-       <Fact label={tr("内存 / 硬盘")} value={`${bytes(node.mem_total)} / ${bytes(node.disk_total)}`}/>
-       <Fact label={tr("架构 / 虚拟化")} value={[node.arch, node.virt !== "none" ? node.virt : ""].filter(Boolean).join(" · ")}/>
-       <Fact label={tr("交换空间")} value={m?`${bytes(m.swap_used)} / ${bytes(m.swap_total)}`:"—"}/>
+       {orderedHardware.map(item=><Fact key={item.key} label={item.label} value={item.value}/>)}
      </dl>
    </FactSection>
    <FactSection label={tr("网络与流量")} Icon={Network}>
