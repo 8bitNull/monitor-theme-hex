@@ -10,7 +10,7 @@ async function setup(page:any,long=false){
 }
 for(const width of [768,800,1024,1440])test(`primary metrics and long identity fit at ${width}`,async({page})=>{
  await page.setViewportSize({width,height:900});await setup(page,true)
- await expect(page.locator('.detail-resources .resource')).toHaveCount(4);await expect(page.locator('.detail-resources .resource').last()).toContainText('负载')
+ await expect(page.locator('.desktop-detail-metrics>.detail-metric-card')).toHaveCount(4);await expect(page.locator('.detail-metric-card[data-metric=cpu]')).toContainText('负载')
  const expand=page.getByRole('button',{name:'展开名称',exact:true}),heading=(await page.locator('.detail-title h2').boundingBox())!;expect((await expand.boundingBox())!.y).toBeGreaterThanOrEqual(heading.y+heading.height)
  await expand.click();await expect(page.getByRole('dialog')).toHaveCount(0);await page.getByRole('button',{name:'收起名称',exact:true}).click()
  await page.getByRole('button',{name:'展开备注',exact:true}).click();await expect(page.locator('.detail-meta-tags .detail-remark-tag')).toHaveCount(8)
@@ -18,7 +18,7 @@ for(const width of [768,800,1024,1440])test(`primary metrics and long identity f
  if(width<900)await page.locator('.detail-facts-toggle').click()
  const cpuRow=page.locator('section[aria-label="硬件与系统"] .detail-facts>div').filter({hasText:'CPU'}).first();await expect(cpuRow.getByRole('button',{name:'复制：CPU',exact:true})).toHaveCount(0);await expect(cpuRow.locator('.fact-value')).toBeVisible()
  await expect(page.locator('.overview-account')).toBeVisible()
- for(const graph of ['bar','ring','columns','minimal']){await setSiteDefault(page,'graph',graph);expect(await page.locator('.detail-live').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy();if(graph==='bar'){const bottoms=await page.locator('.detail-resources .resource-bar').evaluateAll(elements=>elements.map(el=>el.getBoundingClientRect().bottom));expect(Math.abs(bottoms[0]-bottoms[1])).toBeLessThanOrEqual(1);expect(Math.abs(bottoms[2]-bottoms[3])).toBeLessThanOrEqual(1)}}
+ for(const graph of ['bar','ring','columns','minimal']){await setSiteDefault(page,'graph',graph);expect(await page.locator('.detail-live').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy();const tracks=await page.locator('.detail-metric-track').evaluateAll(elements=>elements.map(el=>el.getBoundingClientRect()));expect(tracks).toHaveLength(3);expect(Math.abs(tracks[0].bottom-tracks[1].bottom)).toBeLessThanOrEqual(1)}
 })
 test('tooltip follows route list order using stable catalog order',async({page})=>{
  await page.setViewportSize({width:1440,height:900});await setup(page);await page.getByRole('button',{name:'网络延迟',exact:true}).click()

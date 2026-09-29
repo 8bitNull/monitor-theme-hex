@@ -21,9 +21,10 @@ test('detail page uses a light modular reading order',async({page})=>{
  expect(await page.locator('.detail-fact-groups h3 svg')).toHaveCount(2)
  const factsFrame=await page.locator('.detail-information').evaluate(el=>({border:getComputedStyle(el).borderTopWidth,sections:[...el.querySelectorAll('.detail-fact-groups>section')].map(section=>getComputedStyle(section).borderLeftWidth)}))
  expect(factsFrame.border).toBe('1px');expect(factsFrame.sections).toEqual(['0px','1px'])
- const backgrounds=await page.locator('.detail-live,.detail-history,.detail-fact-groups>section').evaluateAll(elements=>elements.map(el=>getComputedStyle(el).backgroundColor))
+ const backgrounds=await page.locator('.detail-metric-card,.overview-account,.detail-history,.detail-information').evaluateAll(elements=>elements.map(el=>getComputedStyle(el).backgroundColor))
  expect(new Set(backgrounds)).toEqual(new Set(['rgb(255, 255, 255)']))
- await expect(page.locator('.detail-live')).toContainText('资源使用')
+ await expect(page.locator('.desktop-detail-metrics')).toContainText('CPU')
+ await expect(page.locator('.detail-metric-network')).toContainText('实时网速')
  await expect(page.locator('.detail-live')).not.toContainText('负载 1 / 5 / 15')
 })
 

@@ -11,7 +11,7 @@ for(const width of [899,900,1024,1199,1200,1440,1920])test(`detail proportions a
  await page.setViewportSize({width,height:900});await setup(page)
  if(width<900)await page.locator('.detail-facts-toggle').click()
  const groups=page.locator('.detail-fact-groups'),sections=groups.locator('section'),hardware=(await sections.nth(0).boundingBox())!,network=(await sections.nth(1).boundingBox())!,billing=(await page.locator('.overview-account').boundingBox())!
- const resources=(await page.locator('.overview-resources').boundingBox())!,live=(await page.locator('.detail-live').boundingBox())!,history=(await page.locator('.detail-history').boundingBox())!
+ const resources=(await page.locator('.desktop-detail-metrics').boundingBox())!,live=(await page.locator('.detail-live').boundingBox())!,history=(await page.locator('.detail-history').boundingBox())!
  await expect(sections).toHaveCount(2)
  if(width>=900){expect(Math.abs(hardware.width-network.width)).toBeLessThanOrEqual(1);expect(Math.abs(hardware.y-network.y)).toBeLessThanOrEqual(1)}
  expect(billing.y).toBeGreaterThanOrEqual(resources.y+resources.height-1)

@@ -37,11 +37,11 @@ test('stale reports and transport loss invalidate every live view and recover',a
  await expect(card.locator('.speed-indicators strong').first()).toHaveText('—')
  await expect(page.locator('.summary-grid>div').nth(2)).toContainText('1 个节点暂无实时数据')
  await page.getByLabel('表格视图').click();await expect(page.locator('tbody tr .status-pill')).toHaveText('数据已过期');await expect(page.locator('.table-metric')).toHaveCount(0)
- await page.locator('.table-node-name').click();await expect(page.locator('.overview-unavailable')).toContainText('数据已过期');await expect(page.locator('.detail-resources')).toHaveCount(0);await expect(page.locator('.overview-account')).toBeVisible()
+ await page.locator('.table-node-name').click();await expect(page.locator('.overview-unavailable')).toContainText('数据已过期');await expect(page.locator('.desktop-detail-metrics')).toHaveCount(0);await expect(page.locator('.overview-account')).toBeVisible()
  fail=false;await page.clock.runFor(5001)
- await expect(page.locator('.detail-resources .bar-number').first()).toHaveText('28.0%')
+ await expect(page.locator('.detail-metric-card[data-metric=cpu] .detail-metric-value')).toHaveText('28.0%')
  stale=true;await page.clock.runFor(5001)
- await expect(page.locator('.overview-unavailable')).toContainText('数据已过期');await expect(page.locator('.detail-resources')).toHaveCount(0);await expect(page.locator('.overview-account')).toBeVisible()
+ await expect(page.locator('.overview-unavailable')).toContainText('数据已过期');await expect(page.locator('.desktop-detail-metrics')).toHaveCount(0);await expect(page.locator('.overview-account')).toBeVisible()
 })
 
 test('route selection explicitly distinguishes inherited and fixed routes',async({page})=>{

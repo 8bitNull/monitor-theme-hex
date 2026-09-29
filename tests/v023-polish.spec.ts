@@ -35,13 +35,14 @@ test('compact desktop detail groups, alignment and history ranges are bounded',a
  await page.getByRole('button',{name:'网络延迟',exact:true}).click();await expect(toolbar).toHaveAttribute('data-range-count','3');const latencyRanges=await toolbar.locator('.detail-ranges button').evaluateAll(bs=>bs.map(b=>{const box=b.getBoundingClientRect();return {top:box.top,bottom:box.bottom,right:box.right}}));expect(new Set(latencyRanges.map(box=>Math.round(box.top))).size).toBe(1);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
 })
 
-test('compact desktop resource selector aligns with the toolbar right edge',async({page})=>{
+test('compact desktop resource selector stays beside chart tabs',async({page})=>{
  for(const width of [768,800]){
   await page.setViewportSize({width,height:844});await setup(page);await page.goto('/node/1')
   const toolbar=page.locator('.detail-chart-toolbar[data-history-tab=resources]')
   const selector=toolbar.locator('.detail-resource-metric-mobile > summary')
-  const toolbarBox=(await toolbar.boundingBox())!,selectorBox=(await selector.boundingBox())!
-  expect(Math.abs(toolbarBox.x+toolbarBox.width-selectorBox.x-selectorBox.width)).toBeLessThan(12)
+  const selectionBox=(await toolbar.locator('.detail-toolbar-selection').boundingBox())!,tabsBox=(await toolbar.locator('.detail-tabs').boundingBox())!,selectorBox=(await selector.boundingBox())!
+  expect(selectorBox.x).toBeGreaterThanOrEqual(tabsBox.x+tabsBox.width)
+  expect(selectorBox.x+selectorBox.width).toBeLessThanOrEqual(selectionBox.x+selectionBox.width+1)
   await selector.click()
   const menuBox=(await toolbar.locator('.detail-resource-metric-menu').boundingBox())!
   expect(menuBox.x).toBeGreaterThanOrEqual(0)
@@ -49,12 +50,12 @@ test('compact desktop resource selector aligns with the toolbar right edge',asyn
  }
 })
 
-test('compact desktop latency controls align at the toolbar right edge',async({page})=>{
+test('compact desktop latency controls stay within their toolbar groups',async({page})=>{
  for(const width of [768,800]){
   await page.setViewportSize({width,height:844});await setup(page);await page.goto('/node/1')
   await page.getByRole('button',{name:'网络延迟',exact:true}).click()
   const toolbar=page.locator('.detail-chart-toolbar[data-history-tab=latency]')
-  const toolbarBox=(await toolbar.boundingBox())!
+  const selection=(await toolbar.locator('.detail-toolbar-selection').boundingBox())!,actions=(await toolbar.locator('.detail-toolbar-actions').boundingBox())!
   const tabs=(await toolbar.locator('.detail-tabs').boundingBox())!
   const smooth=(await toolbar.locator('.detail-smooth').boundingBox())!
   const refresh=(await toolbar.locator('.detail-refresh').boundingBox())!
@@ -65,8 +66,9 @@ test('compact desktop latency controls align at the toolbar right edge',async({p
    expect(probeBox.x).toBeGreaterThanOrEqual(tabs.x+tabs.width)
    expect(smooth.x).toBeGreaterThanOrEqual(probeBox.x+probeBox.width)
   }
-  expect(Math.abs(toolbarBox.x+toolbarBox.width-smooth.x-smooth.width)).toBeLessThan(12)
-  expect(Math.abs(refresh.x+refresh.width-smooth.x-smooth.width)).toBeLessThan(2)
+  expect(smooth.x+smooth.width).toBeLessThanOrEqual(selection.x+selection.width+1)
+  expect(actions.y).toBeGreaterThanOrEqual(selection.y)
+  expect(Math.abs(refresh.y+refresh.height/2-actions.y-actions.height/2)).toBeLessThan(2)
   const toggle=toolbar.getByRole('checkbox',{name:'抑制尖峰'})
   await toggle.check();await expect(toggle).toBeChecked()
  }

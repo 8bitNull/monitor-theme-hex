@@ -16,12 +16,12 @@ for(const width of [768,800,850,1024,1440])test('detail and settings polish rema
    if(width<900){await expect(page.locator('.detail-resource-metric-desktop')).toBeHidden();await page.locator('.detail-resource-metric-mobile>summary').click();await expect(page.locator('.detail-resource-metric-menu button')).toHaveCount(4);await expect(page.locator('.detail-resource-metric-menu button')).toHaveText([/^CPU/, 'Memory', 'Disk', 'Network'])}
    else {await expect(page.locator('.detail-resource-metric-desktop button')).toHaveText(metricLabels)}
   }
-  if(width===800){const cpu=await page.locator('.detail-live .resource').first().boundingBox();expect(cpu!.y+cpu!.height).toBeLessThan(844)}
+  if(width===800){const cpu=await page.locator('.detail-metric-card[data-metric=cpu]').boundingBox();expect(cpu!.y+cpu!.height).toBeLessThan(844)}
   for(const graph of ['bar','ring','columns','minimal']){
    await setSiteDefault(page,'graph',graph)
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
    expect(await page.locator('.detail-live').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
-   const overflow=await page.locator('.detail-live .resource').evaluateAll(els=>els.some(el=>{const r=el.getBoundingClientRect();return [...el.querySelectorAll('.bar-number,.metric-ring strong')].some(n=>{const b=n.getBoundingClientRect();return b.width>0&&(b.right>r.right+1||b.left<r.left-1)})}))
+   const overflow=await page.locator('.detail-metric-card').evaluateAll(els=>els.some(el=>{const r=el.getBoundingClientRect();return [...el.querySelectorAll('.detail-metric-value,.detail-speed strong')].some(n=>{const b=n.getBoundingClientRect();return b.width>0&&(b.right>r.right+1||b.left<r.left-1)})}))
    expect(overflow,`${language} ${appearance} ${graph}`).toBeFalsy()
   }
   for(const button of await page.locator('.detail-tabs button,.detail-ranges button,.detail-refresh,.resource-chart-tabs button').all())expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(40)

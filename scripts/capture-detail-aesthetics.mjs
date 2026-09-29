@@ -18,6 +18,7 @@ catch(error){
  fixture={now:Date.now(),nodes:[nodes()[0]],history:metrics()}
  await writeFile(fixturePath,JSON.stringify(fixture))
 }
+if(!fixture.now||!fixture.nodes?.length||!fixture.history?.metrics?.length)throw new Error(`Incomplete detail fixture: ${fixturePath}`)
 const browser=await chromium.launch()
 for(const width of widths){
  for(const lang of languages)for(const appearance of appearances){
@@ -32,7 +33,10 @@ for(const width of widths){
   await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:fixture.history}))
   await page.goto(`${base}/node/1`)
   await page.locator(width<=720?'.ma-detail-overview':'.detail-live').waitFor()
-  if(width>720)await page.locator('.recharts-area-curve').first().waitFor()
+  if(width>720){
+   await page.locator('.recharts-area-curve').first().waitFor()
+   await page.locator('.resource-trend[data-metric=cpu] svg path').waitFor()
+  }
   const stem=`${width}-${lang}-${appearance}`
   await page.screenshot({path:`${out}/${stem}-overview.png`,fullPage:true})
   if(width<=720){
@@ -40,6 +44,7 @@ for(const width of widths){
     await page.locator('.ma-detail-tabs').getByRole('button',{name,exact:true}).click()
     const selector=['资源','Resources'].includes(name)?'.detail-resource-charts':['网络','Network'].includes(name)?'.latency-view':'.detail-facts'
     await page.locator(selector).first().waitFor()
+    if(['资源','Resources'].includes(name))await page.locator('.recharts-area-curve').first().waitFor()
     await page.screenshot({path:`${out}/${stem}-${name}.png`,fullPage:true})
    }
   }

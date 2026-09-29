@@ -24,7 +24,7 @@ for(const [width,height] of [[320,568],[390,844],[667,375],[768,1024],[1024,768]
  }else{
   await page.getByRole('combobox',{name:english?'Region':'地区',exact:true}).click();await expect(page.getByRole('listbox')).toBeVisible();await fits(page);await capture(page,testInfo,'regions');await page.keyboard.press('Escape')
  }
- await page.goto('/node/1');await expect(page.locator(mobile?'.ma-detail-header':'.detail-live')).toBeVisible();await fits(page)
+ await page.locator(mobile?'.ma-node>button':'.node-card .node-open').first().click();await expect(page.locator(mobile?'.ma-detail-header':'.detail-live')).toBeVisible();await fits(page)
  if(mobile)await page.getByRole('button',{name:english?'Info':'资料',exact:true}).click()
  const factsToggle=page.locator('.detail-facts-toggle[aria-expanded=false]');if(await factsToggle.count())await factsToggle.click()
  await expect(page.locator('.detail-facts').first()).toBeVisible();await page.locator('.detail-facts').first().scrollIntoViewIfNeeded();await fits(page);await capture(page,testInfo,'facts')

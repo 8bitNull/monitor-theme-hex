@@ -3,7 +3,7 @@ import base from './playwright.config'
 
 export default defineConfig({
  ...base,
- testMatch:['**/compatibility.spec.ts','**/session-continuity.spec.ts','**/startup-loading.spec.ts','**/mobile-loading.spec.ts','**/live-polish.spec.ts','**/ux-navigation.spec.ts'],
+ testMatch:['**/compatibility.spec.ts','**/session-continuity.spec.ts','**/startup-loading.spec.ts','**/mobile-loading.spec.ts','**/live-polish.spec.ts','**/ux-navigation.spec.ts','**/detail-aesthetics.spec.ts'],
  workers:2,
  use:{...base.use,channel:undefined},
  projects:[
