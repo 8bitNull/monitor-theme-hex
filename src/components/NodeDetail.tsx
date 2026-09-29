@@ -5,6 +5,8 @@ import {Select} from './ui/select'
 import {ChartTooltip,useChartTooltip} from './ChartTooltip'
 import type {Preferences} from '@/lib/appearance'
 import {DetailIdentity,DetailLiveOverview} from './DetailOverview'
+import type {ResourceTrendMetric} from '@/lib/resourceTrend'
+import '@/styles/detail-aesthetics.css'
 import {DetailFacts} from './DetailFacts'
 import {MobileRemarks} from './MobileRemarks'
 import {ResourceHistory,type ResourceMetricKey} from './ResourceHistory'
@@ -337,7 +339,7 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
     });
     const previewActive=tab==='resources';
     const previewMatches=data?.key===`${node.id}:${ranges.resources}:resources`;
-    const selectPreview=(metric:'cpu'|'mem_used')=>{
+    const selectPreview=(metric:ResourceTrendMetric)=>{
         setTab('resources');setResourceMetric(metric);
         requestAnimationFrame(()=>{const section=document.querySelector<HTMLElement>('.detail-history');section?.focus({preventScroll:true});section?.scrollIntoView({block:'start'});});
     };

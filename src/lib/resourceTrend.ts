@@ -1,6 +1,6 @@
 import {trendPath} from './trends.ts'
-export type ResourceTrendRow={ts:number;cpu:number|null;mem_used:number|null}
-export type ResourceTrendMetric='cpu'|'mem_used'
+export type ResourceTrendRow={ts:number;cpu:number|null;mem_used:number|null;disk_used?:number|null}
+export type ResourceTrendMetric='cpu'|'mem_used'|'disk_used'
 
 /** Same two-hour gap boundary as the resource main chart; timestamps are milliseconds. */
 export function resourceTrend(rows:ResourceTrendRow[],metric:ResourceTrendMetric){

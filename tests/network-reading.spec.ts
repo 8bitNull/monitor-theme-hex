@@ -32,11 +32,12 @@ for(const width of [768,800,899,900,1200,1350,1360,1440])test(`network readings 
    if(value!.y<label!.y+label!.height-1)expect(value!.x).toBeGreaterThanOrEqual(label!.x+label!.width+4)
    else expect(value!.y).toBeGreaterThanOrEqual(label!.y+label!.height-1)
   }
-  if(width<900)await page.locator('.overview-more-toggle').click()
-  for(const reading of await page.locator('.detail-connections>div').all()){
-   const label=await reading.locator('span').boundingBox(),value=await reading.locator('strong').boundingBox()
-   expect(label).not.toBeNull();expect(value).not.toBeNull()
-   expect(value!.x).toBeGreaterThanOrEqual(label!.x+label!.width+4)
+  const networkCard=page.locator('.detail-metric-network')
+  await expect(networkCard.locator('.detail-metric-note').first()).toContainText(/TCP.*UDP/)
+  await expect(networkCard.locator('.detail-metric-note').nth(1)).toContainText(language==='zh'?'在线时长':'Uptime')
+  for(const direction of ['upload','download']){
+   const reading=networkCard.locator(`.${direction}`),value=(await reading.locator('strong').boundingBox())!,trend=(await reading.locator('.speed-trend').boundingBox())!
+   expect(trend.y).toBeGreaterThanOrEqual(value.y+value.height)
   }
   await expect(page.locator('.detail-chart-frame .recharts-line-curve')).toHaveCount(3)
   await expandRoutes(page);await expect(page.locator('.route-chips button>span').first()).toHaveCSS('text-overflow','ellipsis');await page.keyboard.press('Escape')

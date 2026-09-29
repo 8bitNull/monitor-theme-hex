@@ -8,9 +8,11 @@ for(const language of ['zh','en'])test(`900px ${language} preview canvases align
  await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:metrics()}))
  await page.goto('/node/1')
  const curves=page.locator('.resource-trend svg')
- await expect(curves).toHaveCount(2)
+ await expect(curves).toHaveCount(3)
  const a=(await curves.nth(0).boundingBox())!,b=(await curves.nth(1).boundingBox())!
  expect(Math.abs(a.y-b.y)).toBeLessThan(1)
+ const disk=page.locator('.detail-metric-card[data-metric="disk_used"]'),diskCurve=(await curves.nth(2).boundingBox())!,diskCard=(await disk.boundingBox())!
+ expect(diskCurve.y).toBeGreaterThan(diskCard.y)
 })
 for(const width of [320,390])test(`mobile settings selects keep their intrinsic width at ${width}px`,async({page})=>{
  await page.setViewportSize({width,height:844});await page.goto('/?page=settings')

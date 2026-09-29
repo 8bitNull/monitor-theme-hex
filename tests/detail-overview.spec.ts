@@ -10,13 +10,13 @@ for(const width of [768,800,1024,1440])test(`overview groups and full-width hist
   await page.addInitScript(({language,appearance})=>{localStorage.setItem('monitor-next-language',language);localStorage.setItem('monitor-next',JSON.stringify({_storageVersion:1,appearance}))},{language,appearance})
   await page.goto('/node/1')
   await expect(page.locator('.detail-resource-charts')).toBeVisible()
-  await expect(page.locator('.detail-resources .resource')).toHaveCount(4)
+  await expect(page.locator('.desktop-detail-metrics>.detail-metric-card')).toHaveCount(4)
   await expect(page.locator('.overview-expiry')).toContainText('2026.10.07')
   await expect(page.locator('.detail-identity .detail-meta-tags')).toHaveCount(0)
   const geometry=await page.evaluate(()=>{
    const box=(s:string)=>document.querySelector(s)!.getBoundingClientRect()
    const live=box('.detail-live'),history=box('.detail-history'),remarks=box('.overview-remarks'),groups=box('.detail-overview-grid'),footer=box('.overview-account-footer'),price=box('.overview-price')
-   return {order:history.top>=live.bottom&&remarks.top>=groups.bottom-1,fullWidth:Math.abs(history.width-live.width)<2,priceContained:price.left>=footer.left&&price.right<=footer.right,overflow:document.documentElement.scrollWidth>innerWidth||[...document.querySelectorAll('.detail-overview-grid section,.detail-resources .resource,.detail-speed>div,.overview-billing>div')].some(el=>el.scrollWidth>el.clientWidth+1)}
+   return {order:history.top>=live.bottom&&remarks.top>=groups.bottom-1,fullWidth:Math.abs(history.width-live.width)<2,priceContained:price.left>=footer.left&&price.right<=footer.right,overflow:document.documentElement.scrollWidth>innerWidth||[...document.querySelectorAll('.detail-metric-card,.detail-speed>div,.overview-billing>div')].some(el=>el.scrollWidth>el.clientWidth+1)}
   })
   expect(geometry).toEqual({order:true,fullWidth:true,priceContained:true,overflow:false})
   await page.locator('.detail-remarks-toggle').click()

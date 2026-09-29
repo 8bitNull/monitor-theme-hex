@@ -6,6 +6,9 @@ import {nodes,metrics} from './fixtures.mjs'
 const out=process.env.DETAIL_CAPTURE_DIR||'artifacts/detail-aesthetics/after'
 const base=process.env.DETAIL_BASE_URL||'http://127.0.0.1:4231'
 const fixturePath=process.env.DETAIL_FIXTURE_PATH||'artifacts/detail-aesthetics/fixture.json'
+const widths=process.env.DETAIL_CAPTURE_WIDTHS?.split(',').map(Number)||[320,390,430,721,768,900,1024,1279,1280,1440,1920]
+const languages=process.env.DETAIL_CAPTURE_LANGUAGES?.split(',')||['zh','en']
+const appearances=process.env.DETAIL_CAPTURE_APPEARANCES?.split(',')||['light','dark']
 await mkdir(out,{recursive:true})
 await mkdir(dirname(fixturePath),{recursive:true})
 let fixture
@@ -16,8 +19,8 @@ catch(error){
  await writeFile(fixturePath,JSON.stringify(fixture))
 }
 const browser=await chromium.launch()
-for(const width of [320,390,430,721,768,900,1024,1279,1280,1440,1920]){
- for(const lang of ['zh','en'])for(const appearance of ['light','dark']){
+for(const width of widths){
+ for(const lang of languages)for(const appearance of appearances){
   const page=await browser.newPage({viewport:{width,height:1000},reducedMotion:'reduce'})
   await page.clock.setFixedTime(fixture.now)
   await page.addInitScript(({lang,appearance})=>{

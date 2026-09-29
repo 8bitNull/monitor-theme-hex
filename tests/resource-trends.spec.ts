@@ -9,16 +9,18 @@ test('desktop trends reuse history and select the main chart without another req
  let requests=0
  await setup(page,r=>{if(new URL(r.request().url()).searchParams.get('series')==='metrics')requests++;return r.fulfill({json:metrics()})})
  await page.goto('/node/1')
- const cpu=page.getByRole('button',{name:'查看 CPU 历史趋势',exact:true}),memory=page.getByRole('button',{name:'查看内存历史趋势',exact:true})
+ const cpu=page.getByRole('button',{name:'查看 CPU 历史趋势',exact:true}),memory=page.getByRole('button',{name:'查看内存历史趋势',exact:true}),disk=page.getByRole('button',{name:'查看硬盘历史趋势',exact:true})
  await expect(cpu.locator('path')).toHaveAttribute('d',/L/)
  await expect(memory.locator('path')).toHaveAttribute('d',/L/)
+ await expect(disk.locator('path')).toHaveAttribute('d',/L/)
  await expect(cpu).toContainText('6h');await expect(memory).toContainText('历史用量')
  expect(requests).toBe(1)
- const bar=(await page.locator('.overview-resources .resource-bar').first().boundingBox())!
- expect((await cpu.boundingBox())!.y).toBeGreaterThanOrEqual(bar.y+bar.height)
+ const track=(await page.locator('.detail-metric-card[data-metric="cpu"] .detail-metric-track').boundingBox())!
+ expect((await cpu.boundingBox())!.y).toBeGreaterThanOrEqual(track.y+track.height)
  await memory.click();await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric','mem_used')
  await expect(page.getByRole('region',{name:'历史图表'})).toBeFocused()
  await cpu.focus();await cpu.press('Enter');await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric','cpu')
+ await disk.focus();await disk.press('Enter');await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric','disk_used')
  expect(requests).toBe(1)
 })
 test('range changes clear old curves and failed refresh labels retained history',async({page})=>{
@@ -69,14 +71,16 @@ test('initial history failure is not an empty series and retry restores previews
 for(const width of [721,900,1440])test(`previews fit ${width}px in English and stay below current readings`,async({page})=>{
  await page.setViewportSize({width,height:1000});await page.addInitScript(()=>localStorage.setItem('monitor-next-language','en'))
  await setup(page);await page.goto('/node/1')
- const previews=page.locator('.resource-trend');await expect(previews).toHaveCount(2)
+ const previews=page.locator('.resource-trend');await expect(previews).toHaveCount(3)
  for(const p of await previews.all()){
   await expect(p.locator('path')).toHaveAttribute('d',/L/)
   const b=(await p.boundingBox())!;expect(b.height).toBeGreaterThanOrEqual(44)
   expect(b.x).toBeGreaterThanOrEqual(0);expect(b.x+b.width).toBeLessThanOrEqual(width)
   expect(await p.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true)
  }
- const resourceBottom=await page.locator('.overview-resources .resource').evaluateAll(els=>Math.max(...els.map(el=>el.getBoundingClientRect().bottom)))
- expect((await previews.first().boundingBox())!.y).toBeGreaterThanOrEqual(resourceBottom)
+ for(const p of await previews.all()){
+  const track=await p.locator('xpath=..').locator('.detail-metric-track').boundingBox()
+  expect((await p.boundingBox())!.y).toBeGreaterThanOrEqual(track!.y+track!.height)
+ }
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
 })

@@ -1,6 +1,7 @@
 export const english: Record<string, string> = {
 "查看 CPU 历史趋势":"View CPU history trend",
 "查看内存历史趋势":"View memory history trend",
+"查看硬盘历史趋势":"View disk history trend",
 "历史用量":"Historical usage",
 "历史":"History",
 "查看历史":"View history",
