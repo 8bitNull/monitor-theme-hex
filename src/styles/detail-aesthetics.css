@@ -46,7 +46,12 @@
  .resource-summary dt,.resource-summary p{font-size:12px;line-height:1.5;color:var(--muted-foreground)}
  .resource-summary dd{margin:4px 0 0;font-size:15px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
  .resource-summary p{margin:6px 0 0;overflow-wrap:anywhere}
- .resource-summary h3{font-size:12px;margin:8px 0 4px}
+ .resource-summary-network{width:100%;table-layout:fixed;border-collapse:collapse;text-align:left}
+ .resource-summary-network th{font-size:12px;line-height:1.5;font-weight:400;color:var(--muted-foreground);padding:0 4px 4px 0;overflow-wrap:anywhere}
+ .resource-summary-network th:first-child{width:56px;white-space:nowrap;overflow-wrap:normal}
+ .resource-summary-network td{padding:4px 4px 4px 0;vertical-align:top;font-size:15px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+ .resource-summary-details summary{min-height:44px;align-content:center;width:fit-content;min-width:44px;font-size:12px;color:var(--muted-foreground);cursor:pointer}
+ .resource-summary-details summary:focus-visible{outline:2px solid var(--ring);outline-offset:2px;border-radius:4px}
  .next-theme .node-detail .ma-panel,.next-theme .node-detail .detail-history{border-radius:16px}
  .next-theme .node-detail .ma-big-grid{gap:20px 16px;align-items:start}
  .next-theme .node-detail .ma-big-metric strong{font-size:26px;line-height:1.25;font-variant-numeric:tabular-nums}
