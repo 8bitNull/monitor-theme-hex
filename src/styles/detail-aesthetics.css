@@ -53,4 +53,16 @@
  .next-theme .node-detail .ma-history-tools{margin:12px 0}
  .next-theme .node-detail .detail-facts>div{border-bottom-color:color-mix(in srgb,var(--border) 55%,transparent)}
  .next-theme .node-detail .detail-fact-groups>section+section{margin-top:20px}
+ .next-theme .node-detail button.ma-metric-action{display:block;width:100%;min-height:44px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--foreground);text-align:left;box-shadow:none}
+ .next-theme .node-detail .ma-metric-label{display:flex;align-items:center;justify-content:space-between;gap:8px}
+ .next-theme .node-detail .ma-metric-label svg{flex-shrink:0;color:var(--tone)}
+ .next-theme .node-detail button.ma-metric-action:focus-visible{outline:2px solid var(--tone);outline-offset:5px}
+ .next-theme .node-detail button.ma-metric-action:hover{background:var(--ma-soft)}
+ .ma-route-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 0;font-variant-numeric:tabular-nums}
+ .ma-route-summary>div{min-width:0}
+ .ma-route-summary dt{font-size:12px;color:var(--muted-foreground);line-height:18px}
+ .ma-route-summary dd{margin:4px 0 0;font-size:16px;line-height:22px;font-weight:550;overflow-wrap:anywhere}
+ .ma-route-summary dd small,.ma-route-summary .ma-unknown-loss{font-size:12px;color:var(--muted-foreground);font-weight:400}
+ .next-theme .node-detail .ma-chart-scope{gap:4px}
+ .ma-chart-scope .ma-statistics-help{min-width:44px;margin-right:auto}
 }

@@ -1,4 +1,7 @@
 export const english: Record<string, string> = {
+"查看上行网速历史":"View upload speed history",
+"查看下行网速历史":"View download speed history",
+"当前节点运行正常，暂无到期或流量提醒。":"Current nodes are reporting normally, with no expiry or traffic reminders.",
 "查看 CPU 历史趋势":"View CPU history trend",
 "查看内存历史趋势":"View memory history trend",
 "查看硬盘历史趋势":"View disk history trend",
