@@ -27,7 +27,7 @@ test('compact desktop can show only packet loss or only the probe route and reta
  await page.reload();await expect(page.locator('thead [data-column=probe]')).toHaveCount(1);await expect(page.locator('thead [data-column=latency]')).toHaveCount(0)
 })
 
-test('compact desktop hides an empty remark column and keeps remark details when current results contain one',async({page})=>{
+test('desktop keeps the remark column stable and opens populated remark details',async({page})=>{
  await page.setViewportSize({width:800,height:844})
  await page.addInitScript(()=>sessionStorage.setItem('monitor-next-browse-v1',JSON.stringify({columnsVersion:5,mobileColumns:['cpu','latency'],view:'table',mobileTableLayout:'grouped'})))
  await page.route('**/api/nodes',route=>{const node=nodes()[0];return route.fulfill({json:{nodes:[{...node,remark:''},{...node,id:2,name:'With note',remark:'first detail；second detail'}]}})})
@@ -38,7 +38,9 @@ test('compact desktop hides an empty remark column and keeps remark details when
  await page.getByRole('dialog').getByRole('button',{name:'关闭'}).click()
  await page.route('**/api/nodes',route=>{const node=nodes()[0];return route.fulfill({json:{nodes:[{...node,remark:''},{...node,id:2,name:'Still empty',remark:'   '}]}})})
  await page.reload()
- await expect(page.locator('thead [data-column=remark]')).toHaveCount(0)
+ // Desktop keeps its column structure when refreshed results have no remarks.
+ await expect(page.locator('tbody td[data-column=remark]')).toHaveText(['—','—'])
+ await expect(page.locator('thead [data-column=remark]')).toHaveCount(1)
  await expect(page.locator('.table-scroll')).toHaveAttribute('aria-label','节点表格，可横向滚动')
 })
 

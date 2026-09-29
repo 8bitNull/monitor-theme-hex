@@ -6,7 +6,7 @@ HEX 是为 monitor-probe 制作的监控主题。你可以在首页查看服务�
 
 主题在电脑端提供卡片和表格视图，手机端采用 App 式布局，支持深浅色以及简体中文和英文。
 
-v0.3.4 更新桌面与手机地图体验：桌面地图精简重复信息，手机地图采用全屏背景、地区标签与底部悬浮信息条，支持缩放、地区筛选和查看全球。统一配色与下拉菜单样式，修复手机长备注标签、资料对齐，以及后台功能开关引起的空横条、重复分隔线和布局空白。底部使用「节点 / 概览 / 设置」导航，详情分为「总览 / 资源 / 网络 / 资料」四个分区；手机端与电脑端共用真实监控接口。
+v0.3.5 优化首屏配置加载与手机卡片加载稳定性，补充失败重试、桌面到期及用量提醒、CPU 与内存历史预览。完善桌面阅读层级，并加入 Firefox、WebKit 与 Chromium 兼容性回归。保留手机全屏地图、底部「节点 / 概览 / 设置」导航，以及详情「总览 / 资源 / 网络 / 资料」四个分区；手机端与电脑端共用真实监控接口。
 
 [下载安装包](https://github.com/8bitNull/monitor-theme-hex/releases/latest/download/theme.tar.gz) · [查看发布记录](https://github.com/8bitNull/monitor-theme-hex/releases)
 
@@ -144,3 +144,7 @@ HEX 是适配 monitor-probe 的独立主题。基础接口与部分组件源自 
 <img src="screenshots/readme/home-mobile.png" width="320" alt="手机节点页" /> <img src="screenshots/readme/overview-mobile.png" width="320" alt="手机概览页" />
 
 <img src="screenshots/readme/detail-mobile.png" width="320" alt="手机详情资料" /> <img src="screenshots/readme/settings-mobile.png" width="320" alt="手机设置" />
+
+### 多浏览器兼容性回归
+
+先运行 `npm run build`，安装 Playwright 的 Chromium、Firefox、WebKit 后，执行 `npx playwright test --config playwright.compat.config.ts`。该套件覆盖三种浏览器引擎的页面、导航、加载状态和模拟会话；手机视口及触摸模拟不代替实体手机 Safari 验收。
