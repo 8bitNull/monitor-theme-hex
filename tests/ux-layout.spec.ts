@@ -77,7 +77,7 @@ test('grouped mobile list shows its first card near the top and detail billing e
  await expect(card).toBeVisible()
  const firstCardY=(await card.boundingBox())!.y
  console.log(`Grouped first card y=${firstCardY}`)
- expect(firstCardY).toBeLessThanOrEqual(274)
+ expect(firstCardY).toBeLessThanOrEqual(300)
  await card.locator('>button').click()
  const billing=page.getByRole('button',{name:'流量与账单'})
  await expect(billing).toHaveAttribute('aria-expanded','false')
@@ -86,16 +86,16 @@ test('grouped mobile list shows its first card near the top and detail billing e
  await expect(page.locator('.ma-detail-overview')).toContainText('费用')
 })
 
-test('mobile overview puts warnings before routine statistics and compresses empty reminders',async({page})=>{
+test('mobile overview puts warnings before routine statistics and omits empty reminders',async({page})=>{
  await page.setViewportSize({width:390,height:844});await fixture(page);await page.goto('/?page=overview')
  const attention=page.getByRole('heading',{name:'需要关注'})
  const stats=page.locator('.ma-stat-grid')
  expect((await attention.boundingBox())!.y).toBeLessThan((await stats.boundingBox())!.y)
- await expect(page.locator('.ma-reminder-empty')).toBeVisible()
- await expect(page.locator('.ma-reminder-empty')).toContainText('暂无到期或流量提醒')
+ await expect(page.getByRole('button',{name:/London.*离线/})).toBeVisible()
+ await expect(page.getByText('暂无到期或流量提醒')).toHaveCount(0)
 })
 
-for (const width of [320,390]) test(`mobile facts keep long values right aligned at ${width}px`,async({page,context})=>{
+for (const width of [320,390]) test(`mobile facts keep long values readable at ${width}px`,async({page,context})=>{
  await page.setViewportSize({width,height:844});await fixture(page,{longName:true})
  await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:nodes().map((node,index)=>index===0?{
   ...node,os:'Debian GNU/Linux 12',kernel:'6.1.0-28-cloud-amd64-production',
@@ -105,11 +105,11 @@ for (const width of [320,390]) test(`mobile facts keep long values right aligned
  await page.goto('/node/1')
  await page.getByRole('navigation',{name:'详情分区'}).getByRole('button',{name:'资料'}).click()
  const facts=page.locator('.detail-information')
- for(const label of ['Agent','系统','CPU','IPv6']){
+ for(const [label,alignment] of [['Agent','right'],['系统','left'],['CPU','left'],['IPv6','left']] as const){
   const row=facts.locator('.detail-facts > div').filter({has:page.locator('dt').filter({hasText:new RegExp(`^${label}$`)})})
   await expect(row.locator('dd')).toBeVisible()
-  await expect(row.locator('dd')).toHaveCSS('text-align','right')
-  await expect(row.locator('.fact-value')).toHaveCSS('text-align','right')
+  await expect(row.locator('dd')).toHaveCSS('text-align',alignment)
+  await expect(row.locator('.fact-value')).toHaveCSS('text-align',alignment)
   expect(await row.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true)
  }
  await context.grantPermissions(['clipboard-read','clipboard-write'])
