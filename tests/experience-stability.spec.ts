@@ -25,26 +25,27 @@ for(const width of [900,1440])test(`desktop cards stay in place when route histo
  expect(Math.abs(after.height-before.height)).toBeLessThanOrEqual(2)
 })
 
-for(const width of [900,1440])test(`detail preview keeps the main chart steady during initial load and refresh at ${width}`,async({page})=>{
+for(const [width,language] of [[900,"zh"],[1440,"zh"],[1280,"en"]] as const)test(`detail preview keeps the main chart steady during initial load and refresh at ${width} ${language}`,async({page})=>{
  await page.setViewportSize({width,height:1000});await fleet(page,1)
+ await page.addInitScript(language=>localStorage.setItem("monitor-next-language",language),language)
  let release!:()=>void
  let held=new Promise<void>(resolve=>{release=resolve})
  await page.route(history,async route=>{await held;await route.fulfill({json:metrics()})})
  await page.goto('/node/1')
  const panel=page.locator('.detail-history'),trend=page.locator('.resource-trend').first()
- await expect(trend).toContainText('读取中')
+ await expect(trend).toContainText(language==='en'?'Loading':'读取中')
  const before=(await panel.boundingBox())!
  release()
  await expect(trend.locator('svg')).toBeVisible()
  const ready=(await panel.boundingBox())!
  expect(Math.abs(ready.y-before.y)).toBeLessThanOrEqual(2)
  held=new Promise<void>(resolve=>{release=resolve})
- await page.getByRole('button',{name:'刷新历史',exact:true}).click()
- await expect(trend).toContainText('读取中')
+ await page.getByRole('button',{name:language==='en'?'Refresh history':'刷新历史',exact:true}).click()
+ await expect(trend).toContainText(language==='en'?'Loading':'读取中')
  await expect(page.locator('.resource-chart-panel .recharts-surface')).toBeVisible()
  expect(Math.abs((await panel.boundingBox())!.y-ready.y)).toBeLessThanOrEqual(2)
  release()
- await expect(page.getByRole('button',{name:'刷新历史',exact:true})).toBeEnabled()
+ await expect(page.getByRole('button',{name:language==='en'?'Refresh history':'刷新历史',exact:true})).toBeEnabled()
 })
 
 for(const width of [320,390,1024,1440])test(`live rate unit changes keep following nodes steady at ${width}`,async({page})=>{

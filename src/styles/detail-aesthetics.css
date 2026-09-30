@@ -1,3 +1,4 @@
+.resource-trend-action{display:none}
 @media (min-width:721px){
  .node-detail .detail-live[data-layout="metric-cards"]{padding:0;border:0;background:transparent;box-shadow:none}
  .node-detail .detail-live[data-layout="metric-cards"] .detail-module-heading{position:absolute;width:1px;height:1px;min-height:0;margin:0;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
@@ -13,8 +14,14 @@
  .node-detail .detail-metric-track[data-level=warning] i{background:var(--warn)}
  .node-detail .detail-metric-track[data-level=danger] i{background:var(--destructive)}
  .node-detail .detail-live .detail-metric-card .resource-trend{margin-top:auto;padding-top:8px;min-height:65px;grid-column:auto;grid-row:auto}
- .node-detail .detail-metric-card .resource-trend-caption{min-height:24px;flex:0 0 auto;font-size:12px}
+ .node-detail .detail-metric-card .resource-trend-caption{min-height:24px;flex:0 0 auto;font-size:12px;align-items:center}
+ .node-detail .resource-trend-action{display:block;flex:1;min-width:0;text-align:right;font-size:11px;opacity:0;color:var(--tone);overflow-wrap:anywhere}
+ .node-detail .resource-trend:is(:hover,:focus-visible) .resource-trend-action{opacity:1}
  .node-detail .detail-metric-card .resource-trend svg{height:30px}
+ /* Reserve the plot below captions even when translated action text wraps. */
+ .node-detail .detail-metric-card .resource-trend:not(:has(svg))::after{content:"";display:block;height:30px;flex-shrink:0;margin-top:3px}
+ .node-detail .detail-metric-card .resource-trend-status{position:absolute;right:0;bottom:2px;padding:0 3px;background:var(--card)}
+ .node-detail .detail-identity{padding-bottom:8px}
  .node-detail .detail-metric-network .detail-speed{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
  .node-detail .detail-metric-network .detail-speed>div{min-width:0;grid-template-columns:14px minmax(0,1fr)}
  .node-detail .detail-metric-network .detail-speed strong{grid-column:1/-1;grid-row:2;justify-self:start;font-size:24px;transform:none}
@@ -22,22 +29,41 @@
  .node-detail .detail-metric-network .detail-speed>div>svg:first-child{grid-column:1;grid-row:1;transform:none}
  .node-detail .detail-metric-network .detail-speed .speed-trend{display:block;grid-column:1/-1;grid-row:3;margin-top:6px}
  .node-detail .detail-metric-network .speed-trend .micro-trend{height:24px}
- .node-detail .detail-overview-grid .overview-account{margin-top:12px;padding:12px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card);display:flex;flex-wrap:wrap;gap:12px 24px}
+ .node-detail .detail-overview-grid .overview-account{margin-top:12px;padding:12px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card);display:flex;flex-wrap:wrap;gap:12px 32px}
+ .node-detail .overview-billing{flex-wrap:wrap;gap:12px 32px}
+ .node-detail .overview-billing>div{flex-wrap:wrap;gap:4px 8px}
+ .node-detail .overview-billing b,.node-detail .overview-billing small{white-space:normal;overflow-wrap:anywhere}
+ .node-detail .overview-account-footer{margin-left:auto;min-width:0;max-width:100%}
+ .node-detail .overview-account-footer .overview-price{display:block;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
  .node-detail .overview-remarks,.node-detail .overview-remarks.remarks-expanded{margin-top:12px;padding:12px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card)}
  .node-detail .overview-unavailable{padding:20px;border:1px solid var(--border);border-radius:8px;background:var(--card)}
  .node-detail .detail-history{padding:20px;border-radius:12px}
  .node-detail .detail-history .detail-chart-toolbar[data-history-tab]{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px 20px;min-height:0;padding:0 0 12px}
  .node-detail .detail-toolbar-selection,.node-detail .detail-toolbar-actions{display:flex;align-items:center;flex-wrap:wrap;gap:16px;min-width:0}
  .node-detail .detail-toolbar-actions{margin-left:auto;justify-content:flex-end}
+ .node-detail .detail-chart-toolbar .detail-resource-metric-desktop{display:flex}
+ .node-detail .detail-chart-toolbar .detail-resource-metric-mobile{display:none}
+ .node-detail .detail-chart-toolbar .detail-resource-metric-desktop button span{display:inline}
+ .node-detail .detail-chart-toolbar .detail-resource-metric-desktop button{min-width:44px;min-height:44px;padding-inline:8px}
  .node-detail .detail-chart-toolbar .detail-submenu-divider{display:none}
  .node-detail .detail-chart-toolbar .detail-update{display:block;margin:0;padding:0}
- .node-detail .detail-chart-toolbar .detail-update[data-failed=true]{color:var(--warn)}
- .node-detail .detail-chart-toolbar .detail-ranges{margin:0}
+ .node-detail .detail-chart-toolbar .detail-update[data-failed=true]{color:var(--warn);white-space:normal;overflow-wrap:anywhere}
+ .node-detail .detail-chart-toolbar .detail-ranges{order:-1;margin:0}
+ .dark .node-detail .detail-latency-band .recharts-area-area{fill-opacity:.12}
+ .dark .node-detail .detail-latency-line .recharts-line-curve{stroke-width:2px}
+ .dark .node-detail .latency-band-key{opacity:.12}
 }
-@media (min-width:721px) and (max-width:1023px){
- .node-detail .detail-toolbar-actions{flex-basis:100%}
+@media (min-width:721px) and (max-width:1199px){
+ .node-detail .detail-toolbar-selection{flex-basis:100%}
+ .node-detail .detail-toolbar-actions{flex-basis:100%;justify-content:flex-end}
 }
 @media (min-width:1280px){.node-detail .desktop-detail-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (min-width:900px){
+ .node-detail .detail-information .detail-fact-groups{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}
+ .node-detail .detail-information .detail-facts>div{grid-template-columns:96px minmax(0,1fr);min-height:24px;align-items:start}
+ .node-detail .detail-information .detail-facts dd{min-width:0;text-align:right;line-height:1.5;overflow-wrap:anywhere}
+ .node-detail .detail-information .detail-facts .fact-value{min-width:0;text-align:right;overflow-wrap:anywhere}
+}
 @media (max-width:720px){
  .next-theme .node-detail .detail-resource-charts:has(.resource-summary){grid-template-rows:auto 24px var(--plot-height)}
  .resource-summary{margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
