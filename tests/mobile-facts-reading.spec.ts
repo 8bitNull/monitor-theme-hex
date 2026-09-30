@@ -9,6 +9,8 @@ test('long phone facts stay readable and copy reports failure',async({page})=>{
  await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:[{
   ...nodes()[0],name:'Tokyo long node name 东京节点',remark:'Long remark 长备注 '.repeat(10),
   cpu_name:'AMD EPYC 7B13 64-Core Processor Production Edition',
+  kernel:'6.12.0-production-long-kernel-version-amd64',
+  ipv4:'192.0.2.10',
   ipv6:'2001:db8:1234:5678:abcd:1234:5678:abcd'
  }]}}))
  await page.goto('/node/1?section=info')
@@ -23,6 +25,13 @@ test('long phone facts stay readable and copy reports failure',async({page})=>{
  await page.screenshot({path:'artifacts/mobile-completion/facts-320.png',fullPage:true})
  for(const width of [320,390,430]){
   await page.setViewportSize({width,height:844})
+  for(const label of ['CPU','系统','IPv4','IPv6','内存 / 硬盘']){
+   const row=page.locator('.detail-facts>div').filter({has:page.locator('dt',{hasText:new RegExp(`^${label}$`)})})
+   await expect(row.locator('dd')).toHaveCSS('text-align','right')
+   await expect(row.locator('.fact-value')).toHaveCSS('text-align','right')
+   expect(await row.evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true)
+  }
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
   for(const colorScheme of ['light','dark'] as const){
    await page.emulateMedia({colorScheme})
    await page.screenshot({path:`artifacts/mobile-completion/facts-${width}-${colorScheme}.png`,fullPage:true})
