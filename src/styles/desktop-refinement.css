@@ -121,9 +121,30 @@
 
 @media (min-width: 721px) {
   .next-theme .node-card[data-card-density=compact] .node-heading { padding-block: 10px 8px; }
-  .next-theme .node-card[data-card-density=compact] .resources { column-gap: 20px; row-gap: 6px; padding-bottom: 6px; }
+  .next-theme .node-card[data-card-density=compact] .resources { column-gap: 20px; row-gap: 10px; padding-bottom: 6px; }
   .next-theme .node-card[data-card-density=compact] .card-network { padding-block: 4px; }
   .next-theme .node-card[data-card-density=compact] .speed-indicators strong { line-height: 1.25; font-variant-numeric: tabular-nums; }
   .next-theme .node-card[data-card-density=compact] .resource small { line-height: 1.35; }
   .next-theme .node-card[data-card-density=compact] .node-secondary-toggle { min-height: 32px; margin-block: 0 4px; }
+}
+
+/* Compact cards lead with identity and CPU/memory; warnings retain their colour and weight. */
+@media (min-width: 721px) {
+  .next-theme .node-card .node-identity h3 { font-size: 18px; }
+  .next-theme .node-card :is(.node-identity p, .resource small, .route-select) { font-size: 13px; }
+  .next-theme .node-card .resource-label > span { font-size: 13px; }
+  .next-theme .node-card .resource small { white-space: normal; line-height: 1.5; }
+  .next-theme .node-card[data-card-density=compact]:not([data-metric-state=missing]) .resource:nth-child(-n+2) .bar-number { font-size: 20px; }
+  .next-theme .node-card[data-card-density=compact]:not([data-metric-state=missing]) .resource:nth-child(-n+2) .metric-ring strong { font-size: 16px; }
+  .next-theme .node-card[data-card-density=compact] .resource:nth-child(n+3):not(.warning):not(.danger) { --metric-color: var(--muted-foreground); }
+  .next-theme .node-card[data-card-density=compact]:not([data-metric-state=missing]) .resource:nth-child(n+3):not(.warning):not(.danger) :is(.bar-number, .metric-ring strong) { font-size: 15px; font-weight: 500; }
+  .next-theme .node-card[data-card-density=compact] .speed-indicators strong { font-size: 18px; }
+  .next-theme .node-card[data-card-density=compact] .route-matrix[data-route-count="1"] .latency-link { font-size: 16px; }
+  .next-theme .node-card .node-secondary-toggle { font-size: 13px; }
+  .next-theme .node-card[data-card-density=compact] .node-heading { padding-block: 14px 12px; }
+}
+
+/* Keep node readings within the first screen on shorter desktop windows. */
+@media (min-width: 721px) and (max-height: 800px) {
+  .map-frame { --map-height: 200px; }
 }

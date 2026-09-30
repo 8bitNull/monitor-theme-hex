@@ -15,7 +15,10 @@ export function ResourceSummary({rows,metric,hours}:{rows:readonly ResourceSampl
  return <section className="resource-summary" aria-label={tr('历史采样摘要')}>
   {metric==='network'?<table className="resource-summary-network">
    <thead><tr><th scope="col"><span className="sr-only">{tr('网速')}</span></th>{labels.map(label=><th scope="col" key={label}>{label}</th>)}</tr></thead>
-   <tbody>{groups.map(group=><tr key={group.key}><th scope="row">{group.key==='net_tx'?tr('上行'):tr('下行')}</th>{values(group).map((value,i)=><td key={i}>{value}</td>)}</tr>)}</tbody>
+   <tbody>{groups.map(group=><tr key={group.key}><th scope="row">{group.key==='net_tx'?tr('上行'):tr('下行')}</th>{values(group).map((value,i)=>{
+    const [amount,unit]=value.split(' ')
+    return <td key={i}><span>{amount}</span>{unit&&<small> {unit}</small>}</td>
+   })}</tr>)}</tbody>
   </table>:<dl>{labels.map((label,i)=><div key={label}><dt>{label}</dt><dd>{values(groups[0])[i]}</dd></div>)}</dl>}
   <details key={`${metric}:${hours}`} className="resource-summary-details">
    <summary>{tr('统计说明')}</summary>

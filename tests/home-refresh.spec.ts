@@ -45,13 +45,13 @@ test('four summary tiles form balanced rows at tablet widths',async({page})=>{
  await page.goto('/')
  const grid=page.locator('.summary-grid')
  await expect(grid.locator(':scope > div')).toHaveCount(4)
- for(const width of [721,795,1024,1100,1101,1440]){
+ for(const width of [721,795,959,960,1024,1100,1101,1440]){
   await page.setViewportSize({width,height:900})
   const layout=await grid.locator(':scope > div').evaluateAll(tiles=>tiles.map(tile=>{
    const box=tile.getBoundingClientRect()
    return {top:box.top,left:box.left,width:box.width}
   }))
-  if(width<=1100){
+  if(width<960){
    expect(layout[0].top).toBe(layout[1].top)
    expect(layout[2].top).toBe(layout[3].top)
    expect(layout[2].top).toBeGreaterThan(layout[0].top)
