@@ -2,18 +2,18 @@
   "name": "HEX",
   "short": "hex",
   "description": "HEX，让服务器状态一目了然。",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "author": "HEX contributors",
   "url": "https://github.com/8bitNull/monitor-theme-hex",
   "config": [
     { "type": "title", "label": "外观与布局" },
     { "key": "palette", "type": "select", "label": "主题配色", "default": "default", "options": [
-      { "value": "default", "label": "经典蓝" },
-      { "value": "ocean", "label": "海洋" },
-      { "value": "sunset", "label": "落日" },
-      { "value": "forest", "label": "森林" },
-      { "value": "midnight", "label": "午夜" },
-      { "value": "rose", "label": "玫瑰" }
+      { "value": "default", "label": "电光青" },
+      { "value": "midnight", "label": "极光紫" },
+      { "value": "forest", "label": "矩阵绿" },
+      { "value": "sunset", "label": "炽阳金" },
+      { "value": "ocean", "label": "深空蓝" },
+      { "value": "rose", "label": "赛博粉" }
     ] },
     { "key": "appearance", "type": "select", "label": "明暗模式", "default": "system", "options": [
       { "value": "system", "label": "跟随系统" },
@@ -45,7 +45,7 @@
     ] },
     { "key": "backgroundBlur", "type": "number", "label": "背景模糊（px）", "default": 0, "min": 0, "max": 30, "help": "设置背景图片地址后生效" },
     { "key": "backgroundMask", "type": "number", "label": "背景遮罩（%）", "default": 45, "min": 0, "max": 90, "help": "设置背景图片地址后生效" },
-    { "key": "glass", "type": "boolean", "label": "开启卡片毛玻璃", "default": false },
+    { "key": "glass", "type": "boolean", "label": "开启卡片毛玻璃", "default": true },
     { "key": "cardOpacity", "type": "number", "label": "卡片不透明度（%）", "default": 88, "min": 55, "max": 100, "help": "开启卡片毛玻璃后生效" },
     { "key": "cardBlur", "type": "number", "label": "卡片模糊（px）", "default": 12, "min": 0, "max": 24, "help": "开启卡片毛玻璃后生效" },
 
