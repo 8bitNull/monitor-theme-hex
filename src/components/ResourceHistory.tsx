@@ -8,7 +8,7 @@ import {tr,locale} from '@/lib/i18n'
 import {mbpsAmount,axisBytes,axisTop,bytes,clockFor,quarters,rate,timeTicks} from '@/lib/format'
 type Row={ts:number;cpu:number;mem_used:number;disk_used:number;net_rx:number;net_tx:number}
 const AXIS={stroke:'currentColor',fontSize:11,tickLine:false,axisLine:false}
-const SERIES={dot:false as const,strokeWidth:1.7,isAnimationActive:false,connectNulls:false}
+const SERIES={dot:false as const,strokeWidth:1.7,isAnimationActive:false,connectNulls:false,type:"monotone" as const}
 export const resourceOptions=[{key:'cpu',label:'CPU',Icon:Cpu},{key:'mem_used',label:'内存',Icon:MemoryStick},{key:'disk_used',label:'硬盘',Icon:HardDrive},{key:'network',label:'网速',Icon:ArrowDownUp}] as const
 export type ResourceMetricKey=(typeof resourceOptions)[number]['key']
 export function ResourceHistory({rows,node,hours,metric,compact,mobile=false}:{compact:boolean;mobile?:boolean;rows:Row[];node:Node;hours:number;metric:ResourceMetricKey}){

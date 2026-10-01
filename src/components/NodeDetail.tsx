@@ -434,7 +434,7 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
                     bands overlap into a fog and their extremes drag the
                     axis from 165-385 out to 140-420. */}
                     {shownProbes.length === 1 &&
-                    shownProbes.map((s) => (<Area className="detail-latency-band" key={`band${s.id}`} dataKey={`b${s.id}`} type="monotone" stroke="none" fill="url(#cyberChartGradient)" fillOpacity={0.12} isAnimationActive={false} tooltipType="none" legendType="none" connectNulls={false}/>))}
+                    shownProbes.map((s) => (<Area className="detail-latency-band" key={`band${s.id}`} dataKey={`b${s.id}`} type="monotone" stroke="none" fill="url(#cyberLatencyGradient)" fillOpacity={0.12} isAnimationActive={false} tooltipType="none" legendType="none" connectNulls={false}/>))}
                     {shownProbes.map((s) => (<Line className="detail-latency-line" key={s.id} dataKey={`${smooth ? "s" : "t"}${s.id}`} name={s.name} stroke={style(s.id).stroke} {...SERIES} strokeOpacity={highlightProbe!==null && visibleIds.includes(highlightProbe) && highlightProbe!==s.id ? 0.2 : 1} onMouseEnter={()=>{if(!compact)setHighlightProbe(s.id)}} onMouseLeave={()=>{if(!compact)setHighlightProbe(null)}} connectNulls={false}/>))}
                     {/* Drag either handle to zoom into a stretch of the trend. */}
                     {!mobile&&<Brush ariaLabel={tr("时间范围")} dataKey="ts" height={44} travellerWidth={compact?44:12} startIndex={zoom?.[0]??0} endIndex={zoom?.[1]??pingRows.length-1} tickFormatter={clockFor(hours)} fill="var(--card)" className="latency-brush" stroke="var(--border)" onChange={(r) => {tooltipDismiss();setZoom([r.startIndex ?? 0, r.endIndex ?? pingRows.length - 1])}}>

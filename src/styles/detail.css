@@ -155,11 +155,18 @@
    Cyber-Glass Historical Telemetry & Chart Surfaces
    ========================================================================== */
 
-/* Detail Panels: Frosted Cyber Glass */
+/* Detail Panels: Base solid styling with frosted Cyber Glass when data-glass=true */
 .node-detail .detail-history,
 .node-detail .detail-live,
 .node-detail .detail-information section,
 .node-detail .detail-fact-groups>section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel, 14px);
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.06);
+}
+
+[data-glass=true] .node-detail :is(.detail-history, .detail-live, .detail-information section, .detail-fact-groups>section) {
   background: linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box, var(--cyber-border-gradient) border-box;
   border: 1px solid transparent;
   -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
@@ -167,17 +174,30 @@
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12);
 }
 
+@media (max-width: 720px) {
+  [data-glass=true] .node-detail :is(.detail-history, .detail-live, .detail-information section, .detail-fact-groups>section) {
+    -webkit-backdrop-filter: blur(min(var(--glass-blur, 16px), 6px));
+    backdrop-filter: blur(min(var(--glass-blur, 16px), 6px));
+  }
+}
+
 /* Detail Metrics Cards */
 .node-detail .detail-metric-card,
 .node-detail .overview-account,
 .node-detail .overview-remarks {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel, 12px);
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.04);
+  transition: transform .2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-glass=true] .node-detail :is(.detail-metric-card, .overview-account, .overview-remarks) {
   background: linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box, var(--cyber-border-gradient) border-box;
   border: 1px solid transparent;
-  border-radius: var(--radius-panel, 12px);
   -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
   backdrop-filter: blur(var(--glass-blur, 16px));
   box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.06);
-  transition: transform .2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (hover: hover) {
@@ -199,9 +219,13 @@
 
 /* Recharts Area Glow Injections */
 .node-detail .detail-resource-charts .recharts-area-area,
-.node-detail .detail-latency-band.recharts-area-area,
 .node-detail .latency-brush .recharts-area-area {
   fill: url(#cyberChartGradient) !important;
+  fill-opacity: 1 !important;
+}
+
+.node-detail .detail-latency-band .recharts-area-area {
+  fill: url(#cyberLatencyGradient) !important;
   fill-opacity: 1 !important;
 }
 
