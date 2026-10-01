@@ -150,3 +150,92 @@
  .detail-tabs button {padding-inline:8px}
  .resource-chart-tabs button svg {display:none}
 }
+
+/* ==========================================================================
+   Cyber-Glass Historical Telemetry & Chart Surfaces
+   ========================================================================== */
+
+/* Detail Panels: Frosted Cyber Glass */
+.node-detail .detail-history,
+.node-detail .detail-live,
+.node-detail .detail-information section,
+.node-detail .detail-fact-groups>section {
+  background: linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box, var(--cyber-border-gradient) border-box;
+  border: 1px solid transparent;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
+  backdrop-filter: blur(var(--glass-blur, 16px));
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12);
+}
+
+/* Detail Metrics Cards */
+.node-detail .detail-metric-card,
+.node-detail .overview-account,
+.node-detail .overview-remarks {
+  background: linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box, var(--cyber-border-gradient) border-box;
+  border: 1px solid transparent;
+  border-radius: var(--radius-panel, 12px);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
+  backdrop-filter: blur(var(--glass-blur, 16px));
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.06);
+  transition: transform .2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (hover: hover) {
+  .node-detail .detail-metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -4px color-mix(in srgb, var(--cyber-glow-color, var(--tone)) 25%, transparent);
+  }
+}
+
+/* Chart Canvas Frame */
+.node-detail .detail-chart-frame {
+  background: color-mix(in srgb, var(--card) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  border-radius: 12px;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Recharts Area Glow Injections */
+.node-detail .detail-resource-charts .recharts-area-area,
+.node-detail .detail-latency-band.recharts-area-area,
+.node-detail .latency-brush .recharts-area-area {
+  fill: url(#cyberChartGradient) !important;
+  fill-opacity: 1 !important;
+}
+
+.node-detail .detail-resource-charts[data-metric="cpu"] .recharts-area-area {
+  fill: url(#cyberChartGradientCpu) !important;
+  fill-opacity: 1 !important;
+}
+
+.node-detail .detail-resource-charts[data-metric="mem_used"] .recharts-area-area {
+  fill: url(#cyberChartGradientMem) !important;
+  fill-opacity: 1 !important;
+}
+
+.node-detail .detail-resource-charts[data-metric="disk_used"] .recharts-area-area {
+  fill: url(#cyberChartGradientDisk) !important;
+  fill-opacity: 1 !important;
+}
+
+/* Telemetry curves: Spline line drop-shadow glow */
+.node-detail .detail-resource-charts .recharts-area-curve,
+.node-detail .detail-resource-charts .recharts-line-curve {
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--tone) 45%, transparent));
+}
+
+.node-detail .detail-latency-line .recharts-line-curve {
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tone) 35%, transparent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node-detail .detail-resource-charts .recharts-area-curve,
+  .node-detail .detail-resource-charts .recharts-line-curve,
+  .node-detail .detail-latency-line .recharts-line-curve {
+    filter: none !important;
+  }
+}

@@ -456,3 +456,160 @@ main:has(>.node-detail)>.detail-navigation {margin-bottom:4px}
 .fact-section-heading h3 {display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
 .fact-section-heading h3 svg {color:var(--tone)}
 .detail-fact-disclosure>.detail-fact-section-body {padding-top:16px}
+
+/* ==========================================================================
+   Cyber Capsule Controls & Highlight Borders
+   ========================================================================== */
+
+/* Cyber Capsule Track Containers */
+.detail-chart-toolbar .detail-ranges,
+.detail-chart-toolbar .detail-resource-metric-desktop,
+.resource-chart-tabs {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  background: color-mix(in srgb, var(--muted) 80%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent) !important;
+  border-radius: 9999px !important;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* Range Capsule Buttons */
+.detail-chart-toolbar .detail-ranges button,
+.detail-ranges button {
+  min-width: 38px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 9999px !important;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.detail-chart-toolbar .detail-ranges button:hover,
+.detail-ranges button:hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+  border-color: color-mix(in srgb, var(--tone) 25%, transparent);
+}
+
+.detail-chart-toolbar .detail-ranges button[aria-pressed=true],
+.detail-ranges button[aria-pressed=true],
+.next-theme .detail-chart-toolbar .detail-ranges button[aria-pressed=true] {
+  background: linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box, var(--cyber-border-gradient) border-box !important;
+  border: 1px solid transparent !important;
+  color: var(--foreground) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 0 12px -2px color-mix(in srgb, var(--cyber-glow-color, var(--tone)) 50%, transparent), 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Metric Selector Capsule Buttons */
+.detail-chart-toolbar .detail-resource-metric-desktop button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 9999px !important;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  white-space: nowrap;
+  transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.detail-chart-toolbar .detail-resource-metric-desktop button:hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+  border-color: color-mix(in srgb, var(--tone) 25%, transparent);
+}
+
+.detail-chart-toolbar .detail-resource-metric-desktop button[aria-pressed=true],
+.next-theme .detail-chart-toolbar .detail-resource-metric-desktop button[aria-pressed=true] {
+  background: linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box, var(--cyber-border-gradient) border-box !important;
+  border: 1px solid transparent !important;
+  color: var(--tone) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 0 14px -2px color-mix(in srgb, var(--cyber-glow-color, var(--tone)) 55%, transparent), 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Resource Chart Tabs (CPU / 内存 / 硬盘 / 网速) */
+.resource-chart-tabs button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-radius: 9999px !important;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  transition: all .2s ease;
+}
+
+.resource-chart-tabs button:hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+}
+
+.resource-chart-tabs button[aria-pressed=true] {
+  background: linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box, var(--cyber-border-gradient) border-box !important;
+  border: 1px solid transparent !important;
+  color: var(--tone) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 0 12px -2px color-mix(in srgb, var(--cyber-glow-color, var(--tone)) 50%, transparent) !important;
+}
+
+/* Refresh Button Capsule */
+.detail-chart-toolbar .detail-refresh {
+  display: grid;
+  place-items: center;
+  flex: 0 0 34px;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  border-radius: 9999px !important;
+  background: color-mix(in srgb, var(--muted) 80%, transparent);
+  color: var(--tone);
+  transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.detail-chart-toolbar .detail-refresh:hover:not(:disabled) {
+  background: var(--tone-soft);
+  box-shadow: 0 0 12px -2px color-mix(in srgb, var(--cyber-glow-color, var(--tone)) 50%, transparent);
+}
+
+/* Reduced Transparency Mode Support */
+@media (prefers-reduced-transparency: reduce) {
+  .node-detail .detail-history,
+  .node-detail .detail-live,
+  .node-detail .detail-information section,
+  .node-detail .detail-fact-groups>section,
+  .node-detail .detail-metric-card,
+  .node-detail .detail-chart-frame,
+  .detail-chart-toolbar .detail-ranges,
+  .detail-chart-toolbar .detail-resource-metric-desktop,
+  .resource-chart-tabs {
+    background: var(--card) !important;
+    border: 1px solid var(--border) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .detail-chart-toolbar .detail-ranges button[aria-pressed=true],
+  .detail-chart-toolbar .detail-resource-metric-desktop button[aria-pressed=true],
+  .resource-chart-tabs button[aria-pressed=true] {
+    background: var(--muted) !important;
+    border: 1px solid var(--tone) !important;
+    box-shadow: none !important;
+  }
+}
