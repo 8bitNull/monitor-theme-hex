@@ -30,6 +30,7 @@
       { "value": "3", "label": "3 列" },
       { "value": "4", "label": "4 列" }
     ] },
+    { "key": "cockpitMode", "type": "boolean", "label": "前台驾驶舱模式", "default": true, "help": "大屏下启用双栏中控台" },
     { "key": "graph", "type": "select", "label": "指标样式", "default": "bar", "options": [
       { "value": "ring", "label": "圆环" },
       { "value": "bar", "label": "进度条" },

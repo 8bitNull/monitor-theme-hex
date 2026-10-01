@@ -760,6 +760,8 @@ export const english: Record<string, string> = {
   "在线节点": "Online nodes",
   "流量统计": "Traffic statistics",
   "首页地图": "Overview map",
+  "前台驾驶舱模式": "Cockpit Console",
+  "大屏下启用双栏中控台": "Enable dual-column cockpit console on wide screens",
   "文件不是有效的 JSON 配置": "Invalid JSON configuration",
   "配置必须是一个对象": "Configuration must be an object",
   "不支持此配置版本": "Unsupported configuration version",
