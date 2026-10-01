@@ -288,3 +288,172 @@
 .node-card.node-offline .card-billing {border-top:1px solid var(--home-line);padding-top:10px}
 .node-card.node-offline .card-uptime {display:none}
 @media(max-width:360px){.node-card.node-offline .offline-last-report {align-items:flex-start;flex-direction:column;gap:4px}.node-card.node-offline .offline-last-report :is(time,b) {text-align:left}}
+
+/* Cyber-glass micro-interactions: Online pulse, energetic alert pulse, and telemetry flow */
+@keyframes cyber-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 0%, transparent);
+  }
+}
+
+@keyframes cyber-alert-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--warn) 65%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--warn) 0%, transparent), 0 0 8px 1px color-mix(in srgb, var(--warn) 35%, transparent);
+  }
+}
+
+@keyframes cyber-alert-pulse-red {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--destructive) 70%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--destructive) 0%, transparent), 0 0 10px 1px color-mix(in srgb, var(--destructive) 40%, transparent);
+  }
+}
+
+@keyframes cyber-alert-card {
+  0%, 100% {
+    box-shadow: 0 0 6px 0 color-mix(in srgb, var(--warn) 10%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 16px 2px color-mix(in srgb, var(--warn) 26%, transparent);
+  }
+}
+
+@keyframes cyber-alert-card-red {
+  0%, 100% {
+    box-shadow: 0 0 6px 0 color-mix(in srgb, var(--destructive) 12%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 18px 2px color-mix(in srgb, var(--destructive) 30%, transparent);
+  }
+}
+
+@keyframes telemetry-flow-up {
+  0%, 100% {
+    transform: translateY(0);
+    filter: drop-shadow(0 0 0 transparent);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateY(-2px);
+    filter: drop-shadow(0 -1px 3px color-mix(in srgb, var(--upload) 70%, transparent));
+    opacity: 1;
+  }
+}
+
+@keyframes telemetry-flow-down {
+  0%, 100% {
+    transform: translateY(0);
+    filter: drop-shadow(0 0 0 transparent);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateY(2px);
+    filter: drop-shadow(0 1px 3px color-mix(in srgb, var(--download) 70%, transparent));
+    opacity: 1;
+  }
+}
+
+.status-pill.is-online,
+.node-card .status-pill.is-online,
+.busiest-pill.online,
+.status-pill.online {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ok) 18%, transparent);
+  animation: cyber-pulse 3s infinite ease-in-out;
+}
+
+.status-pill.is-online .dot,
+.node-card .status-pill.is-online .dot,
+.status-pill[data-state=live] .dot,
+.dot.online,
+.online .dot,
+.online,
+.table-status-dot,
+.billing-status-normal .billing-status-dot {
+  background: var(--ok);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent);
+  animation: cyber-pulse 3s infinite ease-in-out;
+}
+
+.node-card .card-issue>span,
+.busiest-pill,
+.busiest-pill.warn,
+.status-pill.is-alert {
+  animation: cyber-alert-pulse 1.8s infinite ease-in-out;
+}
+
+.node-card .card-issue>span.is-expired,
+.busiest-pill.danger,
+.busiest-pill.destructive {
+  animation: cyber-alert-pulse-red 1.5s infinite ease-in-out;
+}
+
+.node-card .status-pill[data-state=stale] .dot {
+  background: var(--warn);
+  animation: cyber-alert-pulse 1.8s infinite ease-in-out;
+}
+
+.node-card:has(.card-issue) {
+  animation: cyber-alert-card 2.5s infinite ease-in-out;
+}
+
+.node-card:has(.card-issue .is-expired) {
+  animation: cyber-alert-card-red 2s infinite ease-in-out;
+}
+
+.node-card:not(.node-offline):not([data-metric-state=missing]):not([data-metric-state=stale]) .speed-indicators .upload svg,
+.summary-flow .upload svg,
+.ma-net span:first-child svg {
+  display: inline-block;
+  will-change: transform;
+  animation: telemetry-flow-up 2.4s infinite ease-in-out;
+}
+
+.node-card:not(.node-offline):not([data-metric-state=missing]):not([data-metric-state=stale]) .speed-indicators .download svg,
+.summary-flow .download svg,
+.ma-net span:last-child svg {
+  display: inline-block;
+  will-change: transform;
+  animation: telemetry-flow-down 2.4s infinite ease-in-out;
+}
+
+.node-card.node-offline .speed-indicators svg,
+.node-card[data-metric-state=missing] .speed-indicators svg,
+.node-card[data-metric-state=stale] .speed-indicators svg,
+.speed-indicators[data-state=offline] svg,
+.speed-indicators[data-state=missing] svg,
+.speed-indicators[data-state=stale] svg {
+  animation: none !important;
+  transform: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-pill.is-online,
+  .status-pill.is-online .dot,
+  .node-card .status-pill.is-online .dot,
+  .status-pill[data-state=live] .dot,
+  .dot.online,
+  .online .dot,
+  .online,
+  .table-status-dot,
+  .busiest-pill,
+  .card-issue>span,
+  .node-card .status-pill[data-state=stale] .dot,
+  .node-card:has(.card-issue),
+  .load-alert-tile[data-active=true],
+  .speed-indicators svg,
+  .summary-flow svg,
+  .ma-net svg,
+  .next-theme .summary-grid .summary-node-count button:first-child span::before {
+    animation: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+}
