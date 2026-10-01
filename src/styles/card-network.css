@@ -46,12 +46,12 @@
 .compact-network-card .card-expiry b,.compact-network-card .card-expiry.expiring b {color:var(--foreground);white-space:nowrap}
 .compact-network-card .card-billing .traffic-summary b,.compact-network-card .card-expiry b {font-size:13px;line-height:24px}
 .compact-network-card .quota-meter {display:flex;align-items:center;gap:8px;height:20px;min-width:0}
-.compact-network-card .card-billing .quota {flex:1;min-width:0;height:3px;margin:0;background:var(--muted)}
+.compact-network-card .card-billing .quota {flex:1;min-width:0;height:3px;margin:0;background:var(--muted);border-radius:3px;overflow:hidden}
 .compact-network-card .quota-percent,.compact-network-card .traffic-reset {font-size:10px;color:var(--muted-foreground);white-space:nowrap}
-.compact-network-card .quota i {background:var(--tone)}
-.compact-network-card [data-quota-state=near] .quota i {background:var(--warn)}
+.compact-network-card .quota i {display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,color-mix(in srgb,var(--tone) 65%,transparent),var(--tone));transition:width .3s ease,background .3s ease,box-shadow .3s ease}
+.compact-network-card [data-quota-state=near] .quota i {background:linear-gradient(90deg,color-mix(in srgb,var(--warn) 65%,transparent),var(--warn));box-shadow:0 0 8px 1px color-mix(in srgb,var(--warn) 55%,transparent)}
 .compact-network-card [data-quota-state=near] .quota-percent {color:var(--warn)}
-.compact-network-card [data-quota-state=over] .quota i {background:var(--destructive)}
+.compact-network-card [data-quota-state=over] .quota i {background:linear-gradient(90deg,color-mix(in srgb,var(--destructive) 65%,transparent),var(--destructive));box-shadow:0 0 10px 1px color-mix(in srgb,var(--destructive) 65%,transparent)}
 .compact-network-card .card-billing [data-quota-state=over] b,.compact-network-card [data-quota-state=over] .quota-percent {color:var(--destructive)}
 .compact-network-card .card-expiry small {display:flex;align-items:center;gap:4px;justify-content:end}
 .compact-network-card .card-expiry[data-expiry-state=expired] small {color:var(--destructive)}
@@ -102,4 +102,11 @@
 .node-card.compact-network-card .ping-loading>.ping-loading-line:last-child {width:58%}
 .node-card.compact-network-card .route-matrix[data-loading=true] .route-select .select-value {font-size:0}
 .node-card.compact-network-card .route-matrix[data-loading=true] .route-select .select-value::after {content:"";display:inline-block;width:68px;height:11px;border-radius:3px;background:var(--muted);vertical-align:middle}
-@media(max-width:720px){.node-card.compact-network-card .mobile-card-extra .card-billing {border-top:1px solid var(--border);padding-top:8px}}
+@media(max-width:720px){
+  .node-card.compact-network-card .mobile-card-extra .card-billing {border-top:1px solid var(--border);padding-top:8px}
+  .compact-network-card .matrix-heading button,
+  .compact-network-card .matrix-heading .route-picker {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+}
