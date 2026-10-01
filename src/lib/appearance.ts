@@ -1,5 +1,12 @@
 import { tr } from './i18n.ts'
-export const palettes = { default: '经典蓝', ocean: '海洋', sunset: '落日', forest: '森林', midnight: '午夜', rose: '玫瑰' };
+export const palettes = {
+  default: '电光青',
+  midnight: '极光紫',
+  forest: '矩阵绿',
+  sunset: '炽阳金',
+  ocean: '深空蓝',
+  rose: '赛博粉'
+};
 export const cardLayouts = { classic: '经典', modern: '现代', minimal: '极简', detailed: '详细', compact: '紧凑行' };
 export const graphStyles = { ring: '圆环', bar: '进度条', columns: '分段柱条', minimal: '极简数字' };
 export const moduleLabels = { online: '在线节点', busiest: '高负载提示', traffic: '流量统计', speed: '实时网速', regions: '地区统计', clock: '当前时间', map: '首页地图' };
@@ -49,7 +56,7 @@ export const defaults: Preferences = {
     detailInfoMode: 'auto',
     cardInfo: {...defaultCardInfo}, mobileCardInfo: null, mobileInfoMode: 'follow', desktopColumns: 'auto',
     probe: 'auto', homeRoutes: 1, latencyScale:500, latencyWindow:1, latencyWarn:150, latencyHigh:300, skin: 'lumina', mobileLayout: 'inherit', designVersion: 1, schemaVersion: 3, palette: 'default', graph: 'bar', layout: 'comfortable', cardLayout: 'classic', appearance: 'system', map: true,
-    showTotals: true, icons: true, backgroundUrl: '', backgroundBlur: 0, backgroundMask: 45, backgroundType: 'soft', glass: false, cardOpacity: 88, cardBlur: 12, speedStyle: 'spark',
+    showTotals: true, icons: true, backgroundUrl: '', backgroundBlur: 0, backgroundMask: 45, backgroundType: 'soft', glass: true, cardOpacity: 88, cardBlur: 12, speedStyle: 'spark',
     modules: { online: true, busiest: true, traffic: true, speed: true, regions: false, clock: false, map: true },
 };
 function object(v: unknown): Record<string, unknown> { return v && typeof v === 'object' && !Array.isArray(v) ? v as Record<string, unknown> : {}; }
@@ -114,23 +121,23 @@ export function normalizePreferences(input: unknown, base: Preferences = default
 }
 export function parsePreferences(text: string, base: Preferences = defaults): Preferences {
     if (text.length > 65536)
-        throw new Error(tr("\u914D\u7F6E\u6587\u4EF6\u4E0D\u80FD\u8D85\u8FC7 64 KB"));
+        throw new Error(tr("配置文件不能超过 64 KB"));
     let v: unknown;
     try {
         v = JSON.parse(text);
     }
     catch {
-        throw new Error(tr("\u6587\u4EF6\u4E0D\u662F\u6709\u6548\u7684 JSON \u914D\u7F6E"));
+        throw new Error(tr("文件不是有效的 JSON 配置"));
     }
     if (!v || typeof v !== 'object' || Array.isArray(v))
-        throw new Error(tr("\u914D\u7F6E\u5FC5\u987B\u662F\u4E00\u4E2A\u5BF9\u8C61"));
+        throw new Error(tr("配置必须是一个对象"));
     const data = object(v);
     if (data.schemaVersion !== undefined && data.schemaVersion !== 1 && data.schemaVersion !== 2 && data.schemaVersion !== 3)
-        throw new Error(tr("\u4E0D\u652F\u6301\u6B64\u914D\u7F6E\u7248\u672C"));
+        throw new Error(tr("不支持此配置版本"));
     if (!Object.keys(data).some(key => key !== 'schemaVersion' && Object.hasOwn(defaults, key)))
-        throw new Error(tr("\u6CA1\u6709\u53EF\u7528\u7684\u5916\u89C2\u8BBE\u7F6E"));
+        throw new Error(tr("没有可用的外观设置"));
     if (data.backgroundUrl && !safeBackground(data.backgroundUrl))
-        throw new Error(tr("\u80CC\u666F\u4EC5\u652F\u6301 HTTP(S) \u5730\u5740\u6216\u7AD9\u5185\u7EDD\u5BF9\u8DEF\u5F84"));
+        throw new Error(tr("背景仅支持 HTTP(S) 地址或站内绝对路径"));
     return normalizePreferences({...data,...(!Object.hasOwn(data,"infoDensity")&&data.schemaVersion!==3?{infoDensity:"full"}:{})}, base);
 }
 export function restoreAppearance(current: Preferences, site: Preferences): Preferences {
