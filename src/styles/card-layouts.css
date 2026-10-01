@@ -84,7 +84,7 @@
 
 /* Columns indicator energy bars */
 .node-card[data-indicator=columns] .resource-columns i.filled {
-  background: linear-gradient(180deg, var(--metric-color), color-mix(in srgb, var(--metric-color) 70%, transparent));
+  background: linear-gradient(180deg, var(--metric-color, var(--tone)), color-mix(in srgb, var(--metric-color, var(--tone)) 70%, transparent));
 }
 .node-card :is(.resource.warning, .resource.warn) .resource-columns i.filled {
   box-shadow: 0 0 4px color-mix(in srgb, var(--warn) 55%, transparent);

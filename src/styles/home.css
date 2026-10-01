@@ -7,7 +7,7 @@
 .summary-grid .h-7 {height:12px;opacity:.55}
 .node-grid {gap:18px}
 .node-card {--card-pad:18px;border-color:var(--home-line);border-radius:14px;box-shadow:0 2px 8px #13243a04;transition:border-color .16s ease,box-shadow .16s ease}
-.node-card:hover {border-color:color-mix(in srgb,var(--tone) 27%,var(--border));box-shadow:0 4px 16px #13243a08}
+.node-card:hover {border-color:color-mix(in srgb,var(--tone) 45%,var(--border))}
 .dark .node-card {box-shadow:none}
 .node-card .node-heading {padding-top:16px;padding-bottom:12px;gap:7px}
 .node-card .node-symbol {width:23px}
@@ -401,10 +401,12 @@
 }
 
 .node-card:has(.card-issue) {
+  border-color: color-mix(in srgb, var(--warn) 30%, var(--border));
   animation: cyber-alert-card 2.5s infinite ease-in-out;
 }
 
 .node-card:has(.card-issue .is-expired) {
+  border-color: color-mix(in srgb, var(--destructive) 28%, var(--border));
   animation: cyber-alert-card-red 2s infinite ease-in-out;
 }
 
