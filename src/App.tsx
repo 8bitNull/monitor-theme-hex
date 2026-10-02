@@ -51,10 +51,14 @@ function useNodeRoute(beforeHistoryChange: RefObject<(() => void) | null>) {
     const [page,setPage]=useState<HomePage>(()=>read()===null?homePage():readReturnContext(history.state)?.page??'nodes');
     const home=useRef({y:readReturnContext(history.state)?.scrollY??0,node:0,offset:0,width:0,tableX:0,tableOffset:0,tableY:0,table:false});
     const pending=useRef(false);
-    useEffect(()=>{
+    useLayoutEffect(()=>{
         const previous=history.scrollRestoration;history.scrollRestoration='manual';
-        const sync=()=>{beforeHistoryChange.current?.();const next=read();pending.current=next===null;setId(next);setPage(next===null?homePage():readReturnContext(history.state)?.page??'nodes');};
+        const readCurrentRoute=(next=read())=>{setId(next);setPage(next===null?homePage():readReturnContext(history.state)?.page??'nodes');};
+        const sync=()=>{beforeHistoryChange.current?.();const next=read();pending.current=next===null;readCurrentRoute(next);};
         addEventListener('popstate',sync);
+        // Back can happen between the initial render and listener registration.
+        // Reconcile once subscribed without saving scroll for a page not yet shown.
+        readCurrentRoute();
         return()=>{removeEventListener('popstate',sync);history.scrollRestoration=previous;};
     },[beforeHistoryChange]);
     useLayoutEffect(()=>{

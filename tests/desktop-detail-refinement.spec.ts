@@ -61,7 +61,8 @@ for(const width of [900,1280])for(const language of ['zh','en'])test(`history ac
   expect(layout.rangeRight).toBeLessThanOrEqual(layout.actionLeft)
   expect(layout.actionRight).toBeLessThanOrEqual(layout.arrowLeft)
  }
- expect(layout.actionBottom).toBeLessThanOrEqual(layout.captionBottom)
+ // Firefox DOMRect edges can differ by floating-point rounding (< 0.0001px).
+ expect(layout.actionBottom).toBeLessThanOrEqual(layout.captionBottom+0.001)
  expect(layout.actionFits).toBe(true)
  expect(layout.documentFits).toBe(true)
 })
