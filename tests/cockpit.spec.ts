@@ -271,5 +271,10 @@ for (const width of [1024,1440]) test(`cockpit long hardware and IP facts are re
   await value.scrollIntoViewIfNeeded()
   await expect(value).toBeVisible()
   expect(await value.evaluate(e => e.scrollWidth <= e.clientWidth+1 && e.scrollHeight <= e.clientHeight+1)).toBe(true)
+  if(text!==kernel){
+   const label = page.locator('.detail-facts>div').filter({has:value}).locator('dt')
+   const size = await label.evaluate(e => ({height:e.getBoundingClientRect().height,lineHeight:parseFloat(getComputedStyle(e).lineHeight)}))
+   expect(size.height).toBeLessThanOrEqual(size.lineHeight+1)
+  }
  }
 })
