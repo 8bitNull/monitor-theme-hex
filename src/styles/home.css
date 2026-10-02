@@ -194,6 +194,33 @@
   }
 }
 
+/* Cockpit Card Density Breakpoints */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  [data-cockpit="true"] .cockpit-layout .node-grid,
+  [data-cockpit="true"] .cockpit-layout .node-grid[data-columns],
+  [data-cockpit="true"] .cockpit-layout .node-grid:not([data-columns="auto"])[data-columns] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-cockpit="true"] .cockpit-layout[data-has-aside="false"] .node-grid {
+    grid-template-columns: repeat(auto-fill, minmax(430px, 1fr));
+  }
+
+  [data-cockpit="true"] .cockpit-layout[data-has-aside="false"] .node-grid:not([data-columns="auto"])[data-columns] {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, max(300px, calc((100% - (var(--requested-columns) - 1) * var(--grid-gap)) / var(--requested-columns)))), 1fr));
+  }
+}
+
+@media (min-width: 1366px) {
+  [data-cockpit="true"] .cockpit-layout .node-grid {
+    grid-template-columns: repeat(auto-fill, minmax(430px, 1fr));
+  }
+
+  [data-cockpit="true"] .cockpit-layout .node-grid:not([data-columns="auto"])[data-columns] {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, max(300px, calc((100% - (var(--requested-columns) - 1) * var(--grid-gap)) / var(--requested-columns)))), 1fr));
+  }
+}
+
 /* Persistent high-load overview: four equal tiles, two by two on mobile. */
 .summary-grid[data-load-alerts=true] {grid-template-columns:repeat(4,minmax(0,1fr))}
 .load-alert-tile {position:relative}.load-alert-tile>div:first-child {padding-right:28px}

@@ -460,7 +460,7 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
         </div>
       ) : (
         <div className="detail-cockpit">
-          <aside className="detail-cockpit-sidebar">
+          <aside className="detail-cockpit-sidebar" aria-label={tr("设备资料")}>
             <DetailIdentity node={node} nodes={nodes} onSwitch={onSwitch}/>
             <DetailLiveOverview node={node} preview={{rows:previewActive&&previewMatches?metricRows:[],hours:ranges.resources,loading:previewActive&&(loading||!previewMatches),failed:previewActive&&previewMatches&&!!failed,active:previewActive,updated:previewMatches?updated:null}} onSelectResource={selectPreview}/>
             <DetailFacts node={node} compact={compact} mobile={false} mode={detailInfoMode} onMode={onDetailInfoMode}/>

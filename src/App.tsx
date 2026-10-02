@@ -241,7 +241,9 @@ export default function App({ siteDefaults = defaults }: {
     const handleLeaderboardSelect = useCallback((id: number) => {
         const el = document.querySelector(`[data-node-id="${id}"]`);
         if (el) {
-            el.scrollIntoView({ behavior: "smooth", block: "center" });
+            const prefersReducedMotion = typeof window !== "undefined" &&
+                window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+            el.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "center" });
             const card = el.closest(".node-card, tr") || el;
             card.classList.add("node-card-highlight");
             setTimeout(() => card.classList.remove("node-card-highlight"), 2000);
@@ -315,7 +317,7 @@ export default function App({ siteDefaults = defaults }: {
               <NodeDetail onBack={()=>go(null)} mobilePreferences={mobilePreferences} detailInfoMode={prefs.detailInfoMode} onDetailInfoMode={detailInfoMode=>selectDisplay({detailInfoMode})} key={selected.id} node={selected} probe={compactViewport?resolveProbe(selected.id,prefs.probe):prefs.probe} nodes={sorted} cockpitMode={cockpitMode} onSwitch={id=>{const q=new URLSearchParams(location.search);q.delete("eventStart");q.delete("eventEnd");q.delete("routes");go(id,location.hash.slice(1),q.size?"?"+q:"")}}/>
             </Suspense>) : (<p className="py-16 text-center text-sm text-muted-foreground">{tr("节点不存在或未公开。")}<button className="underline" onClick={() => go(null)}>{tr("返回列表")}</button>
             </p>)) : compactViewport ? null : !nodes ? (
-          <div className="cockpit-layout" data-has-aside={String(mapVisible)}>
+          <div className="cockpit-layout" data-has-aside={String(mapVisible || cockpitMode)}>
             <div className="cockpit-main">
               <div className="node-grid home-loading" aria-label={tr("正在加载节点")} aria-busy="true">
                 {[0, 1, 2].map((i) => (<div key={i} className="loading-card" aria-hidden="true"><Skeleton className="loading-title"/><div className="loading-metrics">{[0,1,2,3].map(n=><Skeleton key={n}/>)}</div><Skeleton className="loading-speed"/><Skeleton className="loading-route"/></div>))}
@@ -344,7 +346,7 @@ export default function App({ siteDefaults = defaults }: {
 {showFilterFeedback && <button className="clear-all-filters" onClick={() => { setQuery(''); setStatus('all'); setRegion('all'); setSystem('all'); setGroupFilter('all'); }}>{tr("清除筛选")}</button>}
 </div></section>
 
-            <div className="cockpit-layout" data-has-aside={String(mapVisible)}>
+            <div className="cockpit-layout" data-has-aside={String(mapVisible || cockpitMode)}>
               <div className="cockpit-main">
                 {browse.view === 'table' && ['latency','loss'].includes(browse.sort) && <p className="sort-note">{tr("延迟和丢包按所选线路比较；无效或旧数据排在末尾。已读取")}{sorted.filter(n => getPing(n.id)?.data).length}/{sorted.length}{tr("个节点。")}{tr("各节点所选线路可能不同，延迟比较请注意探测目标。")}</p>}
 

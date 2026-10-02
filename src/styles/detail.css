@@ -363,11 +363,189 @@
   }
 
   /* Refine metric cards and fact groups in the cockpit sidebar */
+  [data-cockpit="true"] .detail-cockpit-sidebar {
+    gap: 12px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-live {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
   [data-cockpit="true"] .detail-cockpit-sidebar .desktop-detail-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-metric-card {
+    padding: 10px 12px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-metric-card h3 {
+    margin: 0 0 4px;
+    font-size: 11px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-metric-value {
+    font-size: 18px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-metric-note {
+    font-size: 11px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-metric-extra {
+    font-size: 10px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-metric-card .resource-trend {
+    min-height: 40px;
+    padding-top: 4px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-metric-card .resource-trend svg {
+    height: 24px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .overview-account {
+    padding: 10px 12px;
+    margin-top: 10px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .overview-account h3 {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .overview-billing {
+    gap: 8px 12px;
+  }
+
+  /* Compact Detail Facts Harmonization: Sleek 2-column key-value tokens */
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-information {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 
   [data-cockpit="true"] .detail-cockpit-sidebar .detail-information .detail-fact-groups {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-fact-groups > section {
+    padding: 10px 12px;
+    border-radius: var(--radius-panel, 12px);
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-fact-groups h3 {
+    font-size: 11px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 6px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 3px 7px;
+    min-height: 24px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--card) 60%, var(--background));
+    border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts > div.fact-long {
+    grid-column: 1 / -1;
+  }
+
+  [data-glass="true"] [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts > div {
+    background: color-mix(in srgb, var(--glass-bg) 65%, transparent);
+    border-color: color-mix(in srgb, var(--border) 40%, transparent);
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts dt {
+    font-size: 10.5px;
+    color: var(--muted-foreground);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts dd {
+    font-size: 11px;
+    font-weight: 500;
+    margin: 0;
+    min-width: 0;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts dd:has(.copy-control) {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+    padding: 0;
+    min-height: unset;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts .fact-value {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts .copy-control {
+    position: static;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin: 0;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts .copy-fact {
+    width: 18px;
+    height: 18px;
+    min-height: 18px;
+    padding: 0;
+    margin: 0;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: var(--muted-foreground);
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts .copy-fact:hover {
+    color: var(--foreground);
+    background: color-mix(in srgb, var(--muted) 80%, transparent);
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts .copy-notice {
+    font-size: 10px;
+    color: var(--tone);
+    white-space: nowrap;
   }
 }
