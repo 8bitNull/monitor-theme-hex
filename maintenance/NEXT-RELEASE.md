@@ -30,13 +30,13 @@
 | R4 | 全量回归确认默认配置不一致：`public/theme-config.json` 的 `glass=false`，而应用默认值为 `true`，`site-config.spec.ts:35` 失败 | 应用默认值、主题清单和随包默认配置一致；已保存站点配置继续优先生效，配置字段回归通过 |
 | R5 | 本轮完整 Chromium 回归有 41 项失败，涉及详情布局、表格、配置、手机资料及导航等；详见下方跟踪表 | 逐项区分真实退步与新布局有意变化，分别修复实现或按布局模式更新断言。所有失败有处理结论，完整回归重新通过 |
 
-R1～R3 在本地演示数据、1440×900、Chromium 下复现。证据保留在本地 `artifacts/release-audit-2026-10-02/`，不包含真实站点数据，不纳入公开仓库。R4、R5 来自下方记录的 Ubuntu Actions 回归，覆盖不同视口。R1～R4 的修复及边界行为已纳入受控测试，R5 正在重新运行完整套件。
+R1～R3 在本地演示数据、1440×900、Chromium 下复现。证据保留在本地 `artifacts/release-audit-2026-10-02/`，不包含真实站点数据，不纳入公开仓库。R4、R5 来自下方记录的 Ubuntu Actions 回归，覆盖不同视口。R1～R4 的修复及边界行为已纳入受控测试，R5 已在 `668b374` 的完整 Chromium 套件中重新通过。
 
 - [x] R1 修复并有有意义的回归测试。
 - [x] R2 修复并有有意义的回归测试。
 - [x] R3 修复并完成键盘、按钮语义与节点导航检查。
 - [x] R4 默认配置保持一致，配置覆盖和旧设置保留检查通过。
-- [ ] R5 全部回归失败逐项处理并重新验收；不以批量跳过或删除断言代替处理。
+- [x] R5 全部回归失败逐项处理并重新验收；本轮未新增跳过或删除失败用例。
 
 前三项相关实现见 [CockpitWidgets](../src/components/CockpitWidgets.tsx)。完整套件通过不能替代这些新行为的专项验证。新增 `cockpit.spec.ts` 同时进入完整套件和三引擎兼容性套件。
 
@@ -44,29 +44,46 @@ R1～R3 在本地演示数据、1440×900、Chromium 下复现。证据保留在
 
 运行对象 `b389361`，Node.js 24、Ubuntu、Playwright Chromium、2 个 worker：**436 通过、41 失败、17 跳过，共 494 项**。测试步骤失败，安装、构建及报告上传成功；完整日志和截图见 [运行记录](https://github.com/8bitNull/monitor-theme-hex/actions/runs/36993152260)，Actions 产物保留 14 天。
 
-| 测试文件 | 失败数 | 优先核对 |
-|---|---:|---|
-| [customization](../tests/customization.spec.ts) | 1 | 驾驶舱默认开启后，原四列配置断言仍期待四列，实际为两列 |
-| [desktop-detail-refinement](../tests/desktop-detail-refinement.spec.ts) | 4 | 中英文历史工具栏的悬停位置稳定性 |
-| [detail-aesthetics](../tests/detail-aesthetics.spec.ts) | 3 | 资源卡片排列与网速分区 |
-| [detail-balance](../tests/detail-balance.spec.ts) | 4 | 设备资料在不同宽度的布局 |
-| [detail-focus](../tests/detail-focus.spec.ts) | 1 | 指标和长身份资料的容纳情况 |
-| [detail-grid](../tests/detail-grid.spec.ts) | 1 | 详情模块的阅读顺序 |
-| [detail-overview](../tests/detail-overview.spec.ts) | 2 | 详情总览与历史区域 |
-| [detail-polish](../tests/detail-polish.spec.ts) | 5 | 768～900px 控件可用性 |
-| [detail-proportion](../tests/detail-proportion.spec.ts) | 6 | 多宽度详情区域的尺寸与比例 |
-| [detail-resources](../tests/detail-resources.spec.ts) | 2 | 资源控件和资料布局 |
-| [detail-routes](../tests/detail-routes.spec.ts) | 1 | 桌面线路布局 |
-| [latency-desktop](../tests/latency-desktop.spec.ts) | 1 | 延迟图与线路控件 |
-| [site-config](../tests/site-config.spec.ts) | 1 | 上述 R4 默认值不一致 |
-| [table-extra](../tests/table-extra.spec.ts) | 1 | 丢包率和线路选择 |
-| [table-polish](../tests/table-polish.spec.ts) | 1 | 表头裁剪与横向访问 |
-| [table-upgrade](../tests/table-upgrade.spec.ts) | 3 | 表格排序、溢出控件与响应式布局 |
-| [ux-layout](../tests/ux-layout.spec.ts) | 2 | 320/390px 长资料样式 |
-| [ux-navigation](../tests/ux-navigation.spec.ts) | 1 | 手机前进、后退的滚动位置 |
-| [v023-polish](../tests/v023-polish.spec.ts) | 1 | 桌面资源选择控件可见性 |
+修复对象 `668b374`，相同环境：**517 通过、0 失败、17 跳过，共 534 项**，没有不稳定重试项。新增 39 项驾驶舱检查和 1 项手机导航竞态检查；[完整回归](https://github.com/8bitNull/monitor-theme-hex/actions/runs/37009238289)及报告上传成功。下表保留初审失败数和对应处理方式。
 
-这里记录的是失败用例，不把 41 项一概认定为 41 个独立产品缺陷。先确认新的驾驶舱布局与经典布局各自应有的行为，再按条件保留或更新断言；原有配置、导航与数据语义仍需保持。
+| 测试文件 | 原失败数 | 本轮处理 |
+|---|---:|---|
+| [customization](../tests/customization.spec.ts) | 1 | 四列配置在明确关闭驾驶舱的经典布局中验证；驾驶舱另有多宽度覆盖 |
+| [desktop-detail-refinement](../tests/desktop-detail-refinement.spec.ts) | 4 | 移除指标卡悬停位移，保留中英文历史工具栏位置稳定性断言 |
+| [detail-aesthetics](../tests/detail-aesthetics.spec.ts) | 3 | 明确经典布局前提；驾驶舱网速侧栏另有四种图形样式覆盖 |
+| [detail-balance](../tests/detail-balance.spec.ts) | 4 | 明确经典布局前提，更新已移除的工作台选择器 |
+| [detail-focus](../tests/detail-focus.spec.ts) | 1 | 明确经典布局前提；长资料及驾驶舱容纳另有专项覆盖 |
+| [detail-grid](../tests/detail-grid.spec.ts) | 1 | 经典布局保留原有阅读顺序断言 |
+| [detail-overview](../tests/detail-overview.spec.ts) | 2 | 经典布局保留总览与历史区域断言 |
+| [detail-polish](../tests/detail-polish.spec.ts) | 5 | 验证当前具名资源按钮，保留尺寸检查；历史范围按钮增至 44px |
+| [detail-proportion](../tests/detail-proportion.spec.ts) | 6 | 经典布局检查资料区现有 1.1:0.9 比例和对齐；修复驾驶舱百分比列加间隙造成的溢出 |
+| [detail-resources](../tests/detail-resources.spec.ts) | 2 | 在经典布局验证资源控件和资料位置 |
+| [detail-routes](../tests/detail-routes.spec.ts) | 1 | 在经典布局验证桌面线路位置 |
+| [latency-desktop](../tests/latency-desktop.spec.ts) | 1 | 在经典布局验证延迟图与线路控件 |
+| [site-config](../tests/site-config.spec.ts) | 1 | 修复 R4 默认值不一致，补充后台配置优先级检查 |
+| [table-extra](../tests/table-extra.spec.ts) | 1 | 滚动到懒加载线路单元格后验证实际丢包率，保留数据断言 |
+| [table-polish](../tests/table-polish.spec.ts) | 1 | 在经典布局检查全宽表格；驾驶舱另有分页导航覆盖 |
+| [table-upgrade](../tests/table-upgrade.spec.ts) | 3 | 在经典布局检查排序、溢出控件与响应式布局 |
+| [ux-layout](../tests/ux-layout.spec.ts) | 2 | 长手机资料按 v0.3.6 已有右对齐阅读约定验证 |
+| [ux-navigation](../tests/ux-navigation.spec.ts) | 1 | 路由替换页面前保存滚动位置，新增冻结动画帧的快速历史导航回归 |
+| [v023-polish](../tests/v023-polish.spec.ts) | 1 | 检查现有具名资源按钮的位置及四项指标切换 |
+
+这里记录的是失败用例，不把 41 项一概认定为 41 个独立产品缺陷。本轮分别确认驾驶舱与经典布局的预期行为，按条件保留或更新断言，同时验证原有配置、导航与数据语义。
+
+### 既有跳过项的适用范围
+
+完整套件原有 17 项跳过，本轮未新增跳过或删除失败用例。这些用例针对已移除的个人主题抽屉、预设、备份等入口；后台站点配置和现有个人偏好仍由有效测试覆盖。
+
+| 测试文件 | 跳过数 | 原入口 |
+|---|---:|---|
+| [appearance](../tests/appearance.spec.ts) | 2 | 抽屉选项边框与分类 |
+| [defaults-and-freshness](../tests/defaults-and-freshness.spec.ts) | 1 | 已移除的个人主题覆盖 |
+| [settings-backup](../tests/settings-backup.spec.ts) | 2 | 抽屉重置、导出和导入 |
+| [usability](../tests/usability.spec.ts) | 10 | 两项预设、七个视口和一项预设键盘操作 |
+| [v014](../tests/v014.spec.ts) | 1 | 旧抽屉预设与草稿 |
+| [customization](../tests/customization.spec.ts) | 1 | 旧备份入口中的显示选择保留 |
+
+若重新提供这些入口，需恢复并更新相应用例；当前跳过范围不能作为这些已移除功能的验收证明。
 
 ## 必须补充的专项验收
 
@@ -83,17 +100,19 @@ R1～R3 在本地演示数据、1440×900、Chromium 下复现。证据保留在
 
 | 检查 | 对象 | 状态与证据 |
 |---|---|---|
-| 常规 CI | `dev` / `b389361` | [通过](https://github.com/8bitNull/monitor-theme-hex/actions/runs/36988564034) |
-| 完整 Chromium 回归 | `dev` / `b389361` | [未通过](https://github.com/8bitNull/monitor-theme-hex/actions/runs/36993152260)：436 通过、41 失败、17 跳过；报告上传成功 |
-| 三引擎兼容性回归 | 当前开发功能 | 待执行；修复完成后在 `dev` 重新运行 |
-| 驾驶舱专项与视觉验收 | 本轮修复 | 受控数据、键盘、多宽度及地图检查已补充并通过本地检查；维护者视觉验收仍待完成 |
+| 常规 CI | `dev` / `668b374` | [通过](https://github.com/8bitNull/monitor-theme-hex/actions/runs/37009219811)：lint、单测、构建 |
+| 完整 Chromium 回归 | `dev` / `668b374` | [通过](https://github.com/8bitNull/monitor-theme-hex/actions/runs/37009238289)：517 通过、0 失败、17 既有跳过、0 不稳定重试项；报告上传成功 |
+| 三引擎兼容性回归 | `dev` / `668b374` | [通过](https://github.com/8bitNull/monitor-theme-hex/actions/runs/37010155972)：Chromium、Firefox、WebKit 各 131 项，共 393 通过、0 失败、0 跳过、0 不稳定重试项；报告上传成功 |
+| 驾驶舱专项与视觉验收 | `dev` / `668b374` | 受控数据、键盘、多宽度及地图检查已通过完整与三引擎回归；维护者视觉验收仍待完成 |
 | 实体手机 | 候选安装包 | 待人工检查 iPhone Safari 与 Android 常用浏览器 |
 | 安装与升级 | 候选安装包 | 待核验安装包清单、版本一致性、校验和、后台安装与旧配置保留 |
+
+两套浏览器回归验证相同功能提交 `668b37422c51d238c9e40cffcb4b6265276dbac8`。后续仅补充验收记录与开发说明的文档提交不改变该功能对象；若再次修改功能代码，需要重新确认对应回归。自动化问题 R1～R5 已处理，仍待完成下方人工验收与发布准备。
 
 ## 合并与发布条件
 
 - [ ] 上述问题、回归失败和专项验收完成，更新本清单的结果、提交号及证据。
-- [ ] 对候选提交重新运行常规 CI、完整 Chromium 与三引擎兼容性套件；逐项说明跳过的测试及其适用范围。
+- [x] 对候选提交重新运行常规 CI、完整 Chromium 与三引擎兼容性套件；逐项说明跳过的测试及其适用范围。
 - [ ] 维护者完成视觉和实体手机检查，确认本轮范围可发布。
 - [ ] 将开发 PR 从草稿转为可审查状态，分支同步最新 `main` 并通过必需 CI 后再合并。
 - [ ] 发布时统一 package、主题清单与更新说明的版本号，再从验收后的 `main` 创建正式标签及 Release。

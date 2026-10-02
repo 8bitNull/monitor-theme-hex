@@ -37,12 +37,14 @@ npm run test:e2e
 
 ## 多浏览器兼容性回归
 
-先运行 `npm run build`，安装 Playwright 的 Chromium、Firefox、WebKit 后，执行 `npx playwright test --config playwright.compat.config.ts`。该套件覆盖三种浏览器引擎的页面、导航、加载状态和模拟会话；手机视口及触摸模拟不代替实体手机 Safari 验收。
+先运行 `npm run build`，安装 Playwright 的 Chromium、Firefox、WebKit 后，执行 `npx playwright test --config playwright.compat.config.ts`。该套件覆盖三种浏览器引擎的页面、导航、加载状态、模拟会话，以及驾驶舱数据状态、地图联动和多宽度布局；手机视口及触摸模拟不代替实体手机 Safari 验收。
 
 ## GitHub Actions
 
 `CI` 在 `main`、`dev` 的 push 与 PR 上自动运行，使用 Node.js 24，依次执行 `npm ci`、lint、单测和构建。也可从 Actions 页手动运行。
 
 `Browser regression` 单独手动运行：在 Actions 页选择 **Run workflow**，选择待验收分支，然后选择 `full`（完整 Chromium 回归）或 `compatibility`（Chromium、Firefox、WebKit 兼容性套件）。流程先构建，再安装所需浏览器及系统依赖，运行两并发测试，并上传报告与截图，保留 14 天。
+
+同一分支的两套浏览器回归需依次启动；新运行会取消该分支尚未结束的浏览器运行。验收记录应写明测试提交、套件、通过/失败/跳过数量和报告链接。
 
 CI 使用 Playwright 自带 Chromium；本地默认使用 Chrome，或通过 `TEST_BROWSER=chromium` 切换。浏览器回归应在涉及界面、交互和数据流程的改动合并前执行，其结果不代替实体手机验收。
