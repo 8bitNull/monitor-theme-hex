@@ -2,7 +2,7 @@ import {chromium} from '@playwright/test'
 import {mkdirSync,writeFileSync} from 'node:fs'
 import {nodes,metrics} from './fixtures.mjs'
 
-const out='design/card-network'
+const out='archive/design/card-network'
 mkdirSync(out,{recursive:true})
 const browser=await chromium.launch({channel:'chrome'})
 try {

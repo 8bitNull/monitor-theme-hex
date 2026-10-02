@@ -1,10 +1,10 @@
 import {chromium} from '@playwright/test'
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs'
-const out='design/card-billing-aligned';mkdirSync(out,{recursive:true})
+const out='archive/design/card-billing-aligned';mkdirSync(out,{recursive:true})
 const browser=await chromium.launch({channel:'chrome'})
 try{
  const page=await browser.newPage({viewport:{width:1100,height:1300},deviceScaleFactor:2})
- await page.setContent(readFileSync('design/card-billing-indicators/proposal.html','utf8'))
+ await page.setContent(readFileSync('archive/design/card-billing-indicators/proposal.html','utf8'))
  await page.evaluate(()=>{
   document.querySelector('h1').textContent='首页卡片 · 用量与到期三层对齐'
   document.querySelector('.lead').textContent='标题识别内容，数值突出重点，第三行统一呈现额度与到期状态。'

@@ -1,9 +1,9 @@
 import {chromium} from '@playwright/test'
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs'
-const out='design/card-billing-indicators';mkdirSync(out,{recursive:true})
+const out='archive/design/card-billing-indicators';mkdirSync(out,{recursive:true})
 const traffic='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 13V3m-3 3 3-3 3 3m3-3v10m-3-3 3 3 3-3"/></svg>'
 const calendar='<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M5 1v4m6-4v4M2 7h12m-8 3h2"/></svg>'
-let html=readFileSync('design/home-card-refinement/proposal.html','utf8')
+let html=readFileSync('archive/design/home-card-refinement/proposal.html','utf8')
 html=html.replaceAll('首页卡片 · 细节优化方案','首页卡片 · 用量与到期指标').replace('保留信息分区，收紧延迟区域，让当前数值更容易读取。','线性图标识别信息，细进度条表达额度，剩余天数提示到期。')
 html=html.replaceAll('<div class="caption">本月用量</div><div class="usage"><b>220 GB</b><span> / ∞</span></div>',`<div class="caption">${traffic}当前周期用量</div><div class="usage"><b>220 GB</b><span> / 500 GB</span></div><div class="quota" aria-label="已用44%"><i style="width:44%"></i></div>`)
 html=html.replaceAll('<div class="caption">到期时间</div><b>2026.09.28</b><small>5 天后到期</small>',`<div class="caption">${calendar}到期时间</div><b>2026.09.28</b><small class="due"><i></i>剩余 5 天</small>`)

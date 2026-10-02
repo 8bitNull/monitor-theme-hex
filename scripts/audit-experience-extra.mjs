@@ -1,5 +1,5 @@
 import {chromium} from '@playwright/test';import{readFileSync,writeFileSync}from'node:fs';import{nodes,metrics}from'./fixtures.mjs';
-const out='design/ux-audit-v023',records=JSON.parse(readFileSync(`${out}/records.json`));const browser=await chromium.launch({channel:'chrome'});
+const out='archive/design/ux-audit-v023',records=JSON.parse(readFileSync(`${out}/records.json`));const browser=await chromium.launch({channel:'chrome'});
 for(const[device,width]of[['desktop',1440],['mobile',390]]){const ctx=await browser.newContext({viewport:{width,height:device==='mobile'?844:1000},isMobile:device==='mobile',hasTouch:device==='mobile',permissions:['clipboard-read','clipboard-write']});const p=await ctx.newPage();p.setDefaultTimeout(4000);let n=0;const b=name=>p.getByRole('button',{name,exact:true});
 const shot=async title=>{await p.waitForTimeout(200);const file=`${device}-extra-${++n}.png`;await p.screenshot({path:`${out}/${file}`});records.push({device,title,file,url:p.url(),viewport:true});writeFileSync(`${out}/records.json`,JSON.stringify(records,null,2));console.log(device,title)};
 const step=async(title,fn)=>{try{await fn();await shot(title)}catch(e){records.push({device,title,error:e.message.slice(0,200)});console.log('FAILED',title,e.message.slice(0,80))}};

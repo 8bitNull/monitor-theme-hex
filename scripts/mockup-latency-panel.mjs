@@ -1,7 +1,7 @@
 import {chromium} from '@playwright/test'
 import {mkdirSync,writeFileSync} from 'node:fs'
 
-const out='design/latency-panel'
+const out='archive/design/latency-panel'
 mkdirSync(out,{recursive:true})
 let seed=927
 const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}

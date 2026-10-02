@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
-// Start node design/serve-mobile-app-demo.mjs first.
+// Start node archive/design/serve-mobile-app-demo.mjs first.
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try {
  for(const width of [320,390,430,1440]){

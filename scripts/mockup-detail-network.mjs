@@ -3,7 +3,7 @@ import {mkdirSync,writeFileSync} from 'node:fs'
 import {nodes,metrics} from './fixtures.mjs'
 
 const horizontal=process.argv.includes('--horizontal')
-const out=horizontal?'design/detail-horizontal':'design/detail-network'
+const out=horizontal?'archive/design/detail-horizontal':'archive/design/detail-network'
 mkdirSync(out,{recursive:true})
 const fixed=Date.parse('2026-09-23T04:00:00Z'),original=Date.now
 Date.now=()=>fixed

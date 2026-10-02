@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test'
 import {mkdirSync,writeFileSync} from 'node:fs'
-const out='design/home-card-refinement';mkdirSync(out,{recursive:true})
+const out='archive/design/home-card-refinement';mkdirSync(out,{recursive:true})
 const bar=(n)=>`<div class="segments">${Array.from({length:24},(_,i)=>`<i class="${i<n?'on':''}"></i>`).join('')}</div>`
 const icon='<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor"><rect x="4" y="4" width="8" height="8" rx="1"/><path d="M6 1v3m4-3v3M6 12v3m4-3v3M1 6h3m-3 4h3m8-4h3m-3 4h3"/></svg>'
 const resource=(name,value,sub,count)=>`<div class="resource"><div class="row"><span class="caption">${icon}${name}</span><strong>${value}</strong></div><div class="sub">${sub}</div>${bar(count)}</div>`

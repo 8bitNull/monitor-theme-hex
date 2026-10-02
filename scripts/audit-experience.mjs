@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
-const out='design/ux-audit-v023';mkdirSync(out,{recursive:true});const records=[];
+const out='archive/design/ux-audit-v023';mkdirSync(out,{recursive:true});const records=[];
 const browser=await chromium.launch({channel:'chrome'});
 for(const [device,width,height] of [['desktop',1440,1000],['mobile',390,844]]){
  const context=await browser.newContext({viewport:{width,height},isMobile:device==='mobile',hasTouch:device==='mobile',colorScheme:'light'});const page=await context.newPage();page.setDefaultTimeout(3500);let n=0;

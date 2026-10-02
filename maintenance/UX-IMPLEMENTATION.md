@@ -37,14 +37,14 @@
 - 新增截图覆盖320/360/390/430/1280/1440/1920px，延迟深浅模式，以及320/390/1440px英文页。截图与页面横向溢出测量保存在 `screenshots/ux-review/`。
 - 浏览器验证为Chrome及移动视口模拟；真实手机软键盘、Safari/Android触摸与真实读屏软件仍需设备验收。真实后台登录和实际采样链路不在本地演示服务验证范围内。
 
-![手机首页](../screenshots/ux-review/390-home.png)
+![手机首页](../archive/screenshots/ux-review/390-home.png)
 
-![窄屏表格](../screenshots/ux-review/320-table.png)
+![窄屏表格](../archive/screenshots/ux-review/320-table.png)
 
 
-![桌面延迟面板](../screenshots/ux-review/1440-latency-panel.png)
+![桌面延迟面板](../archive/screenshots/ux-review/1440-latency-panel.png)
 
-![手机延迟面板](../screenshots/ux-review/390-latency-panel.png)
+![手机延迟面板](../archive/screenshots/ux-review/390-latency-panel.png)
 
 
 ## v0.1.25：精简延迟线路入口
@@ -56,9 +56,9 @@
 - 新增320、390、1440px联动回归；原菜单相关测试改为图例操作，保留范围切换、提示框、长线路名及配置兼容检查。
 - 验证：209项浏览器回归全部通过；构建、lint、业务单测及553项字面量翻译覆盖检查通过。截图使用本地演示数据和Chrome移动视口。
 
-![精简后的桌面延迟面板](../screenshots/route-controls/1440-latency-panel.png)
+![精简后的桌面延迟面板](../archive/screenshots/route-controls/1440-latency-panel.png)
 
-![精简后的手机延迟面板](../screenshots/route-controls/390-latency-panel.png)
+![精简后的手机延迟面板](../archive/screenshots/route-controls/390-latency-panel.png)
 
 
 ## v0.1.25：首页卡片排版
