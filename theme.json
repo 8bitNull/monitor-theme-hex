@@ -2,7 +2,7 @@
   "name": "HEX",
   "short": "hex",
   "description": "HEX，让服务器状态一目了然。",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "author": "HEX contributors",
   "url": "https://github.com/8bitNull/monitor-theme-hex",
   "config": [
@@ -30,7 +30,7 @@
         },
         {
           "value": "sunset",
-          "label": "炽阳金"
+          "label": "炙阳金"
         },
         {
           "value": "ocean",
@@ -393,7 +393,7 @@
     {
       "key": "latencyScale",
       "type": "select",
-      "label": "延迟统一刻度",
+      "label": "延迟统一度量",
       "default": "500",
       "options": [
         {
