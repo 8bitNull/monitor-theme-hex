@@ -56,7 +56,7 @@
 .table-speed [data-direction=download]:before {content:'↓';color:var(--download)}
 .table-speed small {font-size:var(--text-small);color:var(--muted-foreground)}
 .table-ping {text-align:center;min-width:178px}
-.table-ping-value {display:flex;justify-content:center;align-items:center;gap:8px;min-height:24px}
+.table-ping-value {display:flex;justify-content:center;align-items:center;gap:8px;min-height:24px;white-space:normal;overflow-wrap:anywhere}
 .table-ping-value strong {font-size:13px;font-weight:600}
 .table-ping-value button {min-height:44px}
 .table-latency-grade {display:flex;gap:4px;align-items:center;font-size:var(--text-small);color:var(--muted-foreground)}
