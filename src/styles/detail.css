@@ -507,9 +507,8 @@
   }
 
   [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts .fact-value {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
     min-width: 0;
   }
 

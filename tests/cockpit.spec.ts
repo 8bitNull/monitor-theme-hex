@@ -224,3 +224,52 @@ for (const graph of ['bar', 'ring', 'columns', 'minimal']) test(`cockpit ${graph
  }
  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })
+
+for (const width of [1024,1280,1440]) for (const language of ['zh','en']) test(`cockpit history actions remain readable at ${width}px in ${language}`, async ({page}) => {
+ await page.setViewportSize({width,height:900})
+ await page.addInitScript(language => localStorage.setItem('monitor-next-language',language),language)
+ await fleet(page,[fresh()])
+ await page.goto('/node/1')
+ await expect(page.locator('.resource-trend svg').first()).toBeVisible()
+ for (const metric of ['cpu','mem_used','disk_used']) {
+  const button = page.locator(`.resource-trend[data-metric=${metric}]`)
+  const action = button.locator('.resource-trend-action')
+  const before = (await button.boundingBox())!
+  await button.hover()
+  await expect(action).toHaveCSS('opacity','1')
+  const reading = await action.evaluate(element => {
+   const node = element.firstChild!
+   const text = node.textContent!
+   const splitWords = Array.from(text.matchAll(/[A-Za-z]+/g)).filter(match => {
+    const range = document.createRange()
+    range.setStart(node,match.index!)
+    range.setEnd(node,match.index!+match[0].length)
+    return new Set(Array.from(range.getClientRects(),rect => Math.round(rect.top))).size > 1
+   }).map(match => match[0])
+   return {height:element.getBoundingClientRect().height,lineHeight:parseFloat(getComputedStyle(element).lineHeight),splitWords}
+  })
+  expect(reading.splitWords).toEqual([])
+  expect(reading.height).toBeLessThanOrEqual(reading.lineHeight*3+1)
+  await button.focus()
+  await expect(action).toHaveCSS('opacity','1')
+  const after = (await button.boundingBox())!
+  expect(after.height).toBeCloseTo(before.height,1)
+  await page.keyboard.press('Enter')
+  await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric',metric)
+ }
+})
+
+for (const width of [1024,1440]) test(`cockpit long hardware and IP facts are readable without hover at ${width}px`, async ({page}) => {
+ const cpu = 'AMD EPYC 7B13 64-Core Processor Production Edition'
+ const kernel = '6.12.0-production-long-kernel-version-amd64'
+ const ipv6 = '2001:db8:1234:5678:abcd:1234:5678:abcd'
+ await page.setViewportSize({width,height:900})
+ await fleet(page,[{...fresh(),cpu_name:cpu,kernel,ipv6}])
+ await page.goto('/node/1')
+ for (const text of [cpu,kernel,ipv6]) {
+  const value = page.locator('.fact-value').filter({hasText:text})
+  await value.scrollIntoViewIfNeeded()
+  await expect(value).toBeVisible()
+  expect(await value.evaluate(e => e.scrollWidth <= e.clientWidth+1 && e.scrollHeight <= e.clientHeight+1)).toBe(true)
+ }
+})
