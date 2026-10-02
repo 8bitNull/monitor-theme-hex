@@ -876,5 +876,11 @@ export const english: Record<string, string> = {
 "{0} / {1} 在线":"{0} / {1} online",
 "该地区暂无节点":"No nodes in this region",
 "拖动 · 双指缩放":"Drag · Pinch to zoom",
-"查看版本":"View versions"
+"查看版本":"View versions",
+"实时流量排行":"Live Traffic Leaderboard",
+"Top 5 实时吞吐":"Top 5 Throughput",
+"暂无实时网络吞吐数据":"No live network throughput data",
+"全系统健康运转中":"All Systems Operational",
+"项告警进行中":"Active Alerts",
+"点击查看":"Click to view"
 }

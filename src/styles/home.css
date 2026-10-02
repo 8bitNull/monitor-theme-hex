@@ -584,3 +584,329 @@
     box-shadow: none !important;
   }
 }
+
+/* Cockpit Aside Widgets: Live Traffic Leaderboard & Health Pulse */
+.cockpit-widget {
+  background: var(--glass-bg, color-mix(in srgb, var(--card) 80%, transparent));
+  backdrop-filter: blur(var(--glass-blur, 16px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
+  border: 1px solid var(--home-line);
+  border-radius: var(--radius-panel, 12px);
+  padding: 14px;
+  box-shadow: 0 4px 18px -2px color-mix(in srgb, var(--foreground) 4%, transparent);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dark .cockpit-widget {
+  background: color-mix(in srgb, var(--card) 75%, transparent);
+  border-color: color-mix(in srgb, var(--tone) 18%, var(--border));
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.45);
+}
+
+.cockpit-widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.cockpit-widget-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.cockpit-widget-title h3 {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--foreground);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.cockpit-widget-icon {
+  color: var(--tone);
+  flex-shrink: 0;
+}
+
+.cockpit-widget-tag {
+  font-size: 10px;
+  font-weight: 500;
+  font-family: var(--font-mono);
+  color: var(--muted-foreground);
+  background: color-mix(in srgb, var(--muted) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  padding: 2px 7px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.cockpit-widget-empty {
+  padding: 18px 12px;
+  text-align: center;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  background: color-mix(in srgb, var(--muted) 45%, transparent);
+  border-radius: 8px;
+  border: 1px dashed var(--home-line);
+}
+
+.cockpit-widget-empty p {
+  margin: 0;
+}
+
+.cockpit-leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cockpit-leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+  color: var(--foreground);
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.16s ease;
+}
+
+.cockpit-leaderboard-item:hover {
+  background: color-mix(in srgb, var(--tone) 8%, var(--card));
+  border-color: color-mix(in srgb, var(--tone) 35%, transparent);
+  transform: translateX(2px);
+}
+
+.cockpit-leaderboard-item:focus-visible {
+  outline: 2px solid var(--tone);
+  outline-offset: 1px;
+}
+
+.leaderboard-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  background: var(--muted);
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+}
+
+.leaderboard-rank[data-rank="1"] {
+  background: color-mix(in srgb, #f59e0b 22%, transparent);
+  color: #f59e0b;
+}
+
+.leaderboard-rank[data-rank="2"] {
+  background: color-mix(in srgb, var(--tone) 20%, transparent);
+  color: var(--tone);
+}
+
+.leaderboard-rank[data-rank="3"] {
+  background: color-mix(in srgb, #8b5cf6 20%, transparent);
+  color: #8b5cf6;
+}
+
+.leaderboard-flag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  flex-shrink: 0;
+}
+
+.leaderboard-flag .flag-icon {
+  width: 18px;
+  height: 13px;
+  border-radius: 2px;
+  object-fit: cover;
+}
+
+.leaderboard-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.leaderboard-badge .throughput-down {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--download);
+}
+
+.leaderboard-badge .throughput-up {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--upload);
+}
+
+/* Status Card */
+.cockpit-status-card {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.cockpit-status-badge {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-radius: var(--radius-panel, 12px);
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  box-sizing: border-box;
+  text-align: left;
+  border: 1px solid transparent;
+  transition: all 0.16s ease;
+}
+
+.cockpit-status-badge.is-healthy {
+  background: color-mix(in srgb, var(--ok) 10%, var(--card));
+  border-color: color-mix(in srgb, var(--ok) 32%, transparent);
+  color: var(--ok);
+  box-shadow: 0 2px 14px -2px color-mix(in srgb, var(--ok) 18%, transparent);
+}
+
+.dark .cockpit-status-badge.is-healthy {
+  background: color-mix(in srgb, var(--ok) 14%, rgba(15, 23, 42, 0.7));
+  border-color: color-mix(in srgb, var(--ok) 40%, transparent);
+  box-shadow: 0 2px 16px -2px color-mix(in srgb, var(--ok) 25%, transparent);
+}
+
+.cockpit-status-badge.is-warning {
+  background: color-mix(in srgb, var(--warn) 12%, var(--card));
+  border-color: color-mix(in srgb, var(--warn) 42%, transparent);
+  color: var(--warn);
+  cursor: pointer;
+  box-shadow: 0 2px 14px -2px color-mix(in srgb, var(--warn) 20%, transparent);
+}
+
+.dark .cockpit-status-badge.is-warning {
+  background: color-mix(in srgb, var(--warn) 16%, rgba(15, 23, 42, 0.7));
+  border-color: color-mix(in srgb, var(--warn) 48%, transparent);
+  box-shadow: 0 2px 16px -2px color-mix(in srgb, var(--warn) 30%, transparent);
+}
+
+.cockpit-status-badge.is-warning:hover {
+  background: color-mix(in srgb, var(--warn) 18%, var(--card));
+  border-color: var(--warn);
+  transform: translateY(-1px);
+}
+
+.cockpit-status-badge.is-warning:focus-visible {
+  outline: 2px solid var(--warn);
+  outline-offset: 2px;
+}
+
+.status-pulse-indicator {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  margin-right: 8px;
+  display: inline-block;
+}
+
+.status-pulse-dot {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: currentColor;
+}
+
+.status-pulse-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 1.5px solid currentColor;
+  opacity: 0.75;
+  animation: cyber-pulse 2.2s infinite ease-in-out;
+}
+
+.status-pulse-indicator.is-warning .status-pulse-ring {
+  animation: cyber-alert-pulse 1.8s infinite ease-in-out;
+}
+
+.cockpit-status-badge .status-text {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: -0.01em;
+}
+
+.cockpit-status-badge .status-text b {
+  font-weight: 700;
+}
+
+.cockpit-status-badge .status-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+@keyframes node-card-jump-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--tone) 75%, transparent);
+    border-color: var(--tone);
+  }
+  30% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--tone) 25%, transparent), 0 0 24px 6px color-mix(in srgb, var(--tone) 45%, transparent);
+    border-color: var(--tone);
+  }
+  100% {
+    box-shadow: none;
+    border-color: var(--home-line);
+  }
+}
+
+.node-card-highlight {
+  animation: node-card-jump-pulse 2s ease-out forwards !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-pulse-ring,
+  .node-card-highlight,
+  .cockpit-leaderboard-item:hover,
+  .cockpit-status-badge.is-warning:hover {
+    animation: none !important;
+    transform: none !important;
+  }
+}

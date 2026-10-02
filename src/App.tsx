@@ -1,5 +1,6 @@
 import {BillingReminders} from './components/BillingReminders';
 import {MapPanel} from './components/MapPanel';
+import {CockpitLiveLeaderboard, CockpitStatusCard} from './components/CockpitWidgets';
 import {MobileApp} from './components/MobileApp';
 import {useMobilePreferences} from './lib/mobilePreferences';
 import {MobileSearch} from './components/MobileSearch';
@@ -237,6 +238,17 @@ export default function App({ siteDefaults = defaults }: {
     const showActiveFilters = showFilterFeedback || !!browse.query || system !== 'all' || (status !== 'all' && !prefs.modules.online) || region !== 'all';
     const pageKey=JSON.stringify([browse.query,browse.status,browse.region,browse.sort,browse.direction,browse.probe,system,group]);
     const [tablePage,setTablePage]=useState({key:pageKey,page:1});
+    const handleLeaderboardSelect = useCallback((id: number) => {
+        const el = document.querySelector(`[data-node-id="${id}"]`);
+        if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+            const card = el.closest(".node-card, tr") || el;
+            card.classList.add("node-card-highlight");
+            setTimeout(() => card.classList.remove("node-card-highlight"), 2000);
+        } else {
+            go(id);
+        }
+    }, [go]);
     const page=Math.min(tablePage.key===pageKey?tablePage.page:1,Math.max(1,Math.ceil(filtered.length/20)));
     const viewSwitch = <div className="view-toolbar"><div className="view-switch"><button className={browse.view === 'cards' ? 'active' : ''} onClick={() => patchBrowse({view:'cards'})} aria-label={tr("卡片视图")} aria-pressed={browse.view === 'cards'}><LayoutGrid size={17}/>{tr("卡片")}</button><button className={browse.view === 'table' ? 'active' : ''} onClick={() => patchBrowse({view:'table'})} aria-label={tr("表格视图")} aria-pressed={browse.view === 'table'}><Table2 size={17}/>{tr("表格")}</button></div></div>;
     const searchField = (className = '') => <div className={`node-search-control ${className}`.trim()}>
@@ -341,6 +353,12 @@ export default function App({ siteDefaults = defaults }: {
 
             <aside className="cockpit-aside">
               {mapVisible && <MapPanel viewSwitch={viewSwitch} nodeSnapshot={mapKey} region={region} onRegion={setRegion} onSelectRegion={handleSelectRegion} expanded={mapExpanded} onExpanded={toggleMap}/>}
+              {cockpitMode && (
+                <>
+                  <CockpitLiveLeaderboard nodes={sorted} onSelectNode={handleLeaderboardSelect}/>
+                  <CockpitStatusCard nodes={sorted} loadAlerts={loadAlerts} onAlert={event=>go(event.nodeId,"",`?eventStart=${event.start}&eventEnd=${event.end??event.last}`)}/>
+                </>
+              )}
             </aside>
           </div>
         </>
