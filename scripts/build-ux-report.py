@@ -1,6 +1,6 @@
 from pathlib import Path
 import json,html
-p=Path('design/ux-audit-v023')
+p=Path('archive/design/ux-audit-v023')
 raw=json.loads((p/'records.json').read_text(encoding='utf8'))
 r=list({x['file']:x for x in raw if 'file'in x}.values())
 findings=[

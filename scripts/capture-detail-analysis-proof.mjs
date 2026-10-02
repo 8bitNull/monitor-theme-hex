@@ -1,7 +1,7 @@
 import {chromium} from '@playwright/test'
 import {mkdirSync,copyFileSync} from 'node:fs'
 import {nodes,metrics} from './fixtures.mjs'
-const dest='screenshots/v0.0.20',root='tests/artifacts/detail-analysis';mkdirSync(dest,{recursive:true})
+const dest='archive/screenshots/v0.0.20',root='tests/artifacts/detail-analysis';mkdirSync(dest,{recursive:true})
 const copies={
  'home-1440-light.png':'../home-light.png','home-1440-dark.png':'../home-dark.png','home-390-light.png':'../mobile-light.png','home-390-dark.png':'../mobile-dark.png',
  'current-1440-light-detail.png':'../detail-light.png','current-1440-dark-latency.png':'../latency-dark.png',

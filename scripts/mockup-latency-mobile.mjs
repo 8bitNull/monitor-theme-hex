@@ -1,6 +1,6 @@
 import {chromium} from '@playwright/test'
 import {readFileSync,writeFileSync} from 'node:fs'
-const out='design/latency-panel'
+const out='archive/design/latency-panel'
 const browser=await chromium.launch({channel:'chrome'})
 try{
  const page=await browser.newPage({viewport:{width:390,height:1100},deviceScaleFactor:2})
