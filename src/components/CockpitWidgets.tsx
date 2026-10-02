@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { ArrowDown, ArrowUp, Activity, ChevronRight, Server } from 'lucide-react';
 import type { Node } from '@/lib/api';
 import type { LoadAlert } from '@/lib/loadAlerts';
-import { liveMetrics } from '@/lib/freshness';
+import { liveMetrics, nodeState } from '@/lib/freshness';
 import { bytes } from '@/lib/format';
 import { tr } from '@/lib/i18n';
 import { Flag } from './NodeIcons';
@@ -16,14 +16,7 @@ export interface CockpitLiveLeaderboardProps {
 export function CockpitLiveLeaderboard({ nodes, onSelectNode }: CockpitLiveLeaderboardProps) {
   const rankedNodes = useMemo(() => {
     return nodes
-      .filter((n) => {
-        if (!n.online) return false;
-        const m = liveMetrics(n);
-        if (!m) return false;
-        const rx = m.net_rx ?? 0;
-        const tx = m.net_tx ?? 0;
-        return rx + tx > 0;
-      })
+      .filter((n) => liveMetrics(n) !== null)
       .map((n) => {
         const m = liveMetrics(n)!;
         const rx = m.net_rx ?? 0;
@@ -67,41 +60,41 @@ export function CockpitLiveLeaderboard({ nodes, onSelectNode }: CockpitLiveLeade
           <p>{tr('暂无实时网络吞吐数据')}</p>
         </div>
       ) : (
-        <div className="cockpit-leaderboard-list" role="list">
+        <ul className="cockpit-leaderboard-list">
           {rankedNodes.map((item, index) => (
-            <button
-              key={item.node.id}
-              type="button"
-              role="listitem"
-              className="cockpit-leaderboard-item"
-              onClick={() => handleClick(item.node.id)}
-              aria-label={tr('查看 {0}', item.node.name)}
-              title={tr('查看 {0}', item.node.name)}
-            >
-              <span className="leaderboard-rank" data-rank={index + 1}>
-                {index + 1}
-              </span>
-              <div className="leaderboard-flag">
-                {item.node.country ? (
-                  <Flag code={item.node.country} key={item.node.country} />
-                ) : (
-                  <Server size={14} aria-hidden="true" />
-                )}
-              </div>
-              <span className="leaderboard-name">{item.node.name}</span>
-              <div className="leaderboard-badge">
-                <span className="throughput-down" title={tr('下载')}>
-                  <ArrowDown size={11} aria-hidden="true" />
-                  <span>{bytes(item.rx)}/s</span>
+            <li key={item.node.id}>
+              <button
+                type="button"
+                className="cockpit-leaderboard-item"
+                onClick={() => handleClick(item.node.id)}
+                aria-label={tr('查看 {0}', item.node.name)}
+                title={tr('查看 {0}', item.node.name)}
+              >
+                <span className="leaderboard-rank" data-rank={index + 1}>
+                  {index + 1}
                 </span>
-                <span className="throughput-up" title={tr('上传')}>
-                  <ArrowUp size={11} aria-hidden="true" />
-                  <span>{bytes(item.tx)}/s</span>
-                </span>
-              </div>
-            </button>
+                <div className="leaderboard-flag">
+                  {item.node.country ? (
+                    <Flag code={item.node.country} key={item.node.country} />
+                  ) : (
+                    <Server size={14} aria-hidden="true" />
+                  )}
+                </div>
+                <span className="leaderboard-name">{item.node.name}</span>
+                <div className="leaderboard-badge">
+                  <span className="throughput-down" title={tr('下载')}>
+                    <ArrowDown size={11} aria-hidden="true" />
+                    <span>{bytes(item.rx)}/s</span>
+                  </span>
+                  <span className="throughput-up" title={tr('上传')}>
+                    <ArrowUp size={11} aria-hidden="true" />
+                    <span>{bytes(item.tx)}/s</span>
+                  </span>
+                </div>
+              </button>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
@@ -135,8 +128,15 @@ export function CockpitStatusCard({
     }
   };
 
-  const onlineCount = nodes.filter((n) => n.online).length;
+  const states = nodes.map((n) => nodeState(n));
+  const liveCount = states.filter((state) => state === 'live').length;
   const totalCount = nodes.length;
+  const healthy = totalCount > 0 && liveCount === totalCount;
+  const unavailable = [
+    {count: states.filter((state) => state === 'offline').length, label: tr('离线')},
+    {count: states.filter((state) => state === 'stale').length, label: tr('数据过期')},
+    {count: states.filter((state) => state === 'missing').length, label: tr('缺失数据')},
+  ].filter(({count}) => count > 0).map(({count, label}) => `${count} ${label}`).join(' · ');
 
   return (
     <div className="cockpit-widget cockpit-status-card" data-has-alerts={alertCount > 0}>
@@ -161,13 +161,16 @@ export function CockpitStatusCard({
           </span>
         </button>
       ) : (
-        <div className="cockpit-status-badge is-healthy" role="status">
-          <span className="status-pulse-indicator is-healthy" aria-hidden="true">
+        <div className={`cockpit-status-badge ${healthy ? 'is-healthy' : 'is-unavailable'}`} role="status">
+          <span className={`status-pulse-indicator ${healthy ? 'is-healthy' : ''}`} aria-hidden="true">
             <span className="status-pulse-dot" />
-            <span className="status-pulse-ring" />
+            {healthy && <span className="status-pulse-ring" />}
           </span>
           <span className="status-text">
-            {tr('全系统健康运转中')} · {onlineCount}/{totalCount} {tr('正常')}
+            {totalCount === 0 ? tr('暂无节点数据') : <>
+              {healthy ? `${tr('全系统健康运转中')} · ` : ''}{liveCount}/{totalCount} {tr('正常')}
+              {unavailable && ` · ${unavailable}`}
+            </>}
           </span>
         </div>
       )}

@@ -42,6 +42,25 @@ test('mobile Back and Forward retain both tab scroll positions',async({page})=>{
  await expect.poll(()=>page.evaluate(()=>scrollY)).toBeGreaterThan(settingsScroll-50)
 })
 
+test('rapid history navigation preserves scroll while restoration frames are pending',async({page})=>{
+ await page.setViewportSize({width:390,height:480});await fixture(page)
+ await page.clock.install()
+ await page.goto('/?page=overview')
+ await expect(page.locator('.ma-hero')).toBeVisible()
+ await page.clock.pauseAt(new Date(Date.now()+1000))
+ await page.evaluate(()=>scrollTo(0,400))
+ const nav=page.getByRole('navigation',{name:'主导航'})
+ await nav.getByRole('button',{name:'设置'}).click()
+ await expect(page.getByLabel('新详情页默认历史范围')).toBeVisible()
+ await page.evaluate(()=>scrollTo(0,240))
+ await page.goBack()
+ await expect(nav.getByRole('button',{name:'概览'})).toHaveAttribute('aria-current','page')
+ await expect.poll(()=>page.evaluate(()=>scrollY)).toBeGreaterThan(350)
+ await page.goForward()
+ await expect(nav.getByRole('button',{name:'设置'})).toHaveAttribute('aria-current','page')
+ await expect.poll(()=>page.evaluate(()=>scrollY)).toBeGreaterThan(190)
+})
+
 test('mobile detail returns to its overview source after reload',async({page})=>{
  await page.setViewportSize({width:390,height:844});await fixture(page)
  await page.goto('/?page=overview')

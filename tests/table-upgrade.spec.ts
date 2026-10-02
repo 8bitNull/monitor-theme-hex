@@ -1,6 +1,6 @@
 // Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {chooseOption} from './select'
-import {test,expect,type Page} from '@playwright/test'
+import {test,expect,type Page} from './classicTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 async function setup(page:Page,count=6) {
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:Array.from({length:count},(_,i)=>({...nodes()[0],id:i+1,sort:i,name:`Node ${i+1}`,remark:`备注 ${i+1} <script>文本内容</script>`,online:true,last_seen:Date.now()/1000,metrics:{...nodes()[0].metrics,cpu:10+i,net_tx:i*1000000,net_rx:(count-i)*1000000}}))}}))

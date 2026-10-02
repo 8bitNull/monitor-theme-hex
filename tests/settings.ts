@@ -7,7 +7,8 @@ export async function setStoredPreference(page:Page,key:string,value:unknown){
  await page.reload()
 }
 export async function setSiteDefault(page:Page,key:string,value:unknown){
- await page.route('**/theme-config.json',route=>route.fulfill({json:{[key]:value}}))
+ const cockpitMode = await page.locator('.next-theme').getAttribute('data-cockpit') === 'true'
+ await page.route('**/theme-config.json',route=>route.fulfill({json:{cockpitMode,[key]:value}}))
  await page.route('**/api/themes/hex/config',route=>route.fulfill({status:404}))
  await page.reload()
 }

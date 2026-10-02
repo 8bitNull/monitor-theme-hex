@@ -1,5 +1,5 @@
 // Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
-import {test,expect} from './desktopTest'
+import {test,expect} from './classicTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
 async function setup(page:any){
@@ -35,18 +35,20 @@ test('compact desktop detail groups, alignment and history ranges are bounded',a
  await page.getByRole('button',{name:'网络延迟',exact:true}).click();await expect(toolbar).toHaveAttribute('data-range-count','3');const latencyRanges=await toolbar.locator('.detail-ranges button').evaluateAll(bs=>bs.map(b=>{const box=b.getBoundingClientRect();return {top:box.top,bottom:box.bottom,right:box.right}}));expect(new Set(latencyRanges.map(box=>Math.round(box.top))).size).toBe(1);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
 })
 
-test('compact desktop resource selector stays beside chart tabs',async({page})=>{
+test('compact desktop named resource controls stay beside chart tabs',async({page})=>{
  for(const width of [768,800]){
   await page.setViewportSize({width,height:844});await setup(page);await page.goto('/node/1')
   const toolbar=page.locator('.detail-chart-toolbar[data-history-tab=resources]')
-  const selector=toolbar.locator('.detail-resource-metric-mobile > summary')
+  const selector=toolbar.locator('.detail-resource-metric-desktop')
   const selectionBox=(await toolbar.locator('.detail-toolbar-selection').boundingBox())!,tabsBox=(await toolbar.locator('.detail-tabs').boundingBox())!,selectorBox=(await selector.boundingBox())!
   expect(selectorBox.x).toBeGreaterThanOrEqual(tabsBox.x+tabsBox.width)
   expect(selectorBox.x+selectorBox.width).toBeLessThanOrEqual(selectionBox.x+selectionBox.width+1)
-  await selector.click()
-  const menuBox=(await toolbar.locator('.detail-resource-metric-menu').boundingBox())!
-  expect(menuBox.x).toBeGreaterThanOrEqual(0)
-  expect(menuBox.x+menuBox.width).toBeLessThanOrEqual(width)
+  for(const [name,metric] of [['CPU','cpu'],['内存','mem_used'],['硬盘','disk_used'],['网速','network']]){
+   const button=selector.getByRole('button',{name,exact:true})
+   await expect(button).toBeVisible()
+   await button.click()
+   await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric',metric)
+  }
  }
 })
 

@@ -1,4 +1,4 @@
-import {test,expect} from '@playwright/test'
+import {test,expect} from './classicTest'
 import {detailFixture} from './detail-aesthetics-fixture'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 

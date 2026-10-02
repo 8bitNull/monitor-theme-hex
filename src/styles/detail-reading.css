@@ -480,7 +480,7 @@ main:has(>.node-detail)>.detail-navigation {margin-bottom:4px}
 .detail-chart-toolbar .detail-ranges button,
 .detail-ranges button {
   min-width: 38px;
-  min-height: 32px;
+  min-height: 44px;
   padding: 0 10px;
   border: 1px solid transparent;
   border-radius: 9999px !important;

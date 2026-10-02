@@ -1,5 +1,5 @@
 // Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
-import {test,expect} from '@playwright/test'
+import {test,expect} from './classicTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
 async function setup(page:any){

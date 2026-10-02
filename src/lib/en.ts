@@ -1,4 +1,7 @@
 export const english: Record<string, string> = {
+"缺失数据":"Missing data",
+"数据过期":"Stale data",
+"暂无节点数据":"No node data",
 "查看上行网速历史":"View upload speed history",
 "查看下行网速历史":"View download speed history",
 "当前节点运行正常，暂无到期或流量提醒。":"Current nodes are reporting normally, with no expiry or traffic reminders.",

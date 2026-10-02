@@ -687,6 +687,9 @@
 }
 
 .cockpit-leaderboard-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -826,6 +829,12 @@
   border-color: color-mix(in srgb, var(--ok) 32%, transparent);
   color: var(--ok);
   box-shadow: 0 2px 14px -2px color-mix(in srgb, var(--ok) 18%, transparent);
+}
+
+.cockpit-status-badge.is-unavailable {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--muted-foreground);
 }
 
 .dark .cockpit-status-badge.is-healthy {

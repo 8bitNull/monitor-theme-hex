@@ -202,7 +202,6 @@
 
 @media (hover: hover) {
   .node-detail .detail-metric-card:hover {
-    transform: translateY(-2px);
     box-shadow: 0 8px 24px -4px color-mix(in srgb, var(--cyber-glow-color, var(--tone)) 25%, transparent);
   }
 }
@@ -314,7 +313,7 @@
 @media (min-width: 1024px) {
   [data-cockpit="true"] .detail-cockpit {
     display: grid;
-    grid-template-columns: minmax(320px, 32%) minmax(0, 68%);
+    grid-template-columns: minmax(320px, 32%) minmax(0, 1fr);
     gap: 24px;
     align-items: start;
     width: 100%;
@@ -324,7 +323,7 @@
 
   @media (min-width: 1440px) {
     [data-cockpit="true"] .detail-cockpit {
-      grid-template-columns: minmax(340px, 30%) minmax(0, 70%);
+      grid-template-columns: minmax(340px, 30%) minmax(0, 1fr);
       gap: 28px;
     }
   }
@@ -480,8 +479,9 @@
   [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts dt {
     font-size: 10.5px;
     color: var(--muted-foreground);
-    flex-shrink: 0;
-    white-space: nowrap;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts dd {

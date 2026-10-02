@@ -12,7 +12,7 @@ import {probeRevision,subscribeProbes,resolveProbe} from './lib/nodeProbes';
 import { tr, locale, getLanguage, subscribeLanguage, setLanguage } from './lib/i18n.ts'
 import { readCollection } from '@/lib/collection';
 import { systemKey } from '@/lib/groups';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState, useRef, useLayoutEffect, useSyncExternalStore } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState, useRef, useLayoutEffect, useSyncExternalStore, type RefObject } from "react";
 import {  Moon, Sun, Wrench, LogIn, Globe, LayoutGrid, ArrowLeft, Radio, Table2, Search, X, ArrowUp } from "lucide-react";
 import { usePreferences, useAppearance, useDesktopPreferences } from '@/lib/preferences';
 import { type Preferences as ThemePreferences, defaults } from '@/lib/appearance';
@@ -45,7 +45,7 @@ const NodeDetail = lazy(loadDetail);
 // `/node/{id}` is a real page: it survives a reload, can be linked to, and back
 // leaves the detail view rather than the site. The hub serves index.html for any
 // unknown path, so no server-side route is required.
-function useNodeRoute() {
+function useNodeRoute(beforeHistoryChange: RefObject<(() => void) | null>) {
     const read = () => {const match=location.pathname.match(/^\/node\/(\d+)/);return match?Number(match[1]):null;};
     const [id,setId]=useState(read);
     const [page,setPage]=useState<HomePage>(()=>read()===null?homePage():readReturnContext(history.state)?.page??'nodes');
@@ -53,10 +53,10 @@ function useNodeRoute() {
     const pending=useRef(false);
     useEffect(()=>{
         const previous=history.scrollRestoration;history.scrollRestoration='manual';
-        const sync=()=>{const next=read();pending.current=next===null;setId(next);setPage(next===null?homePage():readReturnContext(history.state)?.page??'nodes');};
+        const sync=()=>{beforeHistoryChange.current?.();const next=read();pending.current=next===null;setId(next);setPage(next===null?homePage():readReturnContext(history.state)?.page??'nodes');};
         addEventListener('popstate',sync);
         return()=>{removeEventListener('popstate',sync);history.scrollRestoration=previous;};
-    },[]);
+    },[beforeHistoryChange]);
     useLayoutEffect(()=>{
         if(id!==null || !pending.current)return;
         pending.current=false;
@@ -124,7 +124,12 @@ export default function App({ siteDefaults = defaults }: {
     const [me, setMe] = useState<Me | null>(null);
     const [meError, setMeError] = useState("");
     const { nodes, error, closed, connection, lastUpdated } = useNodes();
-    const [open, go, homePageState, navigate] = useNodeRoute();
+    const beforeHistoryChange = useRef<(() => void) | null>(null);
+    const registerBeforeHistoryChange = useCallback((save: () => void) => {
+        beforeHistoryChange.current = save;
+        return () => { if (beforeHistoryChange.current === save) beforeHistoryChange.current = null; };
+    }, []);
+    const [open, go, homePageState, navigate] = useNodeRoute(beforeHistoryChange);
     const [mobileCards,setMobileCards]=useState(()=>matchMedia('(max-width:720px)').matches);
     useEffect(()=>{const media=matchMedia('(max-width:720px)');const update=()=>setMobileCards(media.matches);media.addEventListener('change',update);return()=>media.removeEventListener('change',update)},[]);
     const [prefs, setPrefs, selectDisplay] = usePreferences(siteDefaults);
@@ -308,7 +313,7 @@ export default function App({ siteDefaults = defaults }: {
 
       <main className="mx-auto max-w-[1400px] space-y-5 px-4 py-4 sm:px-6">
         {(error || meError) && <p role="alert" className="error-banner">{tr("连接异常，正在重试。")}{error || meError}</p>}
-        {compactViewport&&<MobileApp active={open===null} page={homePageState} onNavigate={navigate} nodes={nodes} prefs={prefs} onPrefs={setPrefs} mobile={mobilePreferences} onMobile={setMobilePreferences} siteName={me.site_name||'HEX'} authed={me.authed} connection={connection} lastUpdated={lastUpdated} loadAlerts={loadAlerts} onOpen={(id,section,probe)=>go(id,section,probe===undefined?'':`?routes=${probe}`)} onAlert={event=>go(event.nodeId,'',`?eventStart=${event.start}&eventEnd=${event.end??event.last}`)}/>}
+        {compactViewport&&<MobileApp registerBeforeHistoryChange={registerBeforeHistoryChange} active={open===null} page={homePageState} onNavigate={navigate} nodes={nodes} prefs={prefs} onPrefs={setPrefs} mobile={mobilePreferences} onMobile={setMobilePreferences} siteName={me.site_name||'HEX'} authed={me.authed} connection={connection} lastUpdated={lastUpdated} loadAlerts={loadAlerts} onOpen={(id,section,probe)=>go(id,section,probe===undefined?'':`?routes=${probe}`)} onAlert={event=>go(event.nodeId,'',`?eventStart=${event.start}&eventEnd=${event.end??event.last}`)}/>}
 
         {open !== null && selected && <div className="detail-navigation">
           <Button className="detail-back" variant="ghost" aria-label={tr("返回总览")} title={tr("返回总览")} onClick={()=>go(null)}><ArrowLeft/><span>{tr("返回总览")}</span></Button>

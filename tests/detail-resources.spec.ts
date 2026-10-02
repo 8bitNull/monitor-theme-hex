@@ -1,6 +1,6 @@
 // Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {expandRoutes} from './routes'
-import {test,expect} from '@playwright/test'
+import {test,expect} from './classicTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 import {setSiteDefault} from './settings'
 async function setup(page:any,{many=false,empty=false,error=false}={}){

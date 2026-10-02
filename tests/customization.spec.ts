@@ -59,7 +59,7 @@ test.skip('explicit equal-default display choices survive site changes, unrelate
 for(const width of [768,800,850,899,721,1024,1440,1920])test('site column layout stays readable at '+width,async({page})=>{
  await page.setViewportSize({width,height:1000})
  let columns='4'
- await page.route('**/theme-config.json',r=>r.fulfill({json:{desktopColumns:columns,modules:{map:false}}}))
+ await page.route('**/theme-config.json',r=>r.fulfill({json:{cockpitMode:false,desktopColumns:columns,modules:{map:false}}}))
  await page.route('**/api/themes/hex/config',r=>r.fulfill({status:404}))
  await setup(page)
  const grid=page.locator('.node-grid'),card=page.locator('.node-card')
