@@ -4,6 +4,7 @@
 
 - [使用指南](USER-GUIDE.md)：页面操作、设置作用域与数据说明。
 - [开发说明](DEVELOPMENT.md)：本地服务、测试、打包与多浏览器回归。
+- [下一次发布清单](NEXT-RELEASE.md)：开发范围、已知问题、专项验收和合并门槛。
 - [验收记录](ACCEPTANCE.md)：各轮检查结果和验证边界。
 - [地图性能与部署说明](MAP-PERFORMANCE.md)：性能基准、复测方法和部署建议。
 - [历史体验优化记录](UX-IMPLEMENTATION.md)：v0.1.24 的实施记录。
