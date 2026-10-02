@@ -27,14 +27,46 @@
 | R1 | `CockpitStatusCard` 仅凭没有活动高负载事件就显示健康；两台节点中一台离线时，实测显示“全系统健康运转中 · 1/2 正常” | 区分离线、数据过期、缺失数据、空节点列表和无高负载事件；有这些异常时不能声明全系统健康。增加对应回归 |
 | R2 | `CockpitLiveLeaderboard` 排除了实时上下行均为 0 的节点；两台在线且读数有效的空闲节点，实测显示“暂无实时网络吞吐数据” | 保留有效零值，或明确展示空闲状态；只在确实没有有效读数时显示暂无数据。覆盖零值、过期、缺失和离线情况 |
 | R3 | 排行榜在原生按钮上设置 `role="listitem"`；实测一条可点击记录有 1 个 listitem，但可访问按钮数量为 0 | 列表项和按钮分别提供正确语义；键盘与读屏能识别并激活节点操作，点击行为保持一致 |
+| R4 | 全量回归确认默认配置不一致：`public/theme-config.json` 的 `glass=false`，而应用默认值为 `true`，`site-config.spec.ts:35` 失败 | 应用默认值、主题清单和随包默认配置一致；已保存站点配置继续优先生效，配置字段回归通过 |
+| R5 | 本轮完整 Chromium 回归有 41 项失败，涉及详情布局、表格、配置、手机资料及导航等；详见下方跟踪表 | 逐项区分真实退步与新布局有意变化，分别修复实现或按布局模式更新断言。所有失败有处理结论，完整回归重新通过 |
 
 以上均在本地演示数据、1440×900、Chromium 下复现。证据保留在本地 `artifacts/release-audit-2026-10-02/`，不包含真实站点数据，不纳入公开仓库。
 
 - [ ] R1 修复并有有意义的回归测试。
 - [ ] R2 修复并有有意义的回归测试。
 - [ ] R3 修复并完成键盘、按钮语义与节点导航检查。
+- [ ] R4 默认配置保持一致，配置覆盖和旧设置保留检查通过。
+- [ ] R5 全部回归失败逐项处理并重新验收；不以批量跳过或删除断言代替处理。
 
-相关实现见 [CockpitWidgets](../src/components/CockpitWidgets.tsx)。完整套件通过不能替代这些新行为的专项验证。
+前三项相关实现见 [CockpitWidgets](../src/components/CockpitWidgets.tsx)。完整套件通过不能替代这些新行为的专项验证。
+
+## 本轮回归失败跟踪
+
+运行对象 `b389361`，Node.js 24、Ubuntu、Playwright Chromium、2 个 worker：**436 通过、41 失败、17 跳过，共 494 项**。测试步骤失败，安装、构建及报告上传成功；完整日志和截图见 [运行记录](https://github.com/8bitNull/monitor-theme-hex/actions/runs/36993152260)，Actions 产物保留 14 天。
+
+| 测试文件 | 失败数 | 优先核对 |
+|---|---:|---|
+| [customization](../tests/customization.spec.ts) | 1 | 驾驶舱默认开启后，原四列配置断言仍期待四列，实际为两列 |
+| [desktop-detail-refinement](../tests/desktop-detail-refinement.spec.ts) | 4 | 中英文历史工具栏的悬停位置稳定性 |
+| [detail-aesthetics](../tests/detail-aesthetics.spec.ts) | 3 | 资源卡片排列与网速分区 |
+| [detail-balance](../tests/detail-balance.spec.ts) | 4 | 设备资料在不同宽度的布局 |
+| [detail-focus](../tests/detail-focus.spec.ts) | 1 | 指标和长身份资料的容纳情况 |
+| [detail-grid](../tests/detail-grid.spec.ts) | 1 | 详情模块的阅读顺序 |
+| [detail-overview](../tests/detail-overview.spec.ts) | 2 | 详情总览与历史区域 |
+| [detail-polish](../tests/detail-polish.spec.ts) | 5 | 768～900px 控件可用性 |
+| [detail-proportion](../tests/detail-proportion.spec.ts) | 6 | 多宽度详情区域的尺寸与比例 |
+| [detail-resources](../tests/detail-resources.spec.ts) | 2 | 资源控件和资料布局 |
+| [detail-routes](../tests/detail-routes.spec.ts) | 1 | 桌面线路布局 |
+| [latency-desktop](../tests/latency-desktop.spec.ts) | 1 | 延迟图与线路控件 |
+| [site-config](../tests/site-config.spec.ts) | 1 | 上述 R4 默认值不一致 |
+| [table-extra](../tests/table-extra.spec.ts) | 1 | 丢包率和线路选择 |
+| [table-polish](../tests/table-polish.spec.ts) | 1 | 表头裁剪与横向访问 |
+| [table-upgrade](../tests/table-upgrade.spec.ts) | 3 | 表格排序、溢出控件与响应式布局 |
+| [ux-layout](../tests/ux-layout.spec.ts) | 2 | 320/390px 长资料样式 |
+| [ux-navigation](../tests/ux-navigation.spec.ts) | 1 | 手机前进、后退的滚动位置 |
+| [v023-polish](../tests/v023-polish.spec.ts) | 1 | 桌面资源选择控件可见性 |
+
+这里记录的是失败用例，不把 41 项一概认定为 41 个独立产品缺陷。先确认新的驾驶舱布局与经典布局各自应有的行为，再按条件保留或更新断言；原有配置、导航与数据语义仍需保持。
 
 ## 必须补充的专项验收
 
@@ -52,15 +84,15 @@
 | 检查 | 对象 | 状态与证据 |
 |---|---|---|
 | 常规 CI | `dev` / `b389361` | [通过](https://github.com/8bitNull/monitor-theme-hex/actions/runs/36988564034) |
-| 完整 Chromium 回归 | `dev` / `b389361` | [本轮运行记录](https://github.com/8bitNull/monitor-theme-hex/actions/runs/36993152260)，结果待核对 |
+| 完整 Chromium 回归 | `dev` / `b389361` | [未通过](https://github.com/8bitNull/monitor-theme-hex/actions/runs/36993152260)：436 通过、41 失败、17 跳过；报告上传成功 |
 | 三引擎兼容性回归 | 当前开发功能 | 待执行；修复完成后在 `dev` 重新运行 |
-| 驾驶舱专项与视觉验收 | 当前开发功能 | 待补充，上述三项已确认问题尚未修复 |
+| 驾驶舱专项与视觉验收 | 当前开发功能 | 待补充，上述已确认问题尚未修复 |
 | 实体手机 | 候选安装包 | 待人工检查 iPhone Safari 与 Android 常用浏览器 |
 | 安装与升级 | 候选安装包 | 待核验安装包清单、版本一致性、校验和、后台安装与旧配置保留 |
 
 ## 合并与发布条件
 
-- [ ] 上述三项问题和专项验收完成，更新本清单的结果、提交号及证据。
+- [ ] 上述问题、回归失败和专项验收完成，更新本清单的结果、提交号及证据。
 - [ ] 对候选提交重新运行常规 CI、完整 Chromium 与三引擎兼容性套件；逐项说明跳过的测试及其适用范围。
 - [ ] 维护者完成视觉和实体手机检查，确认本轮范围可发布。
 - [ ] 将开发 PR 从草稿转为可审查状态，分支同步最新 `main` 并通过必需 CI 后再合并。
