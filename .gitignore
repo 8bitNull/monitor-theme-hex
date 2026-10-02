@@ -44,3 +44,11 @@ playwright-report/
 # Review notes stay local and are never synchronized or published.
 REVIEW-v0.0.*.md
 scratch/screenshots/
+
+# Local workspaces, verification files and release drafts
+/artifacts/
+/scratch/
+/.worktrees/
+/.superpowers/
+/release_body.md
+/map-delivery-audit.json

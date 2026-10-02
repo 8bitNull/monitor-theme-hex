@@ -1,5 +1,7 @@
 # HEX
 
+> `dev` 是开发分支，包含尚未完成验收的改动；稳定版请使用 `main` 或 [v0.3.6 发布页](https://github.com/8bitNull/monitor-theme-hex/releases/tag/v0.3.6)。开发协作与目录约定见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
 ![HEX 主题预览](preview.png)
 
 HEX 是为 monitor-probe 制作的监控主题。你可以在首页查看服务器状态、资源占用和网络情况，也可以进入单台服务器的详情页，查看历史曲线、流量用量和设备资料。
@@ -26,7 +28,7 @@ v0.3.6 优化详情页阅读层级：桌面 CPU、内存、硬盘和实时网速
 
 主题短名为 `hex`。页面顶部的站点名称读取后台配置；服务器名称、备注、价格、到期时间等内容也由后台管理。
 
-地图加载时会显示进度提示；网络较慢或加载失败时，节点列表仍可使用。维护者可参考[地图性能与部署说明](MAP-PERFORMANCE.md)检查资源压缩和缓存。
+地图加载时会显示进度提示；网络较慢或加载失败时，节点列表仍可使用。维护者可参考[地图性能与部署说明](maintenance/MAP-PERFORMANCE.md)检查资源压缩和缓存。
 
 ## 首页怎么用
 
@@ -119,7 +121,7 @@ npm run test:e2e
 
 运行 `npm run package` 会重新构建，并生成 `theme.tar.gz` 和对应的 SHA-256 校验文件。安装包包含主题清单、前端文件、预览图和许可证；依赖、演示服务和本地测试产物不会随包发布。
 
-发布说明放在 [GitHub Releases](https://github.com/8bitNull/monitor-theme-hex/releases)，检查记录见 [ACCEPTANCE.md](ACCEPTANCE.md)。
+发布说明放在 [GitHub Releases](https://github.com/8bitNull/monitor-theme-hex/releases)，检查记录见 [验收记录](maintenance/ACCEPTANCE.md)，本地历史发布说明见 [维护资料](maintenance/README.md)。
 
 ## 来源与许可
 
