@@ -54,8 +54,9 @@ button:disabled {cursor:default;opacity:.45}
 .result-count {font-size:var(--text-small);color:var(--muted-foreground)}
 /* Shared card anatomy: identity, resources, speed, route, secondary facts. */
 .node-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}
-.node-card {--card-pad:16px;min-width:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-panel);overflow:hidden}
+.node-card {--card-pad:16px;min-width:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-panel);overflow:hidden;transition:transform .2s cubic-bezier(0.16,1,0.3,1),box-shadow .2s cubic-bezier(0.16,1,0.3,1),border-color .2s ease}
 .node-card:hover {border-color:color-mix(in srgb,var(--tone) 45%,var(--border))}
+@media(hover:hover) {.node-card:hover {transform:translateY(-2px);box-shadow:0 8px 24px -4px color-mix(in srgb,var(--tone) 25%,transparent)}}
 .node-open {display:block;width:100%;text-align:left;color:inherit}
 .node-heading {display:flex;align-items:center;gap:8px;padding:var(--card-pad)}
 .node-symbol {display:grid;place-items:center;flex-shrink:0;width:28px;color:var(--tone);font-size:var(--text-small)}
@@ -83,7 +84,7 @@ button:disabled {cursor:default;opacity:.45}
 .metric-ring,.resource-bar {display:none}
 [data-graph=bar] .resource-columns,[data-graph=ring] .resource-columns,[data-graph=minimal] .resource-columns {display:none}
 [data-graph=bar] .resource-bar {display:block;height:6px;background:var(--muted);border-radius:4px;overflow:hidden;margin-top:8px;order:2}
-.resource-bar i {display:block;height:100%;background:var(--metric-color)}
+.resource-bar i {display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,color-mix(in srgb,var(--metric-color) 65%,transparent),var(--metric-color));transition:width .3s ease,background .3s ease,box-shadow .3s ease}
 [data-graph=ring] .metric-ring {display:block;position:relative;width:64px;height:64px;margin:0 auto 8px}
 [data-graph=ring] .resource-label {justify-content:center}
 [data-graph=ring] .bar-number {display:none}
@@ -154,9 +155,9 @@ button:disabled {cursor:default;opacity:.45}
 [data-layout=compact] .node-card {--card-pad:12px}
 [data-layout=compact] .node-grid {gap:12px}
 [data-layout=compact] .resources {padding-bottom:12px}
-[data-glass=true] :is(.node-card,.summary-grid>[data-slot=card],.world-panel,.table-scroll) {background:color-mix(in srgb,var(--card) var(--card-opacity),transparent);backdrop-filter:blur(var(--glass-blur))}
-@media(max-width:720px) {[data-glass=true] :is(.node-card,.summary-grid>[data-slot=card],.world-panel,.table-scroll) {backdrop-filter:blur(min(var(--glass-blur),6px))}}
-@media(prefers-reduced-transparency:reduce) {[data-glass=true] :is(.node-card,.summary-grid>[data-slot=card],.world-panel,.table-scroll) {background:var(--card);backdrop-filter:none}}
+[data-glass=true] :is(.node-card,.summary-grid>[data-slot=card],.world-panel,.table-scroll) {background:linear-gradient(var(--glass-bg),var(--glass-bg)) padding-box,var(--cyber-border-gradient) border-box;border:1px solid transparent;-webkit-backdrop-filter:blur(var(--glass-blur,16px));backdrop-filter:blur(var(--glass-blur,16px))}
+@media(max-width:720px) {[data-glass=true] :is(.node-card,.summary-grid>[data-slot=card],.world-panel,.table-scroll) {-webkit-backdrop-filter:blur(min(var(--glass-blur,16px),6px));backdrop-filter:blur(min(var(--glass-blur,16px),6px))}}
+@media(prefers-reduced-transparency:reduce) {[data-glass=true] :is(.node-card,.summary-grid>[data-slot=card],.world-panel,.table-scroll) {background:var(--card);border:1px solid var(--border);-webkit-backdrop-filter:none;backdrop-filter:none}}
 @media(max-width:1150px) {.node-grid {grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:720px) {
  .node-grid {grid-template-columns:minmax(0,1fr)}

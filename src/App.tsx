@@ -1,10 +1,10 @@
 import {BillingReminders} from './components/BillingReminders';
 import {MapPanel} from './components/MapPanel';
+import {CockpitLiveLeaderboard, CockpitStatusCard} from './components/CockpitWidgets';
 import {MobileApp} from './components/MobileApp';
 import {useMobilePreferences} from './lib/mobilePreferences';
 import {MobileSearch} from './components/MobileSearch';
 import {countryName} from './lib/regionNames';
-import {RegionPicker} from './components/RegionPicker';
 import themeManifest from '../theme.json';
 import {useLoadAlerts} from './lib/useLoadAlerts';
 import {DesktopRegionFilter} from './components/DesktopRegionFilter';
@@ -12,7 +12,7 @@ import {probeRevision,subscribeProbes,resolveProbe} from './lib/nodeProbes';
 import { tr, locale, getLanguage, subscribeLanguage, setLanguage } from './lib/i18n.ts'
 import { readCollection } from '@/lib/collection';
 import { systemKey } from '@/lib/groups';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState, useRef, useLayoutEffect, useSyncExternalStore } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState, useRef, useLayoutEffect, useSyncExternalStore, type RefObject } from "react";
 import {  Moon, Sun, Wrench, LogIn, Globe, LayoutGrid, ArrowLeft, Radio, Table2, Search, X, ArrowUp } from "lucide-react";
 import { usePreferences, useAppearance, useDesktopPreferences } from '@/lib/preferences';
 import { type Preferences as ThemePreferences, defaults } from '@/lib/appearance';
@@ -45,18 +45,22 @@ const NodeDetail = lazy(loadDetail);
 // `/node/{id}` is a real page: it survives a reload, can be linked to, and back
 // leaves the detail view rather than the site. The hub serves index.html for any
 // unknown path, so no server-side route is required.
-function useNodeRoute() {
+function useNodeRoute(beforeHistoryChange: RefObject<(() => void) | null>) {
     const read = () => {const match=location.pathname.match(/^\/node\/(\d+)/);return match?Number(match[1]):null;};
     const [id,setId]=useState(read);
     const [page,setPage]=useState<HomePage>(()=>read()===null?homePage():readReturnContext(history.state)?.page??'nodes');
     const home=useRef({y:readReturnContext(history.state)?.scrollY??0,node:0,offset:0,width:0,tableX:0,tableOffset:0,tableY:0,table:false});
     const pending=useRef(false);
-    useEffect(()=>{
+    useLayoutEffect(()=>{
         const previous=history.scrollRestoration;history.scrollRestoration='manual';
-        const sync=()=>{const next=read();pending.current=next===null;setId(next);setPage(next===null?homePage():readReturnContext(history.state)?.page??'nodes');};
+        const readCurrentRoute=(next=read())=>{setId(next);setPage(next===null?homePage():readReturnContext(history.state)?.page??'nodes');};
+        const sync=()=>{beforeHistoryChange.current?.();const next=read();pending.current=next===null;readCurrentRoute(next);};
         addEventListener('popstate',sync);
+        // Back can happen between the initial render and listener registration.
+        // Reconcile once subscribed without saving scroll for a page not yet shown.
+        readCurrentRoute();
         return()=>{removeEventListener('popstate',sync);history.scrollRestoration=previous;};
-    },[]);
+    },[beforeHistoryChange]);
     useLayoutEffect(()=>{
         if(id!==null || !pending.current)return;
         pending.current=false;
@@ -64,7 +68,7 @@ function useNodeRoute() {
         const restore=()=>{
             if(stopped)return;
             const target=document.querySelector<HTMLElement>(`[data-node-id="${home.current.node}"]`);
-            if(!target){const table=document.querySelector<HTMLElement>('.table-scroll');if(table){table.scrollTop=home.current.tableY;table.scrollLeft=home.current.tableX;}scrollTo(0,home.current.y);return;}
+            if(!target){const table=document.querySelector<HTMLElement>('.table-scroll');if(table){table.scrollTop=home.current.tableY;table.scrollLeft=home.current.tableX;}scrollTo(0,home.current.y);return;};
             const table=document.querySelector<HTMLElement>('.table-scroll');
             if(table&&home.current.table){table.scrollLeft=home.current.tableX;table.scrollTop+=target.getBoundingClientRect().top-table.getBoundingClientRect().top-home.current.tableOffset;}
             // Mobile branding scrolls away. Keep a stable clearance for sticky search
@@ -124,7 +128,12 @@ export default function App({ siteDefaults = defaults }: {
     const [me, setMe] = useState<Me | null>(null);
     const [meError, setMeError] = useState("");
     const { nodes, error, closed, connection, lastUpdated } = useNodes();
-    const [open, go, homePageState, navigate] = useNodeRoute();
+    const beforeHistoryChange = useRef<(() => void) | null>(null);
+    const registerBeforeHistoryChange = useCallback((save: () => void) => {
+        beforeHistoryChange.current = save;
+        return () => { if (beforeHistoryChange.current === save) beforeHistoryChange.current = null; };
+    }, []);
+    const [open, go, homePageState, navigate] = useNodeRoute(beforeHistoryChange);
     const [mobileCards,setMobileCards]=useState(()=>matchMedia('(max-width:720px)').matches);
     useEffect(()=>{const media=matchMedia('(max-width:720px)');const update=()=>setMobileCards(media.matches);media.addEventListener('change',update);return()=>media.removeEventListener('change',update)},[]);
     const [prefs, setPrefs, selectDisplay] = usePreferences(siteDefaults);
@@ -172,6 +181,17 @@ export default function App({ siteDefaults = defaults }: {
     const setQuery = (query: string) => patchBrowse({ query });
     const setStatus = (status: string) => patchBrowse({ status });
     const setRegion = useCallback((region:string)=>setBrowse(prev=>({...prev,region})),[]);
+    const cockpitMode = prefs.cockpitMode ?? true;
+    const handleSelectRegion = useCallback(() => {
+        const results = document.getElementById('node-results');
+        if (results) {
+            results.focus({ preventScroll: true });
+            results.scrollIntoView({
+                behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+                block: 'nearest',
+            });
+        }
+    }, []);
     const pingVersion = useSyncExternalStore(subscribePing, pingRevision);
     useEffect(() => { try {
         sessionStorage.setItem('monitor-next-browse-v1', JSON.stringify(browse));
@@ -221,12 +241,25 @@ export default function App({ siteDefaults = defaults }: {
     const mapKey=JSON.stringify(sorted.filter(n=>(browse.status==='all'||(browse.status==='online'?n.online:!n.online))&&(system==='all'||systemKey(n.os)===system)).map(({id,name,country,online})=>({id,name,country,online})));
     const selected = sorted.find((n) => n.id === open);
     const filtered = browseNodes(sorted, browse.view === "cards" ? {...browse,sort:"default"} : browse).filter(n => (system === 'all' || systemKey(n.os) === system) && (group === 'all' || (n.group || '') === (group === 'none' ? '' : group.slice(1))));
-    const showFilterFeedback = (status !== 'all' && !prefs.modules.online || !!browse.query || region !== 'all' || system !== 'all') && !(mapVisible && region !== 'all');
+    const showFilterFeedback = status !== 'all' && !prefs.modules.online || !!browse.query || region !== 'all' || system !== 'all';
     const systems = [...new Set(sorted.map(n=>systemKey(n.os)))];
     const showSystemFilters = systems.length > 1 || system !== 'all';
-    const showActiveFilters = showFilterFeedback || !!browse.query || system !== 'all' || (status !== 'all' && !prefs.modules.online);
+    const showActiveFilters = showFilterFeedback || !!browse.query || system !== 'all' || (status !== 'all' && !prefs.modules.online) || region !== 'all';
     const pageKey=JSON.stringify([browse.query,browse.status,browse.region,browse.sort,browse.direction,browse.probe,system,group]);
     const [tablePage,setTablePage]=useState({key:pageKey,page:1});
+    const handleLeaderboardSelect = useCallback((id: number) => {
+        const el = document.querySelector(`[data-node-id="${id}"]`);
+        if (el) {
+            const prefersReducedMotion = typeof window !== "undefined" &&
+                window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+            el.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "center" });
+            const card = el.closest(".node-card, tr") || el;
+            card.classList.add("node-card-highlight");
+            setTimeout(() => card.classList.remove("node-card-highlight"), 2000);
+        } else {
+            go(id);
+        }
+    }, [go]);
     const page=Math.min(tablePage.key===pageKey?tablePage.page:1,Math.max(1,Math.ceil(filtered.length/20)));
     const viewSwitch = <div className="view-toolbar"><div className="view-switch"><button className={browse.view === 'cards' ? 'active' : ''} onClick={() => patchBrowse({view:'cards'})} aria-label={tr("卡片视图")} aria-pressed={browse.view === 'cards'}><LayoutGrid size={17}/>{tr("卡片")}</button><button className={browse.view === 'table' ? 'active' : ''} onClick={() => patchBrowse({view:'table'})} aria-label={tr("表格视图")} aria-pressed={browse.view === 'table'}><Table2 size={17}/>{tr("表格")}</button></div></div>;
     const searchField = (className = '') => <div className={`node-search-control ${className}`.trim()}>
@@ -256,7 +289,7 @@ export default function App({ siteDefaults = defaults }: {
     // The status page is closed and nobody is signed in: redirect to the panel.
     if (!me.public_page && !me.authed)
         return null;
-    return (<div className="next-theme min-h-svh" data-skin={prefs.skin} data-palette={prefs.palette} data-graph={prefs.graph} data-layout={prefs.layout} data-card-layout={prefs.cardLayout} data-glass={prefs.glass} data-background={background.ready} data-background-type={prefs.backgroundType} style={background.style}>
+    return (<div className="next-theme min-h-svh" data-skin={prefs.skin} data-palette={prefs.palette} data-graph={prefs.graph} data-layout={prefs.layout} data-card-layout={prefs.cardLayout} data-glass={prefs.glass} data-background={background.ready} data-background-type={prefs.backgroundType} data-cockpit={String(cockpitMode)} style={background.style}>
       {background.ready && <Background url={prefs.backgroundUrl}/>}
       {!compactViewport&&<header className="desktop-app-header sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
         <div className="mx-auto flex max-w-[1400px] items-center gap-3 px-4 py-3 sm:px-6">
@@ -284,40 +317,63 @@ export default function App({ siteDefaults = defaults }: {
 
       <main className="mx-auto max-w-[1400px] space-y-5 px-4 py-4 sm:px-6">
         {(error || meError) && <p role="alert" className="error-banner">{tr("连接异常，正在重试。")}{error || meError}</p>}
-        {compactViewport&&<MobileApp active={open===null} page={homePageState} onNavigate={navigate} nodes={nodes} prefs={prefs} onPrefs={setPrefs} mobile={mobilePreferences} onMobile={setMobilePreferences} siteName={me.site_name||'HEX'} authed={me.authed} connection={connection} lastUpdated={lastUpdated} loadAlerts={loadAlerts} onOpen={(id,section,probe)=>go(id,section,probe===undefined?'':`?routes=${probe}`)} onAlert={event=>go(event.nodeId,'',`?eventStart=${event.start}&eventEnd=${event.end??event.last}`)}/>}
+        {compactViewport&&<MobileApp registerBeforeHistoryChange={registerBeforeHistoryChange} active={open===null} page={homePageState} onNavigate={navigate} nodes={nodes} prefs={prefs} onPrefs={setPrefs} mobile={mobilePreferences} onMobile={setMobilePreferences} siteName={me.site_name||'HEX'} authed={me.authed} connection={connection} lastUpdated={lastUpdated} loadAlerts={loadAlerts} onOpen={(id,section,probe)=>go(id,section,probe===undefined?'':`?routes=${probe}`)} onAlert={event=>go(event.nodeId,'',`?eventStart=${event.start}&eventEnd=${event.end??event.last}`)}/>}
 
         {open !== null && selected && <div className="detail-navigation">
           <Button className="detail-back" variant="ghost" aria-label={tr("返回总览")} title={tr("返回总览")} onClick={()=>go(null)}><ArrowLeft/><span>{tr("返回总览")}</span></Button>
         </div>}
         {open !== null ? (!nodes ? (<Skeleton className="h-96"/>) : selected ? (<Suspense fallback={<Skeleton className="h-96"/>}>
-              <NodeDetail onBack={()=>go(null)} mobilePreferences={mobilePreferences} detailInfoMode={prefs.detailInfoMode} onDetailInfoMode={detailInfoMode=>selectDisplay({detailInfoMode})} key={selected.id} node={selected} probe={compactViewport?resolveProbe(selected.id,prefs.probe):prefs.probe} nodes={sorted} onSwitch={id=>{const q=new URLSearchParams(location.search);q.delete("eventStart");q.delete("eventEnd");q.delete("routes");go(id,location.hash.slice(1),q.size?"?"+q:"")}}/>
+              <NodeDetail onBack={()=>go(null)} mobilePreferences={mobilePreferences} detailInfoMode={prefs.detailInfoMode} onDetailInfoMode={detailInfoMode=>selectDisplay({detailInfoMode})} key={selected.id} node={selected} probe={compactViewport?resolveProbe(selected.id,prefs.probe):prefs.probe} nodes={sorted} cockpitMode={cockpitMode} onSwitch={id=>{const q=new URLSearchParams(location.search);q.delete("eventStart");q.delete("eventEnd");q.delete("routes");go(id,location.hash.slice(1),q.size?"?"+q:"")}}/>
             </Suspense>) : (<p className="py-16 text-center text-sm text-muted-foreground">{tr("节点不存在或未公开。")}<button className="underline" onClick={() => go(null)}>{tr("返回列表")}</button>
-            </p>)) : compactViewport ? null : !nodes ? (<>{mapVisible&&<MapPanel viewSwitch={viewSwitch} nodeSnapshot={mapKey} region={region} onRegion={setRegion} expanded={mapExpanded} onExpanded={toggleMap} pendingNodes/>}<div className="node-grid home-loading" aria-label={tr("正在加载节点")} aria-busy="true">
-            {[0, 1, 2].map((i) => (<div key={i} className="loading-card" aria-hidden="true"><Skeleton className="loading-title"/><div className="loading-metrics">{[0,1,2,3].map(n=><Skeleton key={n}/>)}</div><Skeleton className="loading-speed"/><Skeleton className="loading-route"/></div>))}
-          </div></>) : (<>
-            <section className="overview-heading"><div className="page-heading"><h1>{tr("服务器总览")}</h1><span className={`live-label connection-${connection}`} role="status" title={[{connecting:tr("正在连接"),realtime:tr("实时连接"),polling:tr("轮询更新"),disconnected:tr("连接中断 \u00B7 数据可能已过期")}[connection],lastUpdated ? new Date(lastUpdated).toLocaleString(locale()) : tr("等待首次数据")].join(" · ")}><Radio size={14}/><span>{{ connecting: tr("正在连接"), realtime: tr("实时连接"), polling: tr("轮询更新"), disconnected: tr("连接中断 \u00B7 数据可能已过期") }[connection]}</span></span></div>
-            <BillingReminders nodes={sorted} onOpen={id=>go(id)}/>
-            <p className="update-time">{lastUpdated ? tr("最后更新：{0}", new Date(lastUpdated).toLocaleString(locale())) : tr("等待首次数据")}</p></section>
+            </p>)) : compactViewport ? null : !nodes ? (
+          <div className="cockpit-layout" data-has-aside={String(mapVisible || cockpitMode)}>
+            <div className="cockpit-main">
+              <div className="node-grid home-loading" aria-label={tr("正在加载节点")} aria-busy="true">
+                {[0, 1, 2].map((i) => (<div key={i} className="loading-card" aria-hidden="true"><Skeleton className="loading-title"/><div className="loading-metrics">{[0,1,2,3].map(n=><Skeleton key={n}/>)}</div><Skeleton className="loading-speed"/><Skeleton className="loading-route"/></div>))}
+              </div>
+            </div>
+            <aside className="cockpit-aside">
+              {mapVisible && <MapPanel viewSwitch={viewSwitch} nodeSnapshot={mapKey} region={region} onRegion={setRegion} onSelectRegion={handleSelectRegion} expanded={mapExpanded} onExpanded={toggleMap} pendingNodes/>}
+            </aside>
+          </div>
+        ) : (
+          <>
+            <section className="overview-heading"><div className="page-heading"><h1>{tr("服务器总览")}</h1><span className={`live-label connection-${connection}`} role="status" title={[{connecting:tr("正在连接"),realtime:tr("实时连接"),polling:tr("轮询更新"),disconnected:tr("连接中断 · 数据可能已过期")}[connection],lastUpdated ? new Date(lastUpdated).toLocaleString(locale()) : tr("等待首次数据")].join(" · ")}><Radio size={14}/><span>{{ connecting: tr("正在连接"), realtime: tr("实时连接"), polling: tr("轮询更新"), disconnected: tr("连接中断 · 数据可能已过期") }[connection]}</span></span></div>
+              <BillingReminders nodes={sorted} onOpen={id=>go(id)}/>
+              <p className="update-time">{lastUpdated ? tr("最后更新：{0}", new Date(lastUpdated).toLocaleString(locale())) : tr("等待首次数据")}</p></section>
             <Summary status={status} onStatus={setStatus} onCollapse={summaryCollapsed=>setPrefs(prev=>({...prev,summaryCollapsed}))} nodes={sorted} prefs={prefs} loadAlerts={loadAlerts} onAlert={event=>go(event.nodeId,"",`?eventStart=${event.start}&eventEnd=${event.end??event.last}`)}/>
-            <>{compactViewport&&<div className="mobile-node-toolbar"><div className="mobile-toolbar-main"><RegionPicker nodes={sorted} region={region} onChange={setRegion}/></div></div>}</>
             <section hidden={!showSystemFilters && !showActiveFilters} className="node-browser streamlined-browser" aria-label={tr("节点浏览")}>
-            <div className="filters" hidden={!showSystemFilters}><div className="filter-categories"><div className="system-pills" role="group" aria-label={tr("系统快速筛选")}>{['all',...systems].map(key=><button key={key} aria-pressed={system===key} onClick={()=>setSystem(key)}>{key==='all'?tr("所有系统"):key==='other'?tr("其他 / 未知系统"):key}</button>)}</div>
+              <div className="filters" hidden={!showSystemFilters}><div className="filter-categories"><div className="system-pills" role="group" aria-label={tr("系统快速筛选")}>{['all',...systems].map(key=><button key={key} aria-pressed={system===key} onClick={()=>setSystem(key)}>{key==='all'?tr("所有系统"):key==='other'?tr("其他 / 未知系统"):key}</button>)}</div>
 </div>
 </div>
-            <div className="active-filters" hidden={!showActiveFilters}>
+              <div className="active-filters" hidden={!showActiveFilters}>
 {status!=='all'&&!prefs.modules.online&&<button aria-label={tr("清除状态筛选")} onClick={()=>setStatus('all')}>{tr(status==='offline'?"离线":"在线")} ×</button>}
 {showFilterFeedback&&<span className="filter-match-count">{tr("匹配 {0} 个节点",filtered.length)}</span>}
 {system !== 'all' && <button aria-label={tr("清除系统筛选")} onClick={()=>setSystem('all')}>{system} ×</button>}
+{region !== 'all' && <button aria-label={tr("清除地区筛选")} onClick={()=>setRegion('all')}>{countryName(region)} ×</button>}
 {browse.query && <button aria-label={tr("清除搜索筛选")} onClick={()=>setQuery('')}>{tr("搜索节点")}：{browse.query} ×</button>}
 {showFilterFeedback && <button className="clear-all-filters" onClick={() => { setQuery(''); setStatus('all'); setRegion('all'); setSystem('all'); setGroupFilter('all'); }}>{tr("清除筛选")}</button>}
 </div></section>
 
+            <div className="cockpit-layout" data-has-aside={String(mapVisible || cockpitMode)}>
+              <div className="cockpit-main">
+                {browse.view === 'table' && ['latency','loss'].includes(browse.sort) && <p className="sort-note">{tr("延迟和丢包按所选线路比较；无效或旧数据排在末尾。已读取")}{sorted.filter(n => getPing(n.id)?.data).length}/{sorted.length}{tr("个节点。")}{tr("各节点所选线路可能不同，延迟比较请注意探测目标。")}</p>}
 
-             {browse.view === 'table' && ['latency','loss'].includes(browse.sort) && <p className="sort-note">{tr("延迟和丢包按所选线路比较；无效或旧数据排在末尾。已读取")}{sorted.filter(n => getPing(n.id)?.data).length}/{sorted.length}{tr("个节点。")}{tr("各节点所选线路可能不同，延迟比较请注意探测目标。")}</p>}
-            {mapVisible && <MapPanel viewSwitch={viewSwitch} nodeSnapshot={mapKey} region={region} onRegion={setRegion} expanded={mapExpanded} onExpanded={toggleMap}/>}
+                <div id="node-results" tabIndex={-1}><div className={compactViewport ? "mobile-results-toolbar" : "desktop-results-toolbar"}><div className="results-heading">{!compactViewport&&<h2>{tr("节点")}</h2>}{groupPicker}{!compactViewport&&<span>{tr("匹配 {0} 个节点",filtered.length)}</span>}</div><div className="results-actions">{!compactViewport&&<DesktopRegionFilter nodes={sorted} region={region} onChange={setRegion}/>} {!compactViewport&&browse.view==='cards'&&<label className="desktop-card-density">{tr('卡片密度')}<Select aria-label={tr('卡片密度')} value={desktop.cardDensity} onChange={event=>setDesktop(current=>({...current,cardDensity:event.target.value as 'compact'|'detailed'}))}><option value="compact">{tr('紧凑')}</option><option value="detailed">{tr('详细')}</option></Select></label>}{viewSwitch}</div></div>{sorted.length === 0 ? (<div className="empty-state"><p>{tr("还没有节点")}</p>{me.authed ? <Button variant="outline" asChild><a href="/admin/">{tr("前往后台添加节点")}</a></Button> : <p>{tr("请联系管理员添加节点。")}</p>}</div>) : filtered.length === 0 ? (<div className="empty-state"><p>{tr("没有符合条件的节点")}</p><Button variant="outline" onClick={() => { setQuery(''); setStatus('all'); setRegion('all'); setSystem('all'); setGroupFilter('all'); }}>{tr("清除筛选")}</Button></div>) : browse.view === "table" ? (<NodeTable page={page} onPageChange={page=>setTablePage({key:pageKey,page})} nodes={filtered} browse={{...browse,columns:shownColumns}} onSort={sortBy} onSortChange={(sort,direction)=>patchBrowse({sort,direction})} onResetColumns={resetDesktopColumns} mobile={compactViewport} warn={prefs.latencyWarn} high={prefs.latencyHigh} onOpen={id => go(id)}/>) : (<div className="node-grid" data-columns={prefs.desktopColumns}>{filtered.map(n=><NodeCard key={n.id} node={n} mobile={mobileCards} density={desktop.cardDensity} prefs={prefs} info={mobileCards && prefs.mobileInfoMode==='custom' ? prefs.mobileCardInfo || prefs.cardInfo : prefs.cardInfo} probe={prefs.probe} onOpen={()=>go(n.id)} onOpenRoutes={route=>go(n.id,"latency",`?routes=${route.kind==="all"?"all":route.id}`)}/>)}</div>)}</div>
+            </div>
 
-            <div id="node-results" tabIndex={-1}><div className={compactViewport ? "mobile-results-toolbar" : "desktop-results-toolbar"}><div className="results-heading">{!compactViewport&&<h2>{tr("节点")}</h2>}{groupPicker}{!compactViewport&&<span>{tr("匹配 {0} 个节点",filtered.length)}</span>}</div><div className="results-actions">{!compactViewport&&<DesktopRegionFilter nodes={sorted} region={region} onChange={setRegion}/>} {!compactViewport&&browse.view==='cards'&&<label className="desktop-card-density">{tr('卡片密度')}<Select aria-label={tr('卡片密度')} value={desktop.cardDensity} onChange={event=>setDesktop(current=>({...current,cardDensity:event.target.value as 'compact'|'detailed'}))}><option value="compact">{tr('紧凑')}</option><option value="detailed">{tr('详细')}</option></Select></label>}{viewSwitch}</div></div>{sorted.length === 0 ? (<div className="empty-state"><p>{tr("还没有节点")}</p>{me.authed ? <Button variant="outline" asChild><a href="/admin/">{tr("前往后台添加节点")}</a></Button> : <p>{tr("请联系管理员添加节点。")}</p>}</div>) : filtered.length === 0 ? (<div className="empty-state"><p>{tr("没有符合条件的节点")}</p><Button variant="outline" onClick={() => { setQuery(''); setStatus('all'); setRegion('all'); setSystem('all'); setGroupFilter('all'); }}>{tr("清除筛选")}</Button></div>) : browse.view === "table" ? (<NodeTable page={page} onPageChange={page=>setTablePage({key:pageKey,page})} nodes={filtered} browse={{...browse,columns:shownColumns}} onSort={sortBy} onSortChange={(sort,direction)=>patchBrowse({sort,direction})} onResetColumns={resetDesktopColumns} mobile={compactViewport} warn={prefs.latencyWarn} high={prefs.latencyHigh} onOpen={id => go(id)}/>) : (<div className="node-grid" data-columns={prefs.desktopColumns}>{filtered.map(n=><NodeCard key={n.id} node={n} mobile={mobileCards} density={desktop.cardDensity} prefs={prefs} info={mobileCards && prefs.mobileInfoMode==='custom' ? prefs.mobileCardInfo || prefs.cardInfo : prefs.cardInfo} probe={prefs.probe} onOpen={()=>go(n.id)} onOpenRoutes={route=>go(n.id,"latency",`?routes=${route.kind==="all"?"all":route.id}`)}/>)}</div>)}</div>
-          </>)}
+            <aside className="cockpit-aside">
+              {mapVisible && <MapPanel viewSwitch={viewSwitch} nodeSnapshot={mapKey} region={region} onRegion={setRegion} onSelectRegion={handleSelectRegion} expanded={mapExpanded} onExpanded={toggleMap}/>}
+              {cockpitMode && (
+                <>
+                  <CockpitLiveLeaderboard nodes={sorted} onSelectNode={handleLeaderboardSelect}/>
+                  <CockpitStatusCard nodes={sorted} loadAlerts={loadAlerts} onAlert={event=>go(event.nodeId,"",`?eventStart=${event.start}&eventEnd=${event.end??event.last}`)}/>
+                </>
+              )}
+            </aside>
+          </div>
+        </>
+        )}
       </main>
       {!compactViewport && open === null && showScrollTop && <button type="button" className="back-to-top" aria-label={tr("返回顶部")} title={tr("返回顶部")} onClick={() => window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })}><ArrowUp size={17}/></button>}
       <footer className="site-footer"><span>{themeManifest.name} · {themeManifest.version}</span><span>Powered by monitor-probe</span></footer>

@@ -1,4 +1,7 @@
 export const english: Record<string, string> = {
+"缺失数据":"Missing data",
+"数据过期":"Stale data",
+"暂无节点数据":"No node data",
 "查看上行网速历史":"View upload speed history",
 "查看下行网速历史":"View download speed history",
 "当前节点运行正常，暂无到期或流量提醒。":"Current nodes are reporting normally, with no expiry or traffic reminders.",
@@ -742,6 +745,12 @@ export const english: Record<string, string> = {
   "森林": "Forest",
   "午夜": "Midnight",
   "玫瑰": "Rose",
+  "电光青": "Cyber Cyan",
+  "极光紫": "Cyber Violet",
+  "矩阵绿": "Matrix Emerald",
+  "炽阳金": "Solar Amber",
+  "深空蓝": "Deep Space Blue",
+  "赛博粉": "Neon Pink",
   "经典": "Classic",
   "现代": "Modern",
   "极简": "Minimal",
@@ -754,6 +763,8 @@ export const english: Record<string, string> = {
   "在线节点": "Online nodes",
   "流量统计": "Traffic statistics",
   "首页地图": "Overview map",
+  "前台驾驶舱模式": "Cockpit Console",
+  "大屏下启用双栏中控台": "Enable dual-column cockpit console on wide screens",
   "文件不是有效的 JSON 配置": "Invalid JSON configuration",
   "配置必须是一个对象": "Configuration must be an object",
   "不支持此配置版本": "Unsupported configuration version",
@@ -868,5 +879,11 @@ export const english: Record<string, string> = {
 "{0} / {1} 在线":"{0} / {1} online",
 "该地区暂无节点":"No nodes in this region",
 "拖动 · 双指缩放":"Drag · Pinch to zoom",
-"查看版本":"View versions"
+"查看版本":"View versions",
+"实时流量排行":"Live Traffic Leaderboard",
+"Top 5 实时吞吐":"Top 5 Throughput",
+"暂无实时网络吞吐数据":"No live network throughput data",
+"全系统健康运转中":"All Systems Operational",
+"项告警进行中":"Active Alerts",
+"点击查看":"Click to view"
 }

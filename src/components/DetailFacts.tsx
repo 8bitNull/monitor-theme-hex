@@ -22,7 +22,7 @@ function Fact({ label, value, warning=false,copy=false }: {
     const stackOnMobile=String(value).length>26;
     return (<div className={`min-w-0${String(value).length>32?" fact-long":""}${stackOnMobile?' mobile-fact-stacked':''}`}>
       <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className={`detail-fact text-sm ${warning?"detail-expiry-warning":""}`}><span className="fact-value">{value}</span>{copy&&<span className="copy-control"><button className="copy-fact" aria-label={tr("复制：{0}",label)} title={tr("复制：{0}",label)} onClick={copyValue}>{notice===tr("已复制")?<Check size={14}/>:<Copy size={14}/>}</button>{notice&&<small role="status" className="copy-notice">{notice}</small>}</span>}</dd>
+      <dd className={`detail-fact text-sm ${warning?"detail-expiry-warning":""}`}><span className="fact-value" title={String(value)}>{value}</span>{copy&&<span className="copy-control"><button className="copy-fact" aria-label={tr("复制：{0}",label)} title={tr("复制：{0}",label)} onClick={copyValue}>{notice===tr("已复制")?<Check size={14}/>:<Copy size={14}/>}</button>{notice&&<small role="status" className="copy-notice">{notice}</small>}</span>}</dd>
     </div>);
 }
 function FactSection({label,Icon,children}:{label:string;Icon:ComponentType<{size?:number}>;children:ReactNode}){

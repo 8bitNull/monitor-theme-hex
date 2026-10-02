@@ -1,6 +1,46 @@
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
 import {performance} from 'node:perf_hooks'
+import {fileURLToPath} from 'node:url'
 import {probeCatalog,summarizePing,windowLoss,subscribeNodePing,loadPing,getPing} from './ping.ts'
+
+const tokensCss = fs.readFileSync(fileURLToPath(new URL('../styles/tokens.css', import.meta.url)), 'utf-8')
+
+// Required tokens
+for (const token of ['--cyber-glow', '--cyber-border-gradient', '--glass-bg', '--glass-blur', '--mesh-gradient', '--font-mono']) {
+  assert.ok(tokensCss.includes(token), `tokens.css must define ${token}`)
+}
+
+// Deep space ambient base color & radial gradient
+assert.ok(tokensCss.includes('#0a0d14'), 'Dark mode must use obsidian black (#0a0d14)')
+assert.ok(tokensCss.includes('radial-gradient'), 'tokens.css must include radial-gradient ambient lighting')
+
+// Body ambient mesh
+assert.match(tokensCss, /body\s*\{[^}]*background-image:\s*var\(--mesh-gradient\)/, 'body must use var(--mesh-gradient)')
+
+// Cyber palettes (6 colors with light/primary and dark/glow variants)
+const cyberPalettes = [
+  { name: 'default / cyber cyan', primary: '#06b6d4', glow: '#00f2fe' },
+  { name: 'midnight / cyber violet', primary: '#8b5cf6', glow: '#a78bfa' },
+  { name: 'forest / matrix emerald', primary: '#10b981', glow: '#34d399' },
+  { name: 'sunset / solar amber', primary: '#f59e0b', glow: '#fbbf24' },
+  { name: 'ocean / deep space blue', primary: '#3b82f6', glow: '#60a5fa' },
+  { name: 'rose / neon pink', primary: '#ec4899', glow: '#f472b6' },
+]
+
+for (const p of cyberPalettes) {
+  assert.ok(tokensCss.includes(p.primary), `tokens.css must include primary color ${p.primary} for ${p.name}`)
+  assert.ok(tokensCss.includes(p.glow), `tokens.css must include glow color ${p.glow} for ${p.name}`)
+}
+
+// Precision monospace typography stack
+assert.ok(tokensCss.includes("ui-monospace, 'Geist Mono', 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace"), 'tokens.css must define modern monospace font stack')
+
+// Reduced transparency support
+assert.ok(tokensCss.includes('prefers-reduced-transparency'), 'tokens.css must respect prefers-reduced-transparency')
+
+console.log('design tokens and deep space ambient lighting assertions passed')
+
 const data={ping:[{task_id:1,ts:1,latency:10}],probes:{'1':'A','2':'Empty','-1':'invalid'}}
 assert.deepEqual(probeCatalog(data).map(p=>p.id),[1,2])
 assert.equal(windowLoss(data,1),null)

@@ -87,3 +87,11 @@ const collapsed=parsePreferences(JSON.stringify({...defaults,summaryCollapsed:tr
 assert.equal(collapsed.summaryCollapsed,true)
 assert.equal(collapsed.cardInfo.connections,false)
 assert.equal(restoreAppearance(collapsed,defaults).summaryCollapsed,true)
+
+assert.equal(defaults.cockpitMode, true)
+const migrated = normalizePreferences({ cockpitMode: false })
+assert.equal(migrated.cockpitMode, false)
+const fallback = normalizePreferences({})
+assert.equal(fallback.cockpitMode, true)
+assert.equal(parsePreferences(JSON.stringify({ ...defaults, cockpitMode: false })).cockpitMode, false)
+assert.equal(restoreAppearance(normalizePreferences({ cockpitMode: false }), defaults).cockpitMode, false)

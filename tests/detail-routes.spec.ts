@@ -1,6 +1,6 @@
 import {expandRoutes} from './routes'
 import {chooseOption} from './select'
-import {test,expect} from '@playwright/test'
+import {test,expect} from './classicTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 async function setup(page:any) {
  await page.addInitScript(()=>{

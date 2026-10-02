@@ -1,5 +1,5 @@
 // Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
-import {expect,test} from '@playwright/test'
+import {expect,test} from './classicTest'
 import {nodes} from '../scripts/fixtures.mjs'
 
 test('desktop table keeps clipped headers out of view while retaining horizontal access',async({page})=>{

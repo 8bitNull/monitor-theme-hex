@@ -52,9 +52,9 @@ function CompactNode({node,prefs,detailed,onOpen}:{node:Node;prefs:Preferences;d
   {detailed&&(info.traffic||(m&&(info.uptime||info.connections)))&&<div className="ma-extra">{info.traffic&&<span>{tr('本月用量')} {bytes(trafficUsage(node).value)}</span>}{info.uptime&&m&&<span>{tr('在线时长')} {uptime(m.uptime)}</span>}{info.connections&&m&&<span>TCP {m.tcp} · UDP {m.udp}</span>}</div>}
  </button>{node.online&&<><div className="ma-net"><span><ArrowUp size={12}/><b>{m?adaptiveRate(m.net_tx):'—'}</b></span><span><ArrowDown size={12}/><b>{m?adaptiveRate(m.net_rx):'—'}</b></span>{selected?<button type="button" className="ma-network-link" title={selected.name} aria-label={tr('查看线路：{0}',selected.name)} onClick={()=>onOpen(node.id,'latency',selected.id)}>{!detailed&&<span className="ma-network-name">{selected.name}</span>}<span className="ma-network-value">{recent?(selected.latest.latency===null?tr('超时'):<><b>{Math.round(selected.latest.latency)}</b><small>ms</small></>):'—'}<ChevronRight size={12}/></span></button>:<span className="ma-network-placeholder" aria-hidden={detailed||undefined}>{!detailed&&<small className="ma-network-pending" title={routeCaption}>{routeCaption}</small>}<span>—</span></span>}</div>{(detailed||(!recent&&(snapshot?.failed||snapshot?.data)))&&<div className="ma-route-footer"><small className="ma-route-caption" role={snapshot?.failed?'alert':undefined}>{routeCaption}</small>{snapshot?.failed&&<button type="button" className="ma-route-retry" onClick={retry}>{tr('读取失败 · 重试')}</button>}</div>}</>}</div>
 }
-export function MobileApp({active,page,onNavigate,nodes,prefs,onPrefs,mobile,onMobile,siteName,authed,connection,lastUpdated,loadAlerts,onOpen,onAlert}:{
+export function MobileApp({active,page,onNavigate,nodes,prefs,onPrefs,mobile,onMobile,siteName,authed,connection,lastUpdated,loadAlerts,onOpen,onAlert,registerBeforeHistoryChange}:{
  active:boolean;page:Page;onNavigate:(page:Page)=>void;nodes:Node[]|null;prefs:Preferences;onPrefs:Dispatch<SetStateAction<Preferences>>;mobile:MobilePreferences;onMobile:Dispatch<SetStateAction<MobilePreferences>>;
- siteName:string;authed:boolean;connection:string;lastUpdated:number|null;loadAlerts:{events:LoadAlert[];saved:boolean};onOpen:(id:number,section?:'latency',probe?:number)=>void;onAlert:(event:LoadAlert)=>void
+ siteName:string;authed:boolean;connection:string;lastUpdated:number|null;loadAlerts:{events:LoadAlert[];saved:boolean};onOpen:(id:number,section?:'latency',probe?:number)=>void;onAlert:(event:LoadAlert)=>void;registerBeforeHistoryChange:(save:()=>void)=>()=>void
 }){
  const [mapState,setMapState]=useState(readMapState)
  const mapRegion=useCallback((region:string)=>setMapState(s=>({...s,region})),[])
@@ -68,6 +68,12 @@ export function MobileApp({active,page,onNavigate,nodes,prefs,onPrefs,mobile,onM
  const previousPage=useRef(page),restoringScroll=useRef(false)
  useEffect(()=>{try{sessionStorage.setItem('hex-mobile-browse',JSON.stringify({query,filter}))}catch{/* Optional storage. */}},[query,filter])
  useEffect(()=>{if(!active)return;const record=()=>{if(!restoringScroll.current&&location.pathname==='/'&&homePage()===page)scroll.current[page]=window.scrollY};addEventListener('scroll',record,{passive:true});return()=>removeEventListener('scroll',record)},[active,page])
+ useLayoutEffect(()=>{
+  if(!active)return
+  // The router calls this before changing tabs, while the departing DOM and its
+  // scroll position still exist, including during pending restoration frames.
+  return registerBeforeHistoryChange(()=>{scroll.current[page]=window.scrollY})
+ },[active,page,registerBeforeHistoryChange])
  useLayoutEffect(()=>{
   if(!active||previousPage.current===page)return
   previousPage.current=page

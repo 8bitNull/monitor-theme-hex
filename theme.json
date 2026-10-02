@@ -2,98 +2,445 @@
   "name": "HEX",
   "short": "hex",
   "description": "HEX，让服务器状态一目了然。",
-  "version": "0.3.6",
+  "version": "0.3.9",
   "author": "HEX contributors",
   "url": "https://github.com/8bitNull/monitor-theme-hex",
   "config": [
-    { "type": "title", "label": "外观与布局" },
-    { "key": "palette", "type": "select", "label": "主题配色", "default": "default", "options": [
-      { "value": "default", "label": "经典蓝" },
-      { "value": "ocean", "label": "海洋" },
-      { "value": "sunset", "label": "落日" },
-      { "value": "forest", "label": "森林" },
-      { "value": "midnight", "label": "午夜" },
-      { "value": "rose", "label": "玫瑰" }
-    ] },
-    { "key": "appearance", "type": "select", "label": "明暗模式", "default": "system", "options": [
-      { "value": "system", "label": "跟随系统" },
-      { "value": "light", "label": "浅色" },
-      { "value": "dark", "label": "深色" }
-    ] },
-    { "key": "layout", "type": "select", "label": "卡片密度", "default": "comfortable", "options": [
-      { "value": "comfortable", "label": "舒适" },
-      { "value": "compact", "label": "紧凑" }
-    ] },
-    { "key": "desktopColumns", "type": "select", "label": "桌面列数", "default": "auto", "options": [
-      { "value": "auto", "label": "自动" },
-      { "value": "2", "label": "2 列" },
-      { "value": "3", "label": "3 列" },
-      { "value": "4", "label": "4 列" }
-    ] },
-    { "key": "graph", "type": "select", "label": "指标样式", "default": "bar", "options": [
-      { "value": "ring", "label": "圆环" },
-      { "value": "bar", "label": "进度条" },
-      { "value": "columns", "label": "分段柱条" },
-      { "value": "minimal", "label": "极简数字" }
-    ] },
-    { "key": "showTotals", "type": "boolean", "label": "显示已用 / 总容量", "default": true },
-    { "key": "icons", "type": "boolean", "label": "国旗与系统图标", "default": true },
-    { "key": "backgroundUrl", "type": "string", "label": "背景图片地址", "default": "", "help": "支持 HTTP(S) 地址或站内绝对路径" },
-    { "key": "backgroundType", "type": "select", "label": "背景效果", "default": "soft", "help": "设置背景图片地址后生效", "options": [
-      { "value": "soft", "label": "柔和模糊" },
-      { "value": "glass", "label": "玻璃质感" }
-    ] },
-    { "key": "backgroundBlur", "type": "number", "label": "背景模糊（px）", "default": 0, "min": 0, "max": 30, "help": "设置背景图片地址后生效" },
-    { "key": "backgroundMask", "type": "number", "label": "背景遮罩（%）", "default": 45, "min": 0, "max": 90, "help": "设置背景图片地址后生效" },
-    { "key": "glass", "type": "boolean", "label": "开启卡片毛玻璃", "default": false },
-    { "key": "cardOpacity", "type": "number", "label": "卡片不透明度（%）", "default": 88, "min": 55, "max": 100, "help": "开启卡片毛玻璃后生效" },
-    { "key": "cardBlur", "type": "number", "label": "卡片模糊（px）", "default": 12, "min": 0, "max": 24, "help": "开启卡片毛玻璃后生效" },
-
-    { "type": "title", "label": "卡片信息" },
-    { "key": "card_info_traffic", "type": "boolean", "label": "通用卡片：本月用量", "default": true },
-    { "key": "card_info_connections", "type": "boolean", "label": "通用卡片：TCP／UDP", "default": true },
-    { "key": "card_info_uptime", "type": "boolean", "label": "通用卡片：在线时长", "default": true },
-    { "key": "card_info_expiry", "type": "boolean", "label": "通用卡片：到期信息", "default": true },
-    { "key": "card_info_remarks", "type": "boolean", "label": "通用卡片：备注标签", "default": true },
-    { "key": "card_info_price", "type": "boolean", "label": "通用卡片：价格", "default": true },
-    { "key": "mobileInfoMode", "type": "select", "label": "手机卡片信息", "default": "follow", "help": "选择单独设置后，下方手机卡片字段才会生效", "options": [
-      { "value": "follow", "label": "跟随通用设置" },
-      { "value": "custom", "label": "单独设置" }
-    ] },
-    { "key": "mobile_card_info_traffic", "type": "boolean", "label": "手机卡片：本月用量", "default": true },
-    { "key": "mobile_card_info_connections", "type": "boolean", "label": "手机卡片：TCP／UDP", "default": true },
-    { "key": "mobile_card_info_uptime", "type": "boolean", "label": "手机卡片：在线时长", "default": true },
-    { "key": "mobile_card_info_expiry", "type": "boolean", "label": "手机卡片：到期信息", "default": true },
-    { "key": "mobile_card_info_remarks", "type": "boolean", "label": "手机卡片：备注标签", "default": true },
-    { "key": "mobile_card_info_price", "type": "boolean", "label": "手机卡片：价格", "default": true },
-    { "key": "detailInfoMode", "type": "select", "label": "设备资料展开方式", "default": "auto", "help": "桌面端始终展开；折叠选项仅影响手机端", "options": [
-      { "value": "auto", "label": "自动" },
-      { "value": "expanded", "label": "展开" },
-      { "value": "collapsed", "label": "折叠" }
-    ] },
-
-    { "type": "title", "label": "首页模块" },
-    { "key": "module_online", "type": "boolean", "label": "在线节点", "default": true },
-    { "key": "module_busiest", "type": "boolean", "label": "高负载提示", "default": true },
-    { "key": "module_traffic", "type": "boolean", "label": "流量统计", "default": true },
-    { "key": "module_speed", "type": "boolean", "label": "实时网速", "default": true },
-    { "key": "module_regions", "type": "boolean", "label": "地区统计", "default": false },
-    { "key": "module_clock", "type": "boolean", "label": "当前时间", "default": false },
-    { "key": "module_map", "type": "boolean", "label": "首页地图", "default": true },
-
-    { "type": "title", "label": "网络与延迟" },
-    { "key": "homeRoutes", "type": "number", "label": "首页线路数量", "default": 1, "min": 1, "max": 3 },
-    { "key": "probe", "type": "string", "label": "主要探测线路 ID", "default": "auto", "help": "填 auto 使用各节点首条线路，或填写探测线路的数字 ID" },
-    { "key": "latencyScale", "type": "select", "label": "延迟统一刻度", "default": "500", "options": [
-      { "value": "200", "label": "0–200 ms" },
-      { "value": "500", "label": "0–500 ms" }
-    ] },
-    { "key": "latencyWindow", "type": "select", "label": "首页延迟窗口", "default": "1", "options": [
-      { "value": "1", "label": "最近 1 小时" },
-      { "value": "6", "label": "最近 6 小时" },
-      { "value": "24", "label": "最近 24 小时" }
-    ] },
-    { "key": "latencyWarn", "type": "number", "label": "延迟警告阈值（ms）", "default": 150, "min": 1, "max": 4999 },
-    { "key": "latencyHigh", "type": "number", "label": "延迟高阈值（ms）", "default": 300, "min": 2, "max": 5000 }
+    {
+      "type": "title",
+      "label": "外观与布局"
+    },
+    {
+      "key": "palette",
+      "type": "select",
+      "label": "主题配色",
+      "default": "default",
+      "options": [
+        {
+          "value": "default",
+          "label": "电光青"
+        },
+        {
+          "value": "midnight",
+          "label": "极光紫"
+        },
+        {
+          "value": "forest",
+          "label": "矩阵绿"
+        },
+        {
+          "value": "sunset",
+          "label": "炙阳金"
+        },
+        {
+          "value": "ocean",
+          "label": "深空蓝"
+        },
+        {
+          "value": "rose",
+          "label": "赛博粉"
+        }
+      ]
+    },
+    {
+      "key": "appearance",
+      "type": "select",
+      "label": "明暗模式",
+      "default": "system",
+      "options": [
+        {
+          "value": "system",
+          "label": "跟随系统"
+        },
+        {
+          "value": "light",
+          "label": "浅色"
+        },
+        {
+          "value": "dark",
+          "label": "深色"
+        }
+      ]
+    },
+    {
+      "key": "layout",
+      "type": "select",
+      "label": "卡片密度",
+      "default": "comfortable",
+      "options": [
+        {
+          "value": "comfortable",
+          "label": "舒适"
+        },
+        {
+          "value": "compact",
+          "label": "紧凑"
+        }
+      ]
+    },
+    {
+      "key": "desktopColumns",
+      "type": "select",
+      "label": "桌面列数",
+      "default": "auto",
+      "options": [
+        {
+          "value": "auto",
+          "label": "自动"
+        },
+        {
+          "value": "2",
+          "label": "2 列"
+        },
+        {
+          "value": "3",
+          "label": "3 列"
+        },
+        {
+          "value": "4",
+          "label": "4 列"
+        }
+      ]
+    },
+    {
+      "key": "cockpitMode",
+      "type": "boolean",
+      "label": "前台驾驶舱模式",
+      "default": true,
+      "help": "大屏下启用双栏中控台"
+    },
+    {
+      "key": "graph",
+      "type": "select",
+      "label": "指标样式",
+      "default": "bar",
+      "options": [
+        {
+          "value": "ring",
+          "label": "圆环"
+        },
+        {
+          "value": "bar",
+          "label": "进度条"
+        },
+        {
+          "value": "columns",
+          "label": "分段柱条"
+        },
+        {
+          "value": "minimal",
+          "label": "极简数字"
+        }
+      ]
+    },
+    {
+      "key": "showTotals",
+      "type": "boolean",
+      "label": "显示已用 / 总容量",
+      "default": true
+    },
+    {
+      "key": "icons",
+      "type": "boolean",
+      "label": "国旗与系统图标",
+      "default": true
+    },
+    {
+      "key": "backgroundUrl",
+      "type": "string",
+      "label": "背景图片地址",
+      "default": "",
+      "help": "支持 HTTP(S) 地址或站内绝对路径"
+    },
+    {
+      "key": "backgroundType",
+      "type": "select",
+      "label": "背景效果",
+      "default": "soft",
+      "help": "设置背景图片地址后生效",
+      "options": [
+        {
+          "value": "soft",
+          "label": "柔和模糊"
+        },
+        {
+          "value": "glass",
+          "label": "玻璃质感"
+        }
+      ]
+    },
+    {
+      "key": "backgroundBlur",
+      "type": "number",
+      "label": "背景模糊（px）",
+      "default": 0,
+      "min": 0,
+      "max": 30,
+      "help": "设置背景图片地址后生效"
+    },
+    {
+      "key": "backgroundMask",
+      "type": "number",
+      "label": "背景遮罩（%）",
+      "default": 45,
+      "min": 0,
+      "max": 90,
+      "help": "设置背景图片地址后生效"
+    },
+    {
+      "key": "glass",
+      "type": "boolean",
+      "label": "开启卡片毛玻璃",
+      "default": true
+    },
+    {
+      "key": "cardOpacity",
+      "type": "number",
+      "label": "卡片不透明度（%）",
+      "default": 88,
+      "min": 55,
+      "max": 100,
+      "help": "开启卡片毛玻璃后生效"
+    },
+    {
+      "key": "cardBlur",
+      "type": "number",
+      "label": "卡片模糊（px）",
+      "default": 12,
+      "min": 0,
+      "max": 24,
+      "help": "开启卡片毛玻璃后生效"
+    },
+    {
+      "type": "title",
+      "label": "卡片信息"
+    },
+    {
+      "key": "card_info_traffic",
+      "type": "boolean",
+      "label": "通用卡片：本月用量",
+      "default": true
+    },
+    {
+      "key": "card_info_connections",
+      "type": "boolean",
+      "label": "通用卡片：TCP／UDP",
+      "default": true
+    },
+    {
+      "key": "card_info_uptime",
+      "type": "boolean",
+      "label": "通用卡片：在线时长",
+      "default": true
+    },
+    {
+      "key": "card_info_expiry",
+      "type": "boolean",
+      "label": "通用卡片：到期信息",
+      "default": true
+    },
+    {
+      "key": "card_info_remarks",
+      "type": "boolean",
+      "label": "通用卡片：备注标签",
+      "default": true
+    },
+    {
+      "key": "card_info_price",
+      "type": "boolean",
+      "label": "通用卡片：价格",
+      "default": true
+    },
+    {
+      "key": "mobileInfoMode",
+      "type": "select",
+      "label": "手机卡片信息",
+      "default": "follow",
+      "help": "选择单独设置后，下方手机卡片字段才会生效",
+      "options": [
+        {
+          "value": "follow",
+          "label": "跟随通用设置"
+        },
+        {
+          "value": "custom",
+          "label": "单独设置"
+        }
+      ]
+    },
+    {
+      "key": "mobile_card_info_traffic",
+      "type": "boolean",
+      "label": "手机卡片：本月用量",
+      "default": true
+    },
+    {
+      "key": "mobile_card_info_connections",
+      "type": "boolean",
+      "label": "手机卡片：TCP／UDP",
+      "default": true
+    },
+    {
+      "key": "mobile_card_info_uptime",
+      "type": "boolean",
+      "label": "手机卡片：在线时长",
+      "default": true
+    },
+    {
+      "key": "mobile_card_info_expiry",
+      "type": "boolean",
+      "label": "手机卡片：到期信息",
+      "default": true
+    },
+    {
+      "key": "mobile_card_info_remarks",
+      "type": "boolean",
+      "label": "手机卡片：备注标签",
+      "default": true
+    },
+    {
+      "key": "mobile_card_info_price",
+      "type": "boolean",
+      "label": "手机卡片：价格",
+      "default": true
+    },
+    {
+      "key": "detailInfoMode",
+      "type": "select",
+      "label": "设备资料展开方式",
+      "default": "auto",
+      "help": "桌面端始终展开；折叠选项仅影响手机端",
+      "options": [
+        {
+          "value": "auto",
+          "label": "自动"
+        },
+        {
+          "value": "expanded",
+          "label": "展开"
+        },
+        {
+          "value": "collapsed",
+          "label": "折叠"
+        }
+      ]
+    },
+    {
+      "type": "title",
+      "label": "首页模块"
+    },
+    {
+      "key": "module_online",
+      "type": "boolean",
+      "label": "在线节点",
+      "default": true
+    },
+    {
+      "key": "module_busiest",
+      "type": "boolean",
+      "label": "高负载提示",
+      "default": true
+    },
+    {
+      "key": "module_traffic",
+      "type": "boolean",
+      "label": "流量统计",
+      "default": true
+    },
+    {
+      "key": "module_speed",
+      "type": "boolean",
+      "label": "实时网速",
+      "default": true
+    },
+    {
+      "key": "module_regions",
+      "type": "boolean",
+      "label": "地区统计",
+      "default": false
+    },
+    {
+      "key": "module_clock",
+      "type": "boolean",
+      "label": "当前时间",
+      "default": false
+    },
+    {
+      "key": "module_map",
+      "type": "boolean",
+      "label": "首页地图",
+      "default": true
+    },
+    {
+      "type": "title",
+      "label": "网络与延迟"
+    },
+    {
+      "key": "homeRoutes",
+      "type": "number",
+      "label": "首页线路数量",
+      "default": 1,
+      "min": 1,
+      "max": 3
+    },
+    {
+      "key": "probe",
+      "type": "string",
+      "label": "主要探测线路 ID",
+      "default": "auto",
+      "help": "填 auto 使用各节点首条线路，或填写探测线路的数字 ID"
+    },
+    {
+      "key": "latencyScale",
+      "type": "select",
+      "label": "延迟统一度量",
+      "default": "500",
+      "options": [
+        {
+          "value": "200",
+          "label": "0–200 ms"
+        },
+        {
+          "value": "500",
+          "label": "0–500 ms"
+        }
+      ]
+    },
+    {
+      "key": "latencyWindow",
+      "type": "select",
+      "label": "首页延迟窗口",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "最近 1 小时"
+        },
+        {
+          "value": "6",
+          "label": "最近 6 小时"
+        },
+        {
+          "value": "24",
+          "label": "最近 24 小时"
+        }
+      ]
+    },
+    {
+      "key": "latencyWarn",
+      "type": "number",
+      "label": "延迟警告阈值（ms）",
+      "default": 150,
+      "min": 1,
+      "max": 4999
+    },
+    {
+      "key": "latencyHigh",
+      "type": "number",
+      "label": "延迟高阈值（ms）",
+      "default": 300,
+      "min": 2,
+      "max": 5000
+    }
   ]
 }

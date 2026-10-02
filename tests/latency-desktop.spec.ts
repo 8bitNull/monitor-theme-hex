@@ -1,4 +1,4 @@
-import {test,expect} from '@playwright/test'
+import {test,expect} from './classicTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
 for(const width of [768,800,900,1024,1440])test(`latency chart and route controls fit at ${width}`,async({page})=>{

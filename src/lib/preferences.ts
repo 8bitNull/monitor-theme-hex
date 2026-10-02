@@ -7,8 +7,15 @@ export type DesktopPreferences = {mapExpanded?:boolean;cardDensity:'compact'|'de
 const desktopKey='hex-desktop-v1'
 export function useDesktopPreferences(){
  const [desktop,setDesktop]=useState<DesktopPreferences>(()=>{
-  try {const saved=JSON.parse(localStorage.getItem(desktopKey)||'{}');return {mapExpanded:typeof saved.mapExpanded==='boolean'?saved.mapExpanded:undefined,cardDensity:saved.cardDensity==='detailed'?'detailed':'compact'}}
-  catch {return {cardDensity:'compact'}}
+  try {
+    const saved=JSON.parse(localStorage.getItem(desktopKey)||'{}')
+    return {
+      mapExpanded:typeof saved.mapExpanded==='boolean'?saved.mapExpanded:undefined,
+      cardDensity:saved.cardDensity==='detailed'?'detailed':'compact'
+    }
+  } catch {
+    return {cardDensity:'compact'}
+  }
  })
  useEffect(()=>{try{localStorage.setItem(desktopKey,JSON.stringify(desktop))}catch{/* Optional personal preference. */}},[desktop])
  return [desktop,setDesktop] as const
@@ -38,6 +45,7 @@ export function usePreferences(siteDefaults: Preferences) {
   const selectDisplay=useCallback((patch:DisplayPatch)=>setOverrides(current=>patch.detailInfoMode ? {...current,detailInfoMode:patch.detailInfoMode} : current),[])
   return [prefs, setPrefs, selectDisplay] as const
 }
+
 export function useAppearance(mode: Preferences['appearance']) {
   const [systemDark, setSystemDark] = useState(() => matchMedia('(prefers-color-scheme: dark)').matches)
   useEffect(() => {

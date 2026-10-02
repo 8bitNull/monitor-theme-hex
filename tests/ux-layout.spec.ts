@@ -105,7 +105,7 @@ for (const width of [320,390]) test(`mobile facts keep long values readable at $
  await page.goto('/node/1')
  await page.getByRole('navigation',{name:'详情分区'}).getByRole('button',{name:'资料'}).click()
  const facts=page.locator('.detail-information')
- for(const [label,alignment] of [['Agent','right'],['系统','left'],['CPU','left'],['IPv6','left']] as const){
+ for(const [label,alignment] of [['Agent','right'],['系统','right'],['CPU','right'],['IPv6','right']] as const){
   const row=facts.locator('.detail-facts > div').filter({has:page.locator('dt').filter({hasText:new RegExp(`^${label}$`)})})
   await expect(row.locator('dd')).toBeVisible()
   await expect(row.locator('dd')).toHaveCSS('text-align',alignment)

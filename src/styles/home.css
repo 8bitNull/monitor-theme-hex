@@ -7,7 +7,7 @@
 .summary-grid .h-7 {height:12px;opacity:.55}
 .node-grid {gap:18px}
 .node-card {--card-pad:18px;border-color:var(--home-line);border-radius:14px;box-shadow:0 2px 8px #13243a04;transition:border-color .16s ease,box-shadow .16s ease}
-.node-card:hover {border-color:color-mix(in srgb,var(--tone) 27%,var(--border));box-shadow:0 4px 16px #13243a08}
+.node-card:hover {border-color:color-mix(in srgb,var(--tone) 45%,var(--border))}
 .dark .node-card {box-shadow:none}
 .node-card .node-heading {padding-top:16px;padding-bottom:12px;gap:7px}
 .node-card .node-symbol {width:23px}
@@ -68,6 +68,158 @@
 @media(max-width:360px){.node-card .speed-pair strong {font-size:20px;flex-direction:column;align-items:flex-end;gap:3px}.node-card .node-status-group {gap:3px}.node-card .node-heading {gap:5px}.node-card .node-identity h3 {font-size:15px}}
 @media(prefers-reduced-motion:reduce){.node-card {transition:none}}
 @media(prefers-reduced-transparency:reduce){.region-atlas .section-heading,.region-atlas .map-tools,.region-atlas .map-view-switch,.region-atlas .region-list button {background:var(--card);backdrop-filter:none}}
+
+/* Dual-column Cockpit Console Layout */
+.cockpit-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.cockpit-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cockpit-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+@media (max-width: 1023px) {
+  .cockpit-aside {
+    order: -1;
+  }
+}
+
+[data-cockpit="false"] .cockpit-aside {
+  order: -1;
+}
+
+@media (min-width: 1024px) {
+  [data-cockpit="true"] .desktop-app-header > div,
+  [data-cockpit="true"] main {
+    max-width: 1680px;
+  }
+
+  [data-cockpit="true"] .overview-heading,
+  [data-cockpit="true"] .overview-summary,
+  [data-cockpit="true"] .streamlined-browser {
+    width: 100%;
+    max-width: 1680px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  [data-cockpit="true"] .cockpit-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 20px;
+    align-items: start;
+    width: 100%;
+    max-width: 1680px;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+  @media (min-width: 1440px) {
+    [data-cockpit="true"] .cockpit-layout {
+      grid-template-columns: minmax(0, 1fr) 420px;
+      gap: 24px;
+    }
+  }
+
+  [data-cockpit="true"] .cockpit-main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+    order: unset;
+  }
+
+  [data-cockpit="true"] .cockpit-aside {
+    position: sticky;
+    top: 76px;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: calc(100vh - 92px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    order: unset;
+  }
+
+  [data-cockpit="true"] .cockpit-layout[data-has-aside="false"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-cockpit="true"] .cockpit-layout:has(.cockpit-aside:empty) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-cockpit="true"] .cockpit-aside:empty {
+    display: none;
+  }
+}
+
+.cockpit-aside::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cockpit-aside::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+.cockpit-aside::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cockpit-aside {
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  [data-cockpit="true"] .cockpit-aside {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* Cockpit Card Density Breakpoints */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  [data-cockpit="true"] .cockpit-layout .node-grid,
+  [data-cockpit="true"] .cockpit-layout .node-grid[data-columns],
+  [data-cockpit="true"] .cockpit-layout .node-grid:not([data-columns="auto"])[data-columns] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-cockpit="true"] .cockpit-layout[data-has-aside="false"] .node-grid {
+    grid-template-columns: repeat(auto-fill, minmax(430px, 1fr));
+  }
+
+  [data-cockpit="true"] .cockpit-layout[data-has-aside="false"] .node-grid:not([data-columns="auto"])[data-columns] {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, max(300px, calc((100% - (var(--requested-columns) - 1) * var(--grid-gap)) / var(--requested-columns)))), 1fr));
+  }
+}
+
+@media (min-width: 1366px) {
+  [data-cockpit="true"] .cockpit-layout .node-grid {
+    grid-template-columns: repeat(auto-fill, minmax(430px, 1fr));
+  }
+
+  [data-cockpit="true"] .cockpit-layout .node-grid:not([data-columns="auto"])[data-columns] {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, max(300px, calc((100% - (var(--requested-columns) - 1) * var(--grid-gap)) / var(--requested-columns)))), 1fr));
+  }
+}
 
 /* Persistent high-load overview: four equal tiles, two by two on mobile. */
 .summary-grid[data-load-alerts=true] {grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -288,3 +440,509 @@
 .node-card.node-offline .card-billing {border-top:1px solid var(--home-line);padding-top:10px}
 .node-card.node-offline .card-uptime {display:none}
 @media(max-width:360px){.node-card.node-offline .offline-last-report {align-items:flex-start;flex-direction:column;gap:4px}.node-card.node-offline .offline-last-report :is(time,b) {text-align:left}}
+
+/* Cyber-glass micro-interactions: Online pulse, energetic alert pulse, and telemetry flow */
+@keyframes cyber-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 0%, transparent);
+  }
+}
+
+@keyframes cyber-alert-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--warn) 65%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--warn) 0%, transparent), 0 0 8px 1px color-mix(in srgb, var(--warn) 35%, transparent);
+  }
+}
+
+@keyframes cyber-alert-pulse-red {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--destructive) 70%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--destructive) 0%, transparent), 0 0 10px 1px color-mix(in srgb, var(--destructive) 40%, transparent);
+  }
+}
+
+@keyframes cyber-alert-card {
+  0%, 100% {
+    box-shadow: 0 0 6px 0 color-mix(in srgb, var(--warn) 10%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 16px 2px color-mix(in srgb, var(--warn) 26%, transparent);
+  }
+}
+
+@keyframes cyber-alert-card-red {
+  0%, 100% {
+    box-shadow: 0 0 6px 0 color-mix(in srgb, var(--destructive) 12%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 18px 2px color-mix(in srgb, var(--destructive) 30%, transparent);
+  }
+}
+
+@keyframes telemetry-flow-up {
+  0%, 100% {
+    transform: translateY(0);
+    filter: drop-shadow(0 0 0 transparent);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateY(-2px);
+    filter: drop-shadow(0 -1px 3px color-mix(in srgb, var(--upload) 70%, transparent));
+    opacity: 1;
+  }
+}
+
+@keyframes telemetry-flow-down {
+  0%, 100% {
+    transform: translateY(0);
+    filter: drop-shadow(0 0 0 transparent);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateY(2px);
+    filter: drop-shadow(0 1px 3px color-mix(in srgb, var(--download) 70%, transparent));
+    opacity: 1;
+  }
+}
+
+.status-pill.is-online,
+.node-card .status-pill.is-online,
+.busiest-pill.online,
+.status-pill.online {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ok) 18%, transparent);
+  animation: cyber-pulse 3s infinite ease-in-out;
+}
+
+.status-pill.is-online .dot,
+.node-card .status-pill.is-online .dot,
+.status-pill[data-state=live] .dot,
+.dot.online,
+.online .dot,
+.online,
+.table-status-dot,
+.billing-status-normal .billing-status-dot {
+  background: var(--ok);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent);
+  animation: cyber-pulse 3s infinite ease-in-out;
+}
+
+.node-card .card-issue>span,
+.busiest-pill,
+.busiest-pill.warn,
+.status-pill.is-alert {
+  animation: cyber-alert-pulse 1.8s infinite ease-in-out;
+}
+
+.node-card .card-issue>span.is-expired,
+.busiest-pill.danger,
+.busiest-pill.destructive {
+  animation: cyber-alert-pulse-red 1.5s infinite ease-in-out;
+}
+
+.node-card .status-pill[data-state=stale] .dot {
+  background: var(--warn);
+  animation: cyber-alert-pulse 1.8s infinite ease-in-out;
+}
+
+.node-card:has(.card-issue) {
+  border-color: color-mix(in srgb, var(--warn) 30%, var(--border));
+  animation: cyber-alert-card 2.5s infinite ease-in-out;
+}
+
+.node-card:has(.card-issue .is-expired) {
+  border-color: color-mix(in srgb, var(--destructive) 28%, var(--border));
+  animation: cyber-alert-card-red 2s infinite ease-in-out;
+}
+
+.node-card:not(.node-offline):not([data-metric-state=missing]):not([data-metric-state=stale]) .speed-indicators .upload svg,
+.summary-flow .upload svg,
+.ma-net span:first-child svg {
+  display: inline-block;
+  will-change: transform;
+  animation: telemetry-flow-up 2.4s infinite ease-in-out;
+}
+
+.node-card:not(.node-offline):not([data-metric-state=missing]):not([data-metric-state=stale]) .speed-indicators .download svg,
+.summary-flow .download svg,
+.ma-net span:last-child svg {
+  display: inline-block;
+  will-change: transform;
+  animation: telemetry-flow-down 2.4s infinite ease-in-out;
+}
+
+.node-card.node-offline .speed-indicators svg,
+.node-card[data-metric-state=missing] .speed-indicators svg,
+.node-card[data-metric-state=stale] .speed-indicators svg,
+.speed-indicators[data-state=offline] svg,
+.speed-indicators[data-state=missing] svg,
+.speed-indicators[data-state=stale] svg {
+  animation: none !important;
+  transform: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-pill.is-online,
+  .status-pill.is-online .dot,
+  .node-card .status-pill.is-online .dot,
+  .status-pill[data-state=live] .dot,
+  .dot.online,
+  .online .dot,
+  .online,
+  .table-status-dot,
+  .busiest-pill,
+  .card-issue>span,
+  .node-card .status-pill[data-state=stale] .dot,
+  .node-card:has(.card-issue),
+  .load-alert-tile[data-active=true],
+  .speed-indicators svg,
+  .summary-flow svg,
+  .ma-net svg,
+  .next-theme .summary-grid .summary-node-count button:first-child span::before {
+    animation: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Cockpit Aside Widgets: Live Traffic Leaderboard & Health Pulse */
+.cockpit-widget {
+  background: var(--glass-bg, color-mix(in srgb, var(--card) 80%, transparent));
+  backdrop-filter: blur(var(--glass-blur, 16px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
+  border: 1px solid var(--home-line);
+  border-radius: var(--radius-panel, 12px);
+  padding: 14px;
+  box-shadow: 0 4px 18px -2px color-mix(in srgb, var(--foreground) 4%, transparent);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dark .cockpit-widget {
+  background: color-mix(in srgb, var(--card) 75%, transparent);
+  border-color: color-mix(in srgb, var(--tone) 18%, var(--border));
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.45);
+}
+
+.cockpit-widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.cockpit-widget-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.cockpit-widget-title h3 {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--foreground);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.cockpit-widget-icon {
+  color: var(--tone);
+  flex-shrink: 0;
+}
+
+.cockpit-widget-tag {
+  font-size: 10px;
+  font-weight: 500;
+  font-family: var(--font-mono);
+  color: var(--muted-foreground);
+  background: color-mix(in srgb, var(--muted) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  padding: 2px 7px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.cockpit-widget-empty {
+  padding: 18px 12px;
+  text-align: center;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  background: color-mix(in srgb, var(--muted) 45%, transparent);
+  border-radius: 8px;
+  border: 1px dashed var(--home-line);
+}
+
+.cockpit-widget-empty p {
+  margin: 0;
+}
+
+.cockpit-leaderboard-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cockpit-leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+  color: var(--foreground);
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.16s ease;
+}
+
+.cockpit-leaderboard-item:hover {
+  background: color-mix(in srgb, var(--tone) 8%, var(--card));
+  border-color: color-mix(in srgb, var(--tone) 35%, transparent);
+  transform: translateX(2px);
+}
+
+.cockpit-leaderboard-item:focus-visible {
+  outline: 2px solid var(--tone);
+  outline-offset: 1px;
+}
+
+.leaderboard-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  background: var(--muted);
+  color: var(--muted-foreground);
+  flex-shrink: 0;
+}
+
+.leaderboard-rank[data-rank="1"] {
+  background: color-mix(in srgb, #f59e0b 22%, transparent);
+  color: #f59e0b;
+}
+
+.leaderboard-rank[data-rank="2"] {
+  background: color-mix(in srgb, var(--tone) 20%, transparent);
+  color: var(--tone);
+}
+
+.leaderboard-rank[data-rank="3"] {
+  background: color-mix(in srgb, #8b5cf6 20%, transparent);
+  color: #8b5cf6;
+}
+
+.leaderboard-flag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  flex-shrink: 0;
+}
+
+.leaderboard-flag .flag-icon {
+  width: 18px;
+  height: 13px;
+  border-radius: 2px;
+  object-fit: cover;
+}
+
+.leaderboard-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.leaderboard-badge .throughput-down {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--download);
+}
+
+.leaderboard-badge .throughput-up {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--upload);
+}
+
+/* Status Card */
+.cockpit-status-card {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.cockpit-status-badge {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-radius: var(--radius-panel, 12px);
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  box-sizing: border-box;
+  text-align: left;
+  border: 1px solid transparent;
+  transition: all 0.16s ease;
+}
+
+.cockpit-status-badge.is-healthy {
+  background: color-mix(in srgb, var(--ok) 10%, var(--card));
+  border-color: color-mix(in srgb, var(--ok) 32%, transparent);
+  color: var(--ok);
+  box-shadow: 0 2px 14px -2px color-mix(in srgb, var(--ok) 18%, transparent);
+}
+
+.cockpit-status-badge.is-unavailable {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--muted-foreground);
+}
+
+.dark .cockpit-status-badge.is-healthy {
+  background: color-mix(in srgb, var(--ok) 14%, rgba(15, 23, 42, 0.7));
+  border-color: color-mix(in srgb, var(--ok) 40%, transparent);
+  box-shadow: 0 2px 16px -2px color-mix(in srgb, var(--ok) 25%, transparent);
+}
+
+.cockpit-status-badge.is-warning {
+  background: color-mix(in srgb, var(--warn) 12%, var(--card));
+  border-color: color-mix(in srgb, var(--warn) 42%, transparent);
+  color: var(--warn);
+  cursor: pointer;
+  box-shadow: 0 2px 14px -2px color-mix(in srgb, var(--warn) 20%, transparent);
+}
+
+.dark .cockpit-status-badge.is-warning {
+  background: color-mix(in srgb, var(--warn) 16%, rgba(15, 23, 42, 0.7));
+  border-color: color-mix(in srgb, var(--warn) 48%, transparent);
+  box-shadow: 0 2px 16px -2px color-mix(in srgb, var(--warn) 30%, transparent);
+}
+
+.cockpit-status-badge.is-warning:hover {
+  background: color-mix(in srgb, var(--warn) 18%, var(--card));
+  border-color: var(--warn);
+  transform: translateY(-1px);
+}
+
+.cockpit-status-badge.is-warning:focus-visible {
+  outline: 2px solid var(--warn);
+  outline-offset: 2px;
+}
+
+.status-pulse-indicator {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  margin-right: 8px;
+  display: inline-block;
+}
+
+.status-pulse-dot {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: currentColor;
+}
+
+.status-pulse-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 1.5px solid currentColor;
+  opacity: 0.75;
+  animation: cyber-pulse 2.2s infinite ease-in-out;
+}
+
+.status-pulse-indicator.is-warning .status-pulse-ring {
+  animation: cyber-alert-pulse 1.8s infinite ease-in-out;
+}
+
+.cockpit-status-badge .status-text {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: -0.01em;
+}
+
+.cockpit-status-badge .status-text b {
+  font-weight: 700;
+}
+
+.cockpit-status-badge .status-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+@keyframes node-card-jump-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--tone) 75%, transparent);
+    border-color: var(--tone);
+  }
+  30% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--tone) 25%, transparent), 0 0 24px 6px color-mix(in srgb, var(--tone) 45%, transparent);
+    border-color: var(--tone);
+  }
+  100% {
+    box-shadow: none;
+    border-color: var(--home-line);
+  }
+}
+
+.node-card-highlight {
+  animation: node-card-jump-pulse 2s ease-out forwards !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-pulse-ring,
+  .node-card-highlight,
+  .cockpit-leaderboard-item:hover,
+  .cockpit-status-badge.is-warning:hover {
+    animation: none !important;
+    transform: none !important;
+  }
+}

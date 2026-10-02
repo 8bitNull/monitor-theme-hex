@@ -1,6 +1,6 @@
 // Desktop composition coverage; phone workflows live in mobile-app/refinement/charts-refined and ux-* suites.
 import {expandRoutes} from './routes'
-import {test,expect} from '@playwright/test'
+import {test,expect} from './classicTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 async function setup(page:any,count=7,long=false){
  await page.route('**/api/nodes',(r:any)=>r.fulfill({json:{nodes:[{...nodes()[0],name:long?'Tokyo 东京超长节点名称 '.repeat(16):'Tokyo',ipv6:'2001:db8:1234:5678:abcd:1234:5678:abcd'}]}}))
@@ -9,7 +9,7 @@ async function setup(page:any,count=7,long=false){
 }
 for(const width of [900,1024,1440,1920])test(`facts span the desktop workspace at ${width}`,async({page})=>{
  await page.setViewportSize({width,height:1000});await setup(page)
- const facts=(await page.locator('.detail-information').boundingBox())!,workspace=(await page.locator('.detail-workspace').boundingBox())!,history=(await page.locator('.detail-history').boundingBox())!
+ const facts=(await page.locator('.detail-information').boundingBox())!,workspace=(await page.locator('.detail-cockpit').boundingBox())!,history=(await page.locator('.detail-history').boundingBox())!
  expect(Math.abs(facts.width-workspace.width)).toBeLessThanOrEqual(1);expect(facts.y).toBeGreaterThan(history.y+history.height)
  expect(await page.locator('.detail-fact-groups').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(width>=900?2:1)
  expect(await page.locator('.detail-fact-groups>section').first().getAttribute('aria-label')).toBe('硬件与系统')

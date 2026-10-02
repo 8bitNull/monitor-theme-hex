@@ -1,5 +1,9 @@
 # HEX
 
+> 当前为 `dev` 开发分支，包含尚未完成验收的改动。稳定版请使用 `main` 或 [v0.3.6 发布页](https://github.com/8bitNull/monitor-theme-hex/releases/tag/v0.3.6)。
+
+开发状态与验收标准见 [下一次发布清单](maintenance/NEXT-RELEASE.md)。
+
 为 **monitor-probe** 制作的监控主题，支持桌面卡片与表格、手机端布局、深浅色和中英文。首页汇总节点状态与网络情况，详情页提供资源历史、线路延迟、流量和设备资料。
 
 [下载稳定版](https://github.com/8bitNull/monitor-theme-hex/releases/latest) · [使用指南](maintenance/USER-GUIDE.md) · [开发说明](maintenance/DEVELOPMENT.md) · [更新记录](CHANGELOG.md)

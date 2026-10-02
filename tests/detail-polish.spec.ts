@@ -13,8 +13,8 @@ for(const width of [768,800,850,1024,1440])test('detail and settings polish rema
   await page.goto('/node/1');await page.locator('.resource-chart-panel .recharts-wrapper').waitFor()
   if(language==='en'){
    const metricLabels=['CPU','Memory','Disk','Network'];
-   if(width<900){await expect(page.locator('.detail-resource-metric-desktop')).toBeHidden();await page.locator('.detail-resource-metric-mobile>summary').click();await expect(page.locator('.detail-resource-metric-menu button')).toHaveCount(4);await expect(page.locator('.detail-resource-metric-menu button')).toHaveText([/^CPU/, 'Memory', 'Disk', 'Network'])}
-   else {await expect(page.locator('.detail-resource-metric-desktop button')).toHaveText(metricLabels)}
+   await expect(page.locator('.detail-resource-metric-desktop')).toBeVisible()
+   await expect(page.locator('.detail-resource-metric-desktop button')).toHaveText(metricLabels)
   }
   if(width===800){const cpu=await page.locator('.detail-metric-card[data-metric=cpu]').boundingBox();expect(cpu!.y+cpu!.height).toBeLessThan(844)}
   for(const graph of ['bar','ring','columns','minimal']){

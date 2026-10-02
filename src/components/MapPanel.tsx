@@ -10,10 +10,14 @@ class MapBoundary extends Component<{children:ReactNode;fallback:ReactNode},{fai
  static getDerivedStateFromError(){return {failed:true}}
  render(){return this.state.failed?this.props.fallback:this.props.children}
 }
-export function MapPanel({nodeSnapshot,region,onRegion,viewSwitch,pendingNodes=false,expanded,onExpanded}:{nodeSnapshot:string;viewSwitch:ReactNode;pendingNodes?:boolean;expanded:boolean;onExpanded:()=>void}&Omit<MapProps,'nodes'>){
+export function MapPanel({nodeSnapshot,region,onRegion,onSelectRegion,viewSwitch,pendingNodes=false,expanded,onExpanded}:{nodeSnapshot:string;viewSwitch:ReactNode;pendingNodes?:boolean;expanded:boolean;onExpanded:()=>void;onSelectRegion?:(region:string)=>void}&Omit<MapProps,'nodes'>){
  const nodes=useMemo(()=>JSON.parse(nodeSnapshot) as MapNode[],[nodeSnapshot])
  const [Map,setMap]=useState<ComponentType<MapProps>|null>(null),[state,setState]=useState<'loading'|'slow'|'failed'|'ready'>('loading'),[attempt,setAttempt]=useState(0)
  const [toolsHost,setToolsHost]=useState<HTMLDivElement|null>(null)
+ const handleRegion = (code: string) => {
+  onRegion(code)
+  onSelectRegion?.(code)
+ }
  useEffect(()=>{
   if(!expanded)return
   let active=true
@@ -33,7 +37,7 @@ export function MapPanel({nodeSnapshot,region,onRegion,viewSwitch,pendingNodes=f
    <button type="button" className="home-map-toggle" aria-label={tr(expanded?'收起地图':'展开地图')} aria-expanded={expanded} aria-controls="home-map-canvas" onClick={onExpanded}><MapIcon size={16} aria-hidden="true"/><span>{tr(expanded?'收起地图':'展开地图')}</span></button>
    </div>
   </div>
-  <div id="home-map-canvas" hidden={!expanded}>{expanded&&<MapBoundary key={attempt} fallback={fallback(true)}>{Map&&state==='ready'?<Map pendingNodes={pendingNodes} nodes={nodes} region={region} onRegion={onRegion} viewSwitch={viewSwitch} toolsHost={toolsHost}/>:fallback(state==='failed')}</MapBoundary>}</div>
+  <div id="home-map-canvas" hidden={!expanded}>{expanded&&<MapBoundary key={attempt} fallback={fallback(true)}>{Map&&state==='ready'?<Map pendingNodes={pendingNodes} nodes={nodes} region={region} onRegion={handleRegion} viewSwitch={viewSwitch} toolsHost={toolsHost}/>:fallback(state==='failed')}</MapBoundary>}</div>
   {pendingNodes&&<span className="map-data-notice" role="status">{tr('等待节点数据')}</span>}
  </div>
 }

@@ -20,10 +20,10 @@ test('all extra metrics preserve zero, offline and missing values',async({page})
 
 test('compact desktop can show only packet loss or only the probe route and retains selection',async({page})=>{
  await page.setViewportSize({width:800,height:844});await page.addInitScript(()=>{if(!sessionStorage.getItem('monitor-next-browse-v1'))sessionStorage.setItem('monitor-next-browse-v1',JSON.stringify({columnsVersion:5,columns:['loss'],view:'table',tableLayout:'grouped'}))})
- await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:{...metrics(),loss:{1:0}}}));await page.goto('/');await expect(page.locator('thead th')).toHaveCount(3);await expect(page.locator('td[data-column=loss]').first()).toContainText('0.0%')
+ await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:{...metrics(),loss:{1:0}}}));await page.goto('/');await expect(page.locator('thead th')).toHaveCount(3);await page.locator('td[data-column=loss]').first().scrollIntoViewIfNeeded();await expect(page.locator('td[data-column=loss]').first()).toContainText('0.0%')
  await page.evaluate(()=>localStorage.setItem('monitor-next-table-columns-v1',JSON.stringify({columnsVersion:5,columns:['probe'],mobileColumns:['probe'],tableLayout:'grouped',mobileTableLayout:'grouped'})))
  await page.reload()
- await expect(page.locator('thead [data-column=loss]')).toHaveCount(0);await expect(page.locator('td[data-column=probe]').first()).toContainText('Tokyo gateway');await expect(page.locator('thead th')).toHaveCount(3)
+ await expect(page.locator('thead [data-column=loss]')).toHaveCount(0);await page.locator('td[data-column=probe]').first().scrollIntoViewIfNeeded();await expect(page.locator('td[data-column=probe]').first()).toContainText('Tokyo gateway');await expect(page.locator('thead th')).toHaveCount(3)
  await page.reload();await expect(page.locator('thead [data-column=probe]')).toHaveCount(1);await expect(page.locator('thead [data-column=latency]')).toHaveCount(0)
 })
 

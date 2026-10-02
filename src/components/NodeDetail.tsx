@@ -58,7 +58,7 @@ const AXIS = { stroke: "currentColor", fontSize: 11, tickLine: false, axisLine: 
 // No grow-in animation: it would spend 1.5 s drawing a line across the panel on
 // every range change, on a page meant to be read at a glance, and on the latency
 // chart across seven hundred points per probe.
-const SERIES = { dot: false as const, strokeWidth: 1.7, isAnimationActive: false };
+const SERIES = { dot: false as const, strokeWidth: 1.7, isAnimationActive: false, type: "monotone" as const };
 // Stable colours identify routes across time windows.
 const PALETTE = Array.from({length:8},(_,i)=>({stroke:`var(--latency-line-${i+1})` }));
 /**
@@ -104,7 +104,7 @@ function ChartSettingsSheet({kind,onClose,smooth,onSmooth}:{kind:'settings'|'sta
     </MobileSheet>;
 }
 
-export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMode, onDetailInfoMode, mobilePreferences=mobileDefaults, onBack }: {
+export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMode, onDetailInfoMode, mobilePreferences=mobileDefaults, onBack, cockpitMode }: {
     onBack?:()=>void;
     mobilePreferences?:MobilePreferences;
     detailInfoMode:Preferences['detailInfoMode'];
@@ -113,7 +113,9 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
     probe?:string;
     nodes:Node[];
     onSwitch:(id:number)=>void;
+    cockpitMode?: boolean;
 }) {
+    const isCockpit = cockpitMode ?? true;
     const [compact,setCompact]=useState(()=>matchMedia('(max-width:899px)').matches);
     const [mobile,setMobile]=useState(()=>matchMedia('(max-width:720px)').matches);
     useEffect(()=>{const media=matchMedia('(max-width:720px)');const update=()=>setMobile(media.matches);media.addEventListener('change',update);return()=>media.removeEventListener('change',update)},[]);
@@ -345,13 +347,8 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
         requestAnimationFrame(()=>{const section=document.querySelector<HTMLElement>('.detail-history');section?.focus({preventScroll:true});section?.scrollIntoView({block:'start'});});
     };
     const mobileUpdate=loading?tr('正在更新'):failed?tr('更新失败'):updated?new Date(updated).toLocaleTimeString(locale(),{hour:'2-digit',minute:'2-digit',hour12:false}):tr('等待数据');
-    return (<div className="node-detail" data-mobile-section={mobileSection}>
-      {mobile?<div className="ma-detail-header"><button className="ma-icon" onClick={onBack??(()=>history.back())} aria-label={tr('返回总览')}><ArrowLeft size={20}/></button><div><NodePicker node={node} nodes={nodes} onSwitch={onSwitch}/></div></div>:<DetailIdentity node={node} nodes={nodes} onSwitch={onSwitch}/>}
-      {mobile&&<nav className="ma-detail-tabs" aria-label={tr('详情分区')}>{([{key:'overview',label:tr('总览')},{key:'resources',label:tr('资源')},{key:'latency',label:tr('网络')},{key:'info',label:tr('资料')}] as const).map(({key,label})=><button key={key} aria-pressed={mobileSection===key} onClick={()=>changeSection(key)}>{label}</button>)}</nav>}
-      <div className="detail-workspace">
-      {mobile&&mobileSection==='overview'&&<div className="ma-detail-status"><Status node={node}/><small>{node.last_seen>0?tr('上次上报：{0}',new Date(node.last_seen*1000).toLocaleTimeString(locale())):tr('等待首次上报')}</small></div>}
-      {!mobile?<DetailLiveOverview node={node} preview={{rows:previewActive&&previewMatches?metricRows:[],hours:ranges.resources,loading:previewActive&&(loading||!previewMatches),failed:previewActive&&previewMatches&&!!failed,active:previewActive,updated:previewMatches?updated:null}} onSelectResource={selectPreview}/>:mobileSection==='overview'?<MobileDetailOverview node={node} totals={mobilePreferences.totals} onNetwork={()=>changeSection('latency')} onResource={metric=>{setResourceMetric(metric);changeSection('resources');requestAnimationFrame(()=>{document.querySelector<HTMLElement>('.detail-history')?.focus({preventScroll:true});window.scrollTo(0,0)})}}/>:null}
-      {(!mobile||mobileSection==='resources'||mobileSection==='latency')&&<section className="detail-history" tabIndex={-1} aria-label={tr("历史图表")}>
+    const historySection = (
+      <section className="detail-history" tabIndex={-1} aria-label={tr("历史图表")}>
        {mobile&&<div className="ma-chart-heading"><h2>{tr(tab==='latency'?'网络质量':'资源历史')}</h2><small title={updated?new Date(updated).toLocaleString(locale()):undefined} data-failed={!!failed}>{mobileUpdate}</small></div>}
        {mobile&&tab==='latency'&&<div className="ma-network-summary"><div className="latency-route-controls">{routeControl}</div>
          <MobileRouteStats routes={mobileStats} comparing={expandedRoutes} color={id=>style(id).stroke} onStatistics={()=>setChartSheet('statistics')}/>
@@ -374,6 +371,13 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
             <div className="detail-chart-frame text-muted-foreground" title={tr("拖动两端缩放 · 双击恢复全范围")} onDoubleClick={()=>{setZoom(null);tooltipDismiss()}} ref={tooltipFrame} onClickCapture={tooltipClick} onPointerMove={tooltipMove} onKeyDownCapture={tooltipKey}>
               {shownProbes.length === 0 ? (<HistoryState message={(selectedProbes?.length || selectedProbes === null && probe !== "auto") ? tr("无该线路记录") : tr("没有选中任何探测")} action={tr("选择线路")} onAction={openRoutes}/>) : !shownProbes.some(s=>s.points.length) ? <HistoryState message={tr("这段时间没有延迟数据")} action={tr("调整时间范围")} onAction={chooseRange}/> : (<ResponsiveContainer>
                   <ComposedChart data={mobile?mobileChartRows:pingRows}>
+                    <defs>
+                      <linearGradient id="cyberLatencyGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--tone)" stopOpacity={0.28}/>
+                        <stop offset="65%" stopColor="var(--tone)" stopOpacity={0.06}/>
+                        <stop offset="100%" stopColor="var(--tone)" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 5" stroke="var(--border)" vertical={false}/>
                     <XAxis height={compact?30:68} {...(mobile?timeAxis(mobileChartRows):timeAxis(pingRows, Math.min(zoom?.[0] ?? 0, pingRows.length - 1), Math.min(zoom?.[1] ?? pingRows.length - 1, pingRows.length - 1)))}/>
                     {/* Not anchored at zero: these lines live in a narrow band
@@ -403,11 +407,11 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
                     bands overlap into a fog and their extremes drag the
                     axis from 165-385 out to 140-420. */}
                     {shownProbes.length === 1 &&
-                    shownProbes.map((s) => (<Area className="detail-latency-band" key={`band${s.id}`} dataKey={`b${s.id}`} stroke="none" fill={style(s.id).stroke} fillOpacity={0.07} isAnimationActive={false} tooltipType="none" legendType="none" connectNulls={false}/>))}
+                    shownProbes.map((s) => (<Area className="detail-latency-band" key={`band${s.id}`} dataKey={`b${s.id}`} type="monotone" stroke="none" fill="url(#cyberLatencyGradient)" fillOpacity={0.12} isAnimationActive={false} tooltipType="none" legendType="none" connectNulls={false}/>))}
                     {shownProbes.map((s) => (<Line className="detail-latency-line" key={s.id} dataKey={`${smooth ? "s" : "t"}${s.id}`} name={s.name} stroke={style(s.id).stroke} {...SERIES} strokeOpacity={highlightProbe!==null && visibleIds.includes(highlightProbe) && highlightProbe!==s.id ? 0.2 : 1} onMouseEnter={()=>{if(!compact)setHighlightProbe(s.id)}} onMouseLeave={()=>{if(!compact)setHighlightProbe(null)}} connectNulls={false}/>))}
                     {/* Drag either handle to zoom into a stretch of the trend. */}
                     {!mobile&&<Brush ariaLabel={tr("时间范围")} dataKey="ts" height={44} travellerWidth={compact?44:12} startIndex={zoom?.[0]??0} endIndex={zoom?.[1]??pingRows.length-1} tickFormatter={clockFor(hours)} fill="var(--card)" className="latency-brush" stroke="var(--border)" onChange={(r) => {tooltipDismiss();setZoom([r.startIndex ?? 0, r.endIndex ?? pingRows.length - 1])}}>
-                      <AreaChart data={pingRows}><XAxis xAxisId="preview" dataKey="ts" type="number" domain={['dataMin','dataMax']} hide/><Area xAxisId="preview" dataKey={`t${activeRoute?.id}`} stroke={activeRoute?style(activeRoute.id).stroke:"var(--latency-line-1)"} fill={activeRoute?style(activeRoute.id).stroke:"var(--latency-line-1)"} fillOpacity={.07} strokeWidth={1} isAnimationActive={false} connectNulls={false}/></AreaChart>
+                      <AreaChart data={pingRows}><XAxis xAxisId="preview" dataKey="ts" type="number" domain={['dataMin','dataMax']} hide/><Area type="monotone" xAxisId="preview" dataKey={`t${activeRoute?.id}`} stroke={activeRoute?style(activeRoute.id).stroke:"var(--latency-line-1)"} fill="url(#cyberChartGradient)" fillOpacity={.18} strokeWidth={1} isAnimationActive={false} connectNulls={false}/></AreaChart>
                     </Brush>}
                   </ComposedChart>
                 </ResponsiveContainer>)}
@@ -417,11 +421,55 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
             {mobile&&pingRows.length>1&&shownProbes.length>0&&<><div className="ma-chart-zoom-actions"><button aria-expanded={zoomExpanded} aria-controls="ma-chart-zoom" onClick={()=>setZoomExpanded(v=>!v)}>{tr(zoomExpanded?'收起缩放':'缩放时间范围')}</button>{zoomed&&<button onClick={()=>{setZoom(null);tooltipDismiss()}}>{tr('恢复全范围')}</button>}</div>{zoomExpanded&&<div id="ma-chart-zoom" className="ma-chart-zoom"><p>{tr('仅调整当前图表视野；摘要统计仍使用完整查询范围。')}</p><div className="ma-chart-zoom-presets">{[15,30].map(minutes=><button key={minutes} type="button" disabled={quickStart(minutes)>=pingRows.length-1} onClick={()=>{setZoom([quickStart(minutes),pingRows.length-1]);tooltipDismiss()}}>{tr('最近 {0} 分钟',minutes)}</button>)}</div><label>{tr('开始时间')}<output>{new Date(rangeStart).toLocaleString(locale())}</output><input aria-label={tr('开始时间')} type="range" min={0} max={pingRows.length-2} value={zoom?.[0]??0} aria-valuetext={new Date(rangeStart).toLocaleString(locale())} onChange={e=>{const start=Number(e.target.value);setZoom([start,Math.max(start+1,zoom?.[1]??pingRows.length-1)]);tooltipDismiss()}}/></label><label>{tr('结束时间')}<output>{new Date(rangeEnd).toLocaleString(locale())}</output><input aria-label={tr('结束时间')} type="range" min={1} max={pingRows.length-1} value={zoom?.[1]??pingRows.length-1} aria-valuetext={new Date(rangeEnd).toLocaleString(locale())} onChange={e=>{const end=Number(e.target.value);setZoom([Math.min(end-1,zoom?.[0]??0),end]);tooltipDismiss()}}/></label></div>}</>}
             {shownProbes.length>0&&pingRows.length>0&&<LossTrack showRoute={mobile} selected={activeRoute?.id} key={`${node.id}:${hours}:${activeRoute?.id}`} series={shownProbes} preferred={defaultProbe} start={pingRows[Math.min(zoom?.[0]??0,pingRows.length-1)].ts} end={pingRows[Math.min(zoom?.[1]??pingRows.length-1,pingRows.length-1)].ts}/>}
           </div>)) : (data.metrics ?? []).length === 0 ? (<HistoryState message={tr("这段时间没有历史数据")} action={tr("调整时间范围")} onAction={chooseRange}/>) : (<ResourceHistory compact={compact} mobile={mobile} rows={metricRows} node={node} hours={hours} metric={resourceMetric}/>)}
-      </div></section>}
-
-      {(!mobile||mobileSection==='info')&&<DetailFacts node={node} compact={mobile?false:compact} mobile={mobile} mode={detailInfoMode} onMode={onDetailInfoMode}/>}
-      {mobile&&mobileSection==='info'&&<section className="ma-panel ma-info-extra"><div className="ma-row"><span>{tr('名称')}</span><small>{node.name}</small></div><div className="ma-row"><span>{tr('节点分组')}</span><small>{node.group||tr('未分组')}</small></div>{node.remark&&<MobileRemarks text={node.remark}/>}</section>}
-      </div>
+      </div></section>
+    );
+    return (<div className="node-detail" data-mobile-section={mobileSection} data-cockpit={String(isCockpit)}>
+      <svg width="0" height="0" className="sr-only" aria-hidden="true" style={{position:'absolute',width:0,height:0,pointerEvents:'none',visibility:'hidden'}}>
+        <defs>
+          <linearGradient id="cyberChartGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--tone)" stopOpacity={0.32}/>
+            <stop offset="65%" stopColor="var(--tone)" stopOpacity={0.06}/>
+            <stop offset="100%" stopColor="var(--tone)" stopOpacity={0}/>
+          </linearGradient>
+          <linearGradient id="cyberChartGradientCpu" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-chart-1, var(--tone))" stopOpacity={0.32}/>
+            <stop offset="65%" stopColor="var(--color-chart-1, var(--tone))" stopOpacity={0.06}/>
+            <stop offset="100%" stopColor="var(--color-chart-1, var(--tone))" stopOpacity={0}/>
+          </linearGradient>
+          <linearGradient id="cyberChartGradientMem" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-chart-3, #8b5cf6)" stopOpacity={0.32}/>
+            <stop offset="65%" stopColor="var(--color-chart-3, #8b5cf6)" stopOpacity={0.06}/>
+            <stop offset="100%" stopColor="var(--color-chart-3, #8b5cf6)" stopOpacity={0}/>
+          </linearGradient>
+          <linearGradient id="cyberChartGradientDisk" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-chart-4, #10b981)" stopOpacity={0.32}/>
+            <stop offset="65%" stopColor="var(--color-chart-4, #10b981)" stopOpacity={0.06}/>
+            <stop offset="100%" stopColor="var(--color-chart-4, #10b981)" stopOpacity={0}/>
+          </linearGradient>
+        </defs>
+      </svg>
+      {mobile && <div className="ma-detail-header"><button className="ma-icon" onClick={onBack??(()=>history.back())} aria-label={tr('返回总览')}><ArrowLeft size={20}/></button><div><NodePicker node={node} nodes={nodes} onSwitch={onSwitch}/></div></div>}
+      {mobile && <nav className="ma-detail-tabs" aria-label={tr('详情分区')}>{([{key:'overview',label:tr('总览')},{key:'resources',label:tr('资源')},{key:'latency',label:tr('网络')},{key:'info',label:tr('资料')}] as const).map(({key,label})=><button key={key} aria-pressed={mobileSection===key} onClick={()=>changeSection(key)}>{label}</button>)}</nav>}
+      {mobile ? (
+        <div className="detail-workspace">
+          {mobileSection==='overview'&&<div className="ma-detail-status"><Status node={node}/><small>{node.last_seen>0?tr('上次上报：{0}',new Date(node.last_seen*1000).toLocaleTimeString(locale())):tr('等待首次上报')}</small></div>}
+          {mobileSection==='overview'?<MobileDetailOverview node={node} totals={mobilePreferences.totals} onNetwork={()=>changeSection('latency')} onResource={metric=>{setResourceMetric(metric);changeSection('resources');requestAnimationFrame(()=>{document.querySelector<HTMLElement>('.detail-history')?.focus({preventScroll:true});window.scrollTo(0,0)})}}/>:null}
+          {(mobileSection==='resources'||mobileSection==='latency')&&historySection}
+          {mobileSection==='info'&&<DetailFacts node={node} compact={false} mobile={true} mode={detailInfoMode} onMode={onDetailInfoMode}/>}
+          {mobileSection==='info'&&<section className="ma-panel ma-info-extra"><div className="ma-row"><span>{tr('名称')}</span><small>{node.name}</small></div><div className="ma-row"><span>{tr('节点分组')}</span><small>{node.group||tr('未分组')}</small></div>{node.remark&&<MobileRemarks text={node.remark}/>}</section>}
+        </div>
+      ) : (
+        <div className="detail-cockpit">
+          <aside className="detail-cockpit-sidebar" aria-label={tr("设备资料")}>
+            <DetailIdentity node={node} nodes={nodes} onSwitch={onSwitch}/>
+            <DetailLiveOverview node={node} preview={{rows:previewActive&&previewMatches?metricRows:[],hours:ranges.resources,loading:previewActive&&(loading||!previewMatches),failed:previewActive&&previewMatches&&!!failed,active:previewActive,updated:previewMatches?updated:null}} onSelectResource={selectPreview}/>
+            <DetailFacts node={node} compact={compact} mobile={false} mode={detailInfoMode} onMode={onDetailInfoMode}/>
+          </aside>
+          <div className="detail-cockpit-main">
+            {historySection}
+          </div>
+        </div>
+      )}
       {mobile&&chartSheet&&<ChartSettingsSheet kind={chartSheet} onClose={()=>setChartSheet(null)} smooth={smooth} onSmooth={setSmooth}/>}
     </div>);
 }

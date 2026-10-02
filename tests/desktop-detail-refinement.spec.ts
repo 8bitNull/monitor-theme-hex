@@ -50,11 +50,19 @@ for(const width of [900,1280])for(const language of ['zh','en'])test(`history ac
   const [range,action,arrow]=Array.from(element.children) as HTMLElement[]
   const bounds=(node:HTMLElement)=>node.getBoundingClientRect()
   const r=bounds(range),a=bounds(action),i=bounds(arrow),c=bounds(element)
-  return {rangeRight:r.right,actionLeft:a.left,actionRight:a.right,arrowLeft:i.left,actionBottom:a.bottom,captionBottom:c.bottom,actionFits:action.scrollWidth<=action.clientWidth,documentFits:document.documentElement.scrollWidth<=innerWidth}
+  return {rangeRight:r.right,rangeBottom:r.bottom,actionLeft:a.left,actionRight:a.right,actionTop:a.top,arrowLeft:i.left,captionRight:c.right,actionBottom:a.bottom,captionBottom:c.bottom,actionFits:action.scrollWidth<=action.clientWidth,documentFits:document.documentElement.scrollWidth<=innerWidth}
  })
- expect(layout.rangeRight).toBeLessThanOrEqual(layout.actionLeft)
- expect(layout.actionRight).toBeLessThanOrEqual(layout.arrowLeft)
- expect(layout.actionBottom).toBeLessThanOrEqual(layout.captionBottom)
+ if(width>=1024){
+  // Narrow cockpit cards give the action its own row so translated words stay readable.
+  expect(layout.rangeRight).toBeLessThanOrEqual(layout.arrowLeft)
+  expect(layout.actionTop).toBeGreaterThanOrEqual(layout.rangeBottom)
+  expect(layout.actionRight).toBeLessThanOrEqual(layout.captionRight)
+ }else{
+  expect(layout.rangeRight).toBeLessThanOrEqual(layout.actionLeft)
+  expect(layout.actionRight).toBeLessThanOrEqual(layout.arrowLeft)
+ }
+ // Firefox DOMRect edges can differ by floating-point rounding (< 0.0001px).
+ expect(layout.actionBottom).toBeLessThanOrEqual(layout.captionBottom+0.001)
  expect(layout.actionFits).toBe(true)
  expect(layout.documentFits).toBe(true)
 })

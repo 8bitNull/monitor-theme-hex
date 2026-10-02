@@ -150,3 +150,402 @@
  .detail-tabs button {padding-inline:8px}
  .resource-chart-tabs button svg {display:none}
 }
+
+/* ==========================================================================
+   Cyber-Glass Historical Telemetry & Chart Surfaces
+   ========================================================================== */
+
+/* Detail Panels: Base solid styling with frosted Cyber Glass when data-glass=true */
+.node-detail .detail-history,
+.node-detail .detail-live,
+.node-detail .detail-information section,
+.node-detail .detail-fact-groups>section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel, 14px);
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.06);
+}
+
+[data-glass=true] .node-detail :is(.detail-history, .detail-live, .detail-information section, .detail-fact-groups>section) {
+  background: linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box, var(--cyber-border-gradient) border-box;
+  border: 1px solid transparent;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
+  backdrop-filter: blur(var(--glass-blur, 16px));
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 720px) {
+  [data-glass=true] .node-detail :is(.detail-history, .detail-live, .detail-information section, .detail-fact-groups>section) {
+    -webkit-backdrop-filter: blur(min(var(--glass-blur, 16px), 6px));
+    backdrop-filter: blur(min(var(--glass-blur, 16px), 6px));
+  }
+}
+
+/* Detail Metrics Cards */
+.node-detail .detail-metric-card,
+.node-detail .overview-account,
+.node-detail .overview-remarks {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel, 12px);
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.04);
+  transition: transform .2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-glass=true] .node-detail :is(.detail-metric-card, .overview-account, .overview-remarks) {
+  background: linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box, var(--cyber-border-gradient) border-box;
+  border: 1px solid transparent;
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
+  backdrop-filter: blur(var(--glass-blur, 16px));
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.06);
+}
+
+@media (hover: hover) {
+  .node-detail .detail-metric-card:hover {
+    box-shadow: 0 8px 24px -4px color-mix(in srgb, var(--cyber-glow-color, var(--tone)) 25%, transparent);
+  }
+}
+
+/* Chart Canvas Frame */
+.node-detail .detail-chart-frame {
+  background: color-mix(in srgb, var(--card) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  border-radius: 12px;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Recharts Area Glow Injections */
+.node-detail .detail-resource-charts .recharts-area-area,
+.node-detail .latency-brush .recharts-area-area {
+  fill: url(#cyberChartGradient) !important;
+  fill-opacity: 1 !important;
+}
+
+.node-detail .detail-latency-band .recharts-area-area {
+  fill: url(#cyberLatencyGradient) !important;
+  fill-opacity: 1 !important;
+}
+
+.node-detail .detail-resource-charts[data-metric="cpu"] .recharts-area-area {
+  fill: url(#cyberChartGradientCpu) !important;
+  fill-opacity: 1 !important;
+}
+
+.node-detail .detail-resource-charts[data-metric="mem_used"] .recharts-area-area {
+  fill: url(#cyberChartGradientMem) !important;
+  fill-opacity: 1 !important;
+}
+
+.node-detail .detail-resource-charts[data-metric="disk_used"] .recharts-area-area {
+  fill: url(#cyberChartGradientDisk) !important;
+  fill-opacity: 1 !important;
+}
+
+/* Telemetry curves: Spline line drop-shadow glow */
+.node-detail .detail-resource-charts .recharts-area-curve,
+.node-detail .detail-resource-charts .recharts-line-curve {
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--tone) 45%, transparent));
+}
+
+.node-detail .detail-latency-line .recharts-line-curve {
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tone) 35%, transparent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node-detail .detail-resource-charts .recharts-area-curve,
+  .node-detail .detail-resource-charts .recharts-line-curve,
+  .node-detail .detail-latency-line .recharts-line-curve {
+    filter: none !important;
+  }
+}
+
+/* ==========================================================================
+   Cockpit Dual-Column Workbench (Desktop Cockpit)
+   ========================================================================== */
+
+.detail-cockpit {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.detail-cockpit-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.detail-cockpit-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* Fallback for cockpitMode === false or tablet/mobile < 1024px: single-column waterfall */
+@media (max-width: 1023px) {
+  .detail-cockpit-sidebar,
+  .detail-cockpit-main {
+    display: contents;
+  }
+  .detail-cockpit .detail-identity { order: 1; }
+  .detail-cockpit .detail-live { order: 2; }
+  .detail-cockpit .detail-history { order: 3; }
+  .detail-cockpit .detail-information { order: 4; }
+}
+
+[data-cockpit="false"] .detail-cockpit-sidebar,
+[data-cockpit="false"] .detail-cockpit-main {
+  display: contents;
+}
+[data-cockpit="false"] .detail-cockpit .detail-identity { order: 1; }
+[data-cockpit="false"] .detail-cockpit .detail-live { order: 2; }
+[data-cockpit="false"] .detail-cockpit .detail-history { order: 3; }
+[data-cockpit="false"] .detail-cockpit .detail-information { order: 4; }
+
+/* Cockpit Mode on Wide Screens (>= 1024px) */
+@media (min-width: 1024px) {
+  [data-cockpit="true"] .detail-cockpit {
+    display: grid;
+    grid-template-columns: minmax(320px, 32%) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+    width: 100%;
+    max-width: 1680px;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 1440px) {
+    [data-cockpit="true"] .detail-cockpit {
+      grid-template-columns: minmax(340px, 30%) minmax(0, 1fr);
+      gap: 28px;
+    }
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar {
+    position: sticky;
+    top: 76px;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: calc(100vh - 92px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    order: unset;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-identity {
+    padding: 0 2px 8px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+    order: unset;
+  }
+
+  [data-cockpit="true"] .detail-cockpit .detail-identity,
+  [data-cockpit="true"] .detail-cockpit .detail-live,
+  [data-cockpit="true"] .detail-cockpit .detail-history,
+  [data-cockpit="true"] .detail-cockpit .detail-information {
+    order: unset;
+  }
+
+  /* Refine metric cards and fact groups in the cockpit sidebar */
+  [data-cockpit="true"] .detail-cockpit-sidebar {
+    gap: 12px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-live {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .desktop-detail-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-metric-card {
+    padding: 10px 12px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-metric-card h3 {
+    margin: 0 0 4px;
+    font-size: 11px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-metric-value {
+    font-size: 18px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-metric-note {
+    font-size: 11px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-metric-extra {
+    font-size: 10px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-metric-card .resource-trend {
+    min-height: 40px;
+    padding-top: 4px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-metric-card .resource-trend svg {
+    height: 24px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .overview-account {
+    padding: 10px 12px;
+    margin-top: 10px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .overview-account h3 {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .overview-billing {
+    gap: 8px 12px;
+  }
+
+  /* Compact Detail Facts Harmonization: Sleek 2-column key-value tokens */
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-information {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-information .detail-fact-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-fact-groups > section {
+    padding: 10px 12px;
+    border-radius: var(--radius-panel, 12px);
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-fact-groups h3 {
+    font-size: 11px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 6px;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts > div {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 3px 7px;
+    min-height: 24px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--card) 60%, var(--background));
+    border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts > div.fact-long {
+    grid-column: 1 / -1;
+  }
+
+  [data-glass="true"] [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts > div {
+    background: color-mix(in srgb, var(--glass-bg) 65%, transparent);
+    border-color: color-mix(in srgb, var(--border) 40%, transparent);
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts dt {
+    font-size: 10.5px;
+    color: var(--muted-foreground);
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts dd {
+    font-size: 11px;
+    font-weight: 500;
+    margin: 0;
+    min-width: 0;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts dd:has(.copy-control) {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+    padding: 0;
+    min-height: unset;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts .fact-value {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts .copy-control {
+    position: static;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin: 0;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts .copy-fact {
+    width: 18px;
+    height: 18px;
+    min-height: 18px;
+    padding: 0;
+    margin: 0;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: var(--muted-foreground);
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts .copy-fact:hover {
+    color: var(--foreground);
+    background: color-mix(in srgb, var(--muted) 80%, transparent);
+  }
+
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-facts .copy-notice {
+    font-size: 10px;
+    color: var(--tone);
+    white-space: nowrap;
+  }
+}
