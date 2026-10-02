@@ -171,7 +171,7 @@ export default function App({ siteDefaults = defaults }: {
     const setQuery = (query: string) => patchBrowse({ query });
     const setStatus = (status: string) => patchBrowse({ status });
     const setRegion = useCallback((region:string)=>setBrowse(prev=>({...prev,region})),[]);
-    const cockpitMode = desktop.cockpitMode ?? prefs.cockpitMode;
+    const cockpitMode = prefs.cockpitMode ?? true;
     const handleSelectRegion = useCallback(() => {
         const results = document.getElementById('node-results');
         if (results) {
@@ -303,7 +303,7 @@ export default function App({ siteDefaults = defaults }: {
               <NodeDetail onBack={()=>go(null)} mobilePreferences={mobilePreferences} detailInfoMode={prefs.detailInfoMode} onDetailInfoMode={detailInfoMode=>selectDisplay({detailInfoMode})} key={selected.id} node={selected} probe={compactViewport?resolveProbe(selected.id,prefs.probe):prefs.probe} nodes={sorted} cockpitMode={cockpitMode} onSwitch={id=>{const q=new URLSearchParams(location.search);q.delete("eventStart");q.delete("eventEnd");q.delete("routes");go(id,location.hash.slice(1),q.size?"?"+q:"")}}/>
             </Suspense>) : (<p className="py-16 text-center text-sm text-muted-foreground">{tr("节点不存在或未公开。")}<button className="underline" onClick={() => go(null)}>{tr("返回列表")}</button>
             </p>)) : compactViewport ? null : !nodes ? (
-          <div className="cockpit-layout">
+          <div className="cockpit-layout" data-has-aside={String(mapVisible)}>
             <div className="cockpit-main">
               <div className="node-grid home-loading" aria-label={tr("正在加载节点")} aria-busy="true">
                 {[0, 1, 2].map((i) => (<div key={i} className="loading-card" aria-hidden="true"><Skeleton className="loading-title"/><div className="loading-metrics">{[0,1,2,3].map(n=><Skeleton key={n}/>)}</div><Skeleton className="loading-speed"/><Skeleton className="loading-route"/></div>))}
@@ -314,7 +314,7 @@ export default function App({ siteDefaults = defaults }: {
             </aside>
           </div>
         ) : (
-          <div className="cockpit-layout">
+          <div className="cockpit-layout" data-has-aside={String(mapVisible)}>
             <div className="cockpit-main">
               <section className="overview-heading"><div className="page-heading"><h1>{tr("服务器总览")}</h1><span className={`live-label connection-${connection}`} role="status" title={[{connecting:tr("正在连接"),realtime:tr("实时连接"),polling:tr("轮询更新"),disconnected:tr("连接中断 · 数据可能已过期")}[connection],lastUpdated ? new Date(lastUpdated).toLocaleString(locale()) : tr("等待首次数据")].join(" · ")}><Radio size={14}/><span>{{ connecting: tr("正在连接"), realtime: tr("实时连接"), polling: tr("轮询更新"), disconnected: tr("连接中断 · 数据可能已过期") }[connection]}</span></span></div>
               <BillingReminders nodes={sorted} onOpen={id=>go(id)}/>

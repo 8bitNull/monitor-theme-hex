@@ -4,7 +4,6 @@ import {LossTrack} from './LossTrack'
 import {Select} from './ui/select'
 import {ChartTooltip,useChartTooltip} from './ChartTooltip'
 import type {Preferences} from '@/lib/appearance'
-import {useDesktopPreferences} from '@/lib/preferences'
 import {DetailIdentity,DetailLiveOverview} from './DetailOverview'
 import type {ResourceTrendMetric} from '@/lib/resourceTrend'
 import '@/styles/detail-aesthetics.css'
@@ -116,8 +115,7 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
     onSwitch:(id:number)=>void;
     cockpitMode?: boolean;
 }) {
-    const [desktop] = useDesktopPreferences();
-    const isCockpit = cockpitMode ?? desktop.cockpitMode ?? true;
+    const isCockpit = cockpitMode ?? true;
     const [compact,setCompact]=useState(()=>matchMedia('(max-width:899px)').matches);
     const [mobile,setMobile]=useState(()=>matchMedia('(max-width:720px)').matches);
     useEffect(()=>{const media=matchMedia('(max-width:720px)');const update=()=>setMobile(media.matches);media.addEventListener('change',update);return()=>media.removeEventListener('change',update)},[]);

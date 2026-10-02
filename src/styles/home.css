@@ -159,6 +159,10 @@
     order: unset;
   }
 
+  [data-cockpit="true"] .cockpit-layout[data-has-aside="false"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   [data-cockpit="true"] .cockpit-layout:has(.cockpit-aside:empty) {
     grid-template-columns: minmax(0, 1fr);
   }
