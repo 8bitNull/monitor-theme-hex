@@ -263,3 +263,111 @@
     filter: none !important;
   }
 }
+
+/* ==========================================================================
+   Cockpit Dual-Column Workbench (Desktop Cockpit)
+   ========================================================================== */
+
+.detail-cockpit {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.detail-cockpit-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.detail-cockpit-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* Fallback for cockpitMode === false or tablet/mobile < 1024px: single-column waterfall */
+@media (max-width: 1023px) {
+  .detail-cockpit-sidebar,
+  .detail-cockpit-main {
+    display: contents;
+  }
+  .detail-cockpit .detail-identity { order: 1; }
+  .detail-cockpit .detail-live { order: 2; }
+  .detail-cockpit .detail-history { order: 3; }
+  .detail-cockpit .detail-information { order: 4; }
+}
+
+[data-cockpit=false] .detail-cockpit-sidebar,
+[data-cockpit=false] .detail-cockpit-main {
+  display: contents;
+}
+[data-cockpit=false] .detail-cockpit .detail-identity { order: 1; }
+[data-cockpit=false] .detail-cockpit .detail-live { order: 2; }
+[data-cockpit=false] .detail-cockpit .detail-history { order: 3; }
+[data-cockpit=false] .detail-cockpit .detail-information { order: 4; }
+
+/* Cockpit Mode on Wide Screens (>= 1024px) */
+@media (min-width: 1024px) {
+  [data-cockpit=true] .detail-cockpit {
+    display: grid;
+    grid-template-columns: minmax(320px, 32%) minmax(0, 68%);
+    gap: 24px;
+    align-items: start;
+    width: 100%;
+    max-width: 1680px;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 1440px) {
+    [data-cockpit=true] .detail-cockpit {
+      grid-template-columns: minmax(340px, 30%) minmax(0, 70%);
+      gap: 28px;
+    }
+  }
+
+  [data-cockpit=true] .detail-cockpit-sidebar {
+    position: sticky;
+    top: 76px;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: calc(100vh - 92px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    order: unset;
+  }
+
+  [data-cockpit=true] .detail-cockpit-sidebar .detail-identity {
+    padding: 0 2px 8px;
+  }
+
+  [data-cockpit=true] .detail-cockpit-main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+    order: unset;
+  }
+
+  [data-cockpit=true] .detail-cockpit .detail-identity,
+  [data-cockpit=true] .detail-cockpit .detail-live,
+  [data-cockpit=true] .detail-cockpit .detail-history,
+  [data-cockpit=true] .detail-cockpit .detail-information {
+    order: unset;
+  }
+
+  /* Refine metric cards and fact groups in the cockpit sidebar */
+  [data-cockpit=true] .node-detail .detail-cockpit-sidebar .desktop-detail-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  [data-cockpit=true] .node-detail .detail-cockpit-sidebar .detail-information .detail-fact-groups {
+    grid-template-columns: 1fr;
+  }
+}
