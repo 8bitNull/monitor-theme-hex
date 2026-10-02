@@ -92,31 +92,28 @@
 }
 
 @media (max-width: 1023px) {
-  .cockpit-main {
-    display: contents;
+  .cockpit-aside {
+    order: -1;
   }
-  .overview-heading { order: 1; }
-  .overview-summary { order: 2; }
-  .streamlined-browser { order: 3; }
-  .sort-note { order: 4; }
-  .cockpit-aside { order: 5; }
-  #node-results { order: 6; }
 }
 
-[data-cockpit="false"] .cockpit-main {
-  display: contents;
+[data-cockpit="false"] .cockpit-aside {
+  order: -1;
 }
-[data-cockpit="false"] .overview-heading { order: 1; }
-[data-cockpit="false"] .overview-summary { order: 2; }
-[data-cockpit="false"] .streamlined-browser { order: 3; }
-[data-cockpit="false"] .sort-note { order: 4; }
-[data-cockpit="false"] .cockpit-aside { order: 5; }
-[data-cockpit="false"] #node-results { order: 6; }
 
 @media (min-width: 1024px) {
   [data-cockpit="true"] .desktop-app-header > div,
   [data-cockpit="true"] main {
     max-width: 1680px;
+  }
+
+  [data-cockpit="true"] .overview-heading,
+  [data-cockpit="true"] .overview-summary,
+  [data-cockpit="true"] .streamlined-browser {
+    width: 100%;
+    max-width: 1680px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   [data-cockpit="true"] .cockpit-layout {
@@ -127,7 +124,6 @@
     width: 100%;
     max-width: 1680px;
     margin: 0 auto;
-    padding: 0 16px;
     box-sizing: border-box;
   }
 
