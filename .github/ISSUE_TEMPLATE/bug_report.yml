@@ -1,0 +1,42 @@
+name: 问题反馈
+description: 报告页面、数据或交互问题
+title: '[Bug] '
+body:
+  - type: markdown
+    attributes:
+      value: 请隐藏真实站点地址、IP、账号和凭据。截图使用脱敏信息。
+  - type: input
+    id: version
+    attributes:
+      label: 主题版本或提交
+      description: 正式版填写版本号；开发版填写分支和提交号。
+      placeholder: v0.3.6，或 dev / 提交号
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 使用环境
+      description: 填写浏览器及版本、操作系统、屏幕尺寸；如与接口有关，补充 Hub 和 Agent 版本。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 描述从哪个页面开始、执行了哪些操作，以及是否每次出现。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期行为
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为
+      description: 可附脱敏截图和浏览器控制台错误。
+    validations:
+      required: true
