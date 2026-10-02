@@ -2,7 +2,7 @@ import {Component,useEffect,useMemo,useState,type ComponentType,type ReactNode} 
 import {Globe,Map as MapIcon} from 'lucide-react'
 import type {MapNode} from './WorldMap'
 import {tr} from '@/lib/i18n'
-export type MapProps={pendingNodes?:boolean;nodes:MapNode[];region:string;onRegion:(code:string)=>void;onSelectRegion?:(region:string)=>void;viewSwitch?:ReactNode;toolsHost?:HTMLElement|null}
+export type MapProps={pendingNodes?:boolean;nodes:MapNode[];region:string;onRegion:(code:string)=>void;viewSwitch?:ReactNode;toolsHost?:HTMLElement|null}
 let request:Promise<typeof import('./WorldMap')>|undefined
 export function loadMap(){return request??=import('./WorldMap').catch(error=>{request=undefined;throw error})}
 class MapBoundary extends Component<{children:ReactNode;fallback:ReactNode},{failed:boolean}>{
@@ -37,7 +37,7 @@ export function MapPanel({nodeSnapshot,region,onRegion,onSelectRegion,viewSwitch
    <button type="button" className="home-map-toggle" aria-label={tr(expanded?'收起地图':'展开地图')} aria-expanded={expanded} aria-controls="home-map-canvas" onClick={onExpanded}><MapIcon size={16} aria-hidden="true"/><span>{tr(expanded?'收起地图':'展开地图')}</span></button>
    </div>
   </div>
-  <div id="home-map-canvas" hidden={!expanded}>{expanded&&<MapBoundary key={attempt} fallback={fallback(true)}>{Map&&state==='ready'?<Map pendingNodes={pendingNodes} nodes={nodes} region={region} onRegion={handleRegion} onSelectRegion={onSelectRegion} viewSwitch={viewSwitch} toolsHost={toolsHost}/>:fallback(state==='failed')}</MapBoundary>}</div>
+  <div id="home-map-canvas" hidden={!expanded}>{expanded&&<MapBoundary key={attempt} fallback={fallback(true)}>{Map&&state==='ready'?<Map pendingNodes={pendingNodes} nodes={nodes} region={region} onRegion={handleRegion} viewSwitch={viewSwitch} toolsHost={toolsHost}/>:fallback(state==='failed')}</MapBoundary>}</div>
   {pendingNodes&&<span className="map-data-notice" role="status">{tr('等待节点数据')}</span>}
  </div>
 }

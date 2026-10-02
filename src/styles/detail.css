@@ -301,18 +301,18 @@
   .detail-cockpit .detail-information { order: 4; }
 }
 
-[data-cockpit=false] .detail-cockpit-sidebar,
-[data-cockpit=false] .detail-cockpit-main {
+[data-cockpit="false"] .detail-cockpit-sidebar,
+[data-cockpit="false"] .detail-cockpit-main {
   display: contents;
 }
-[data-cockpit=false] .detail-cockpit .detail-identity { order: 1; }
-[data-cockpit=false] .detail-cockpit .detail-live { order: 2; }
-[data-cockpit=false] .detail-cockpit .detail-history { order: 3; }
-[data-cockpit=false] .detail-cockpit .detail-information { order: 4; }
+[data-cockpit="false"] .detail-cockpit .detail-identity { order: 1; }
+[data-cockpit="false"] .detail-cockpit .detail-live { order: 2; }
+[data-cockpit="false"] .detail-cockpit .detail-history { order: 3; }
+[data-cockpit="false"] .detail-cockpit .detail-information { order: 4; }
 
 /* Cockpit Mode on Wide Screens (>= 1024px) */
 @media (min-width: 1024px) {
-  [data-cockpit=true] .detail-cockpit {
+  [data-cockpit="true"] .detail-cockpit {
     display: grid;
     grid-template-columns: minmax(320px, 32%) minmax(0, 68%);
     gap: 24px;
@@ -323,13 +323,13 @@
   }
 
   @media (min-width: 1440px) {
-    [data-cockpit=true] .detail-cockpit {
+    [data-cockpit="true"] .detail-cockpit {
       grid-template-columns: minmax(340px, 30%) minmax(0, 70%);
       gap: 28px;
     }
   }
 
-  [data-cockpit=true] .detail-cockpit-sidebar {
+  [data-cockpit="true"] .detail-cockpit-sidebar {
     position: sticky;
     top: 76px;
     align-self: start;
@@ -343,11 +343,11 @@
     order: unset;
   }
 
-  [data-cockpit=true] .detail-cockpit-sidebar .detail-identity {
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-identity {
     padding: 0 2px 8px;
   }
 
-  [data-cockpit=true] .detail-cockpit-main {
+  [data-cockpit="true"] .detail-cockpit-main {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -355,19 +355,19 @@
     order: unset;
   }
 
-  [data-cockpit=true] .detail-cockpit .detail-identity,
-  [data-cockpit=true] .detail-cockpit .detail-live,
-  [data-cockpit=true] .detail-cockpit .detail-history,
-  [data-cockpit=true] .detail-cockpit .detail-information {
+  [data-cockpit="true"] .detail-cockpit .detail-identity,
+  [data-cockpit="true"] .detail-cockpit .detail-live,
+  [data-cockpit="true"] .detail-cockpit .detail-history,
+  [data-cockpit="true"] .detail-cockpit .detail-information {
     order: unset;
   }
 
   /* Refine metric cards and fact groups in the cockpit sidebar */
-  [data-cockpit=true] .node-detail .detail-cockpit-sidebar .desktop-detail-metrics {
+  [data-cockpit="true"] .detail-cockpit-sidebar .desktop-detail-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  [data-cockpit=true] .node-detail .detail-cockpit-sidebar .detail-information .detail-fact-groups {
+  [data-cockpit="true"] .detail-cockpit-sidebar .detail-information .detail-fact-groups {
     grid-template-columns: 1fr;
   }
 }

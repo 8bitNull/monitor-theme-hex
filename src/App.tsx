@@ -172,8 +172,7 @@ export default function App({ siteDefaults = defaults }: {
     const setStatus = (status: string) => patchBrowse({ status });
     const setRegion = useCallback((region:string)=>setBrowse(prev=>({...prev,region})),[]);
     const cockpitMode = desktop.cockpitMode ?? prefs.cockpitMode;
-    const handleSelectRegion = useCallback((code: string) => {
-        setRegion(code);
+    const handleSelectRegion = useCallback(() => {
         const results = document.getElementById('node-results');
         if (results) {
             results.focus({ preventScroll: true });
@@ -182,7 +181,7 @@ export default function App({ siteDefaults = defaults }: {
                 block: 'nearest',
             });
         }
-    }, [setRegion]);
+    }, []);
     const pingVersion = useSyncExternalStore(subscribePing, pingRevision);
     useEffect(() => { try {
         sessionStorage.setItem('monitor-next-browse-v1', JSON.stringify(browse));

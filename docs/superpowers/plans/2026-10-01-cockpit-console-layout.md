@@ -1,6 +1,6 @@
 # Cockpit Console Layout Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Transform the desktop experience of `monitor-theme-hex` into a high-density, dual-column Cockpit Console (NOC-style Home with map-card linkage, and Workbench-style Node Detail) with responsive fallback to classic single-column mode on mobile and toggleable user preference.
 
@@ -34,7 +34,7 @@
 - Consumes: Existing `Preferences` interface and `defaults` from `src/lib/appearance.ts`.
 - Produces: `cockpitMode: boolean` field in `Preferences`, exported `defaults.cockpitMode = true`, and updated `data-cockpit` attribute on root.
 
-- [ ] **Step 1: Write failing tests in `src/lib/appearance.test.ts`**
+- [x] **Step 1: Write failing tests in `src/lib/appearance.test.ts`**
 
 Add assertion for `cockpitMode`:
 ```typescript
@@ -45,16 +45,16 @@ const fallback = normalizePreferences({})
 assert.equal(fallback.cockpitMode, true)
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `node src/lib/appearance.test.ts`
 Expected: FAIL with undefined `cockpitMode`
 
-- [ ] **Step 3: Implement minimal code in `src/lib/appearance.ts`**
+- [x] **Step 3: Implement minimal code in `src/lib/appearance.ts`**
 
 Add `cockpitMode: boolean` to `Preferences`, `defaults`, `validatePreferences`, and `normalizePreferences`.
 
-- [ ] **Step 4: Update `src/lib/en.ts`, `theme.json`, and `src/components/Preferences.tsx`**
+- [x] **Step 4: Update `src/lib/en.ts`, `theme.json`, and `src/components/Preferences.tsx`**
 
 1. In `src/lib/en.ts`:
 ```typescript
@@ -64,12 +64,12 @@ Add `cockpitMode: boolean` to `Preferences`, `defaults`, `validatePreferences`, 
 2. In `src/components/Preferences.tsx`: Add toggle switch for `cockpitMode` under "外观与布局".
 3. In `theme.json`: Add config entry for `"cockpitMode"`.
 
-- [ ] **Step 5: Run tests and lint**
+- [x] **Step 5: Run tests and lint**
 
 Run: `node src/lib/appearance.test.ts && node scripts/check-i18n.mjs && npm run test && npm run lint`
 Expected: PASS with 0 errors and 0 warnings.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/appearance.ts src/lib/appearance.test.ts src/lib/en.ts src/components/Preferences.tsx theme.json
@@ -89,14 +89,14 @@ git commit -m "feat(preferences): add cockpit mode preference and i18n support"
 - Consumes: `desktopPreferences.cockpitMode` from `useDesktopPreferences()`.
 - Produces: `.cockpit-layout`, `.cockpit-main`, and `.cockpit-aside` DOM containers and click-to-filter region linkage between Map and Node list.
 
-- [ ] **Step 1: Inspect and prepare DOM structure in `src/App.tsx`**
+- [x] **Step 1: Inspect and prepare DOM structure in `src/App.tsx`**
 
 Wrap Home page desktop elements inside `.cockpit-layout`:
 - Left column `.cockpit-main`: Summary bar, Search/Filters, NodeCard/NodeTable list.
 - Right column `.cockpit-aside`: MapPanel HUD, live flow metrics, and load alert cards.
 - Add `data-cockpit={desktopPreferences.cockpitMode}` to root container.
 
-- [ ] **Step 2: Implement responsive cockpit CSS in `src/styles/home.css`**
+- [x] **Step 2: Implement responsive cockpit CSS in `src/styles/home.css`**
 
 ```css
 @media (min-width: 1024px) {
@@ -129,16 +129,16 @@ Wrap Home page desktop elements inside `.cockpit-layout`:
 }
 ```
 
-- [ ] **Step 3: Connect Map region click to Node filtering**
+- [x] **Step 3: Connect Map region click to Node filtering**
 
 In `src/components/MapPanel.tsx`, pass an `onSelectRegion?: (region: string) => void` prop. When a region marker is clicked on the map in desktop cockpit mode, trigger node list filtering or quick search focusing for that region.
 
-- [ ] **Step 4: Verify test suite and lint**
+- [x] **Step 4: Verify test suite and lint**
 
 Run: `npm run test && npm run lint`
 Expected: PASS with 0 warnings.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/App.tsx src/styles/home.css src/components/MapPanel.tsx
@@ -157,13 +157,13 @@ git commit -m "feat(home): implement dual-column cockpit layout and map-to-list 
 - Consumes: `desktopPreferences.cockpitMode` from preferences.
 - Produces: Dual-column workbench `.detail-cockpit`, `.detail-cockpit-sidebar`, and `.detail-cockpit-main` for wide screens with sticky host specs card.
 
-- [ ] **Step 1: Structure `.detail-cockpit` in `src/components/NodeDetail.tsx`**
+- [x] **Step 1: Structure `.detail-cockpit` in `src/components/NodeDetail.tsx`**
 
 Reorganize detail components into:
 - `.detail-cockpit-sidebar`: Host name & status badge, `DetailOverview` (real-time gauges: CPU/RAM/Disk/Net), and `DetailFacts` (OS, CPU model, Arch, IPs, Uptime, Expiry).
 - `.detail-cockpit-main`: History controls, Ping latency charts (`HistoryState`), and resource historical trends (`ResourceHistory`).
 
-- [ ] **Step 2: Implement dual-column workbench CSS in `src/styles/detail.css`**
+- [x] **Step 2: Implement dual-column workbench CSS in `src/styles/detail.css`**
 
 ```css
 @media (min-width: 1024px) {
@@ -201,16 +201,16 @@ Reorganize detail components into:
 }
 ```
 
-- [ ] **Step 3: Ensure Recharts ResponsiveContainer auto-resizes properly**
+- [x] **Step 3: Ensure Recharts ResponsiveContainer auto-resizes properly**
 
 Verify that all charts in `.detail-cockpit-main` resize smoothly on viewport resizing without layout jumps.
 
-- [ ] **Step 4: Verify test suite and lint**
+- [x] **Step 4: Verify test suite and lint**
 
 Run: `npm run test && npm run lint`
 Expected: PASS with 0 warnings.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/NodeDetail.tsx src/styles/detail.css
@@ -229,7 +229,7 @@ git commit -m "feat(detail): implement dual-column console workbench for wide sc
 - Consumes: Fully integrated Home & Node Detail cockpit layouts.
 - Produces: Clean multi-device Playwright screenshots, verified package archive, and finalized plan.
 
-- [ ] **Step 1: Write Playwright visual inspection script**
+- [x] **Step 1: Write Playwright visual inspection script**
 
 Capture:
 1. Desktop 1440x900 Dark Mode Home (verify 65%/35% dual column, map sticky on right, 0px horizontal overflow).
@@ -237,17 +237,17 @@ Capture:
 3. Desktop 1440x900 Light Mode Home & Detail.
 4. Mobile 390x844 Dark Mode Home & Detail (verify smooth single-column fallback).
 
-- [ ] **Step 2: Run verification script**
+- [x] **Step 2: Run verification script**
 
 Run: `node scratch/verify-cockpit.cjs`
 Expected: 5/5 viewports PASS with 0px horizontal overflow.
 
-- [ ] **Step 3: Run full quality gates**
+- [x] **Step 3: Run full quality gates**
 
 Run: `npm run test && npm run lint && npm run package`
 Expected: 18/18 test suites pass, 0 oxlint warnings, `theme.tar.gz` built cleanly.
 
-- [ ] **Step 4: Commit and finalize**
+- [x] **Step 4: Commit and finalize**
 
 ```bash
 git add docs/superpowers/plans/2026-10-01-cockpit-console-layout.md
