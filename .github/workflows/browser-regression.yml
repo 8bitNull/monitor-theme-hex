@@ -1,0 +1,62 @@
+name: Browser regression
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: Browser test suite
+        required: true
+        default: full
+        type: choice
+        options:
+          - full
+          - compatibility
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-tests:
+    name: Browser tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Install Chromium
+        if: inputs.suite == 'full'
+        run: npx playwright install --with-deps chromium
+      - name: Install compatibility browsers
+        if: inputs.suite == 'compatibility'
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Full Chromium regression
+        if: inputs.suite == 'full'
+        env:
+          TEST_BROWSER: chromium
+        run: npm run test:e2e -- --workers=2 --reporter=line,html
+      - name: Cross-browser compatibility
+        if: inputs.suite == 'compatibility'
+        run: npx playwright test --config playwright.compat.config.ts --workers=2 --reporter=line,html
+      - name: Upload browser reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-reports-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
+            tests/artifacts/
+            artifacts/
+          if-no-files-found: ignore
+          retention-days: 14
