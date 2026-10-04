@@ -21,7 +21,7 @@ test('empty node list gives the next step for the current visitor',async({page})
 })
 test('offline filter composes with search and survives reload',async({page})=>{
  await page.setViewportSize({width:800,height:844});await setup(page);await page.goto('/')
- await page.getByRole('button',{name:'筛选离线节点',exact:true}).click();await expect(page.locator('.node-card')).toHaveCount(1);await expect(page.locator('.active-filters')).toBeHidden();await expect(page.locator('.node-browser')).toBeHidden()
+ await page.getByRole('button',{name:'筛选离线节点',exact:true}).click();await expect(page.locator('.node-card')).toHaveCount(1);await expect(page.getByRole('button',{name:'清除状态筛选',exact:true})).toBeVisible()
  await page.getByRole('button',{name:'显示全部节点',exact:true}).click();await expect(page.locator('.node-card')).toHaveCount(6)
  await page.reload();await expect(page.locator('.summary-grid')).toBeVisible()
  await page.getByRole('searchbox',{name:'搜索节点',exact:true}).fill('Tokyo');await expect(page.locator('.node-card')).toHaveCount(1);await expect(page.locator('.node-card')).toContainText('Tokyo')
@@ -33,20 +33,20 @@ for(const width of [768,800])test(`compact desktop summary status targets remain
  for(const box of boxes){expect(box).not.toBeNull();expect(box!.width).toBeGreaterThanOrEqual(24);expect(box!.height).toBeGreaterThanOrEqual(24)}
  expect(boxes[0]!.x+boxes[0]!.width).toBeLessThanOrEqual(boxes[1]!.x)
   await online.click();await expect(page.locator('.node-card')).toHaveCount(5)
-  await expect(page.locator('.active-filters')).toBeHidden();await expect(page.locator('.node-browser')).toBeHidden()
+  await expect(page.getByRole('button',{name:'清除状态筛选',exact:true})).toBeVisible()
  await all.click();await expect(page.locator('.node-card')).toHaveCount(6)
  await offline.click();await expect(page.locator('.node-card')).toHaveCount(1)
 })
-test('desktop status-only filtering has no duplicate filter panel',async({page})=>{
+test('desktop status-only filtering has a clearable selected condition',async({page})=>{
  await setup(page);await page.goto('/')
  await page.getByRole('button',{name:'筛选在线节点',exact:true}).click()
  await expect(page.locator('.node-card')).toHaveCount(5)
- await expect(page.locator('.node-browser')).toBeHidden()
+ await expect(page.getByRole('button',{name:'清除状态筛选',exact:true})).toBeVisible()
  await page.getByRole('button',{name:'显示全部节点',exact:true}).click()
  await expect(page.locator('.node-card')).toHaveCount(6)
  await page.getByRole('button',{name:'筛选离线节点',exact:true}).click()
  await expect(page.locator('.node-card')).toHaveCount(1)
- await expect(page.locator('.node-browser')).toBeHidden()
+ await expect(page.getByRole('button',{name:'清除状态筛选',exact:true})).toBeVisible()
 })
 for(const width of [320,360,390,430])test(`mobile node list fits ${width}px and keeps status`,async({page})=>{
  await page.setViewportSize({width,height:844});await setup(page);await page.goto('/')

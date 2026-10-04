@@ -1,9 +1,9 @@
 /* Neutral surfaces are shared across devices; input boundaries stay stronger than separators. */
 :root {
   --radius:8px; --radius-control:8px; --radius-panel:12px;
-  --text-small:12px; --text-body:14px; --text-title:16px; --text-page:22px;
-  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-6:24px;
-  --control-height:36px;
+  --text-small:12px; --text-body:14px; --text-title:16px; --text-page:22px; --text-metric:28px;
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-6:24px; --space-8:32px;
+  --control-height:36px; --motion-feedback:160ms;
   --background:#f2f3f5; --foreground:#242933; --card:#fff; --card-foreground:var(--foreground);
   --popover:var(--card); --popover-foreground:var(--foreground);
   --muted:#f7f8fa; --muted-foreground:#626b78; --border:#e2e5ea; --input:#808c9a;
@@ -32,7 +32,7 @@
 .dark [data-palette=forest] {--tone:#7dd8b4}
 .dark [data-palette=midnight] {--tone:#c2adff}
 .dark [data-palette=rose] {--tone:#f2a9c5}
-.next-theme {--tone-soft:color-mix(in srgb,var(--tone) 8%,transparent);--primary:var(--tone);--ring:var(--tone);--chart-1:var(--tone)}
+.next-theme {--tone-soft:color-mix(in srgb,var(--tone) 8%,transparent);--tone-ink:color-mix(in srgb,var(--tone) 88%,var(--foreground));--primary:var(--tone);--ring:var(--tone);--chart-1:var(--tone)}
 @media(max-width:720px) {:root {--control-height:44px}}
 
 /* Muted route colours keep latency charts independent of the accent palette. */

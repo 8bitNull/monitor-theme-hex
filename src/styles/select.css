@@ -4,7 +4,7 @@
 .select-chevron {display:inline-flex;flex-shrink:0;color:var(--muted-foreground)}
 .next-theme [data-slot=select]:hover {background:var(--muted);border-color:var(--border)}
 .next-theme [data-slot=select]:focus {outline:none;box-shadow:none}
-.next-theme [data-slot=select]:focus-visible {outline:2px solid var(--tone);outline-offset:2px}
+.next-theme [data-slot=select]:focus-visible {outline:2px solid var(--ring);outline-offset:2px}
 .next-theme [data-slot=select][data-state=open] {border-color:var(--border);background:var(--muted)}
 .select-menu {z-index:1000;min-width:var(--radix-select-trigger-width);width:max-content;max-width:min(360px,calc(100vw - 24px));max-height:min(320px,var(--radix-select-content-available-height));overflow:hidden;border:1px solid var(--border);border-radius:var(--radius-control);outline:none;background:var(--card);color:var(--foreground);box-shadow:0 8px 24px #00000014;font-size:12px;font-weight:400;line-height:1.5;text-align:left}
 .select-options {padding:5px}
@@ -18,7 +18,7 @@
 .settings-drawer [data-slot=select] {height:38px;min-height:38px;padding:7px 10px}
 .node-card .route-picker .route-select {position:static;inset:auto;opacity:1;width:100%;height:100%;min-height:32px;border-color:transparent;background:transparent;padding:0 4px;font-size:12px;color:var(--muted-foreground)}
 .node-card .route-picker:focus-within {outline:none}
-.node-card .route-picker .route-select:focus-visible {outline:2px solid var(--tone);outline-offset:2px}
+.node-card .route-picker .route-select:focus-visible {outline:2px solid var(--ring);outline-offset:2px}
 @media(max-width:720px),(pointer:coarse){
  .next-theme [data-slot=select],.settings-drawer [data-slot=select],.node-table th [data-slot=select] {height:44px;min-height:44px}
  .select-menu {max-height:min(360px,var(--radix-select-content-available-height));font-size:13px}

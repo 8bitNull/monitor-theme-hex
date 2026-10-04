@@ -1,8 +1,8 @@
 /* Global foundations. A single visual system; density changes spacing only. */
-body {margin:0;font:var(--text-body)/1.5 Inter,-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif}
+body {margin:0;font:var(--text-body)/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 button,:is(select,[data-slot="select"]) {cursor:pointer}
 button:disabled {cursor:default;opacity:.45}
-:where(button,a,input,:is(select,[data-slot="select"])):focus-visible {outline:2px solid var(--tone);outline-offset:3px}
+:where(button,a,input,:is(select,[data-slot="select"])):focus-visible {outline:2px solid var(--ring);outline-offset:2px}
 .next-theme {position:relative;isolation:isolate;color:var(--foreground)}
 .next-theme :where(:is(select,[data-slot="select"]),input:not([type=checkbox],[type=range],[type=file]),button:not(.node-open,.brand,.table-node-name),a[data-slot=button]) {min-height:var(--control-height);font-size:var(--text-small);border-radius:var(--radius-control)}
 .next-theme input:not([type=checkbox],[type=range],[type=file]),.next-theme :is(select,[data-slot="select"]) {border-color:var(--input)}
@@ -44,17 +44,17 @@ button:disabled {cursor:default;opacity:.45}
 .view-switch {margin-left:auto;background:var(--muted);border-radius:var(--radius-control);padding:4px}
 .view-switch button,.status-tabs button,.region-pills button,.system-pills button {display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 10px;white-space:nowrap;color:var(--muted-foreground)}
 .view-switch button.active {background:var(--card);color:var(--foreground)}
-.status-tabs .active,.region-pills [aria-pressed=true],.system-pills [aria-pressed=true] {background:var(--tone-soft);color:var(--tone)}
+.status-tabs .active,.region-pills [aria-pressed=true],.system-pills [aria-pressed=true] {background:var(--tone-soft);color:var(--tone-ink)}
 .status-tabs {border-right:1px solid var(--border);padding-right:12px}
 .region-pills img {width:20px;height:15px;object-fit:cover}
 .region-pills small {font-size:11px;color:var(--muted-foreground)}
 .active-filters {display:flex;flex-wrap:wrap;gap:8px}
 .active-filters:empty {display:none}
-.active-filters button {padding:4px 10px;color:var(--tone);background:var(--tone-soft)}
+.active-filters button {padding:4px 10px;color:var(--tone-ink);background:var(--tone-soft)}
 .result-count {font-size:var(--text-small);color:var(--muted-foreground)}
 /* Shared card anatomy: identity, resources, speed, route, secondary facts. */
 .node-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start}
-.node-card {--card-pad:16px;min-width:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-panel);overflow:hidden}
+.node-card {--card-pad:16px;min-width:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-panel)}
 .node-card:hover {border-color:color-mix(in srgb,var(--tone) 45%,var(--border))}
 .node-open {display:block;width:100%;text-align:left;color:inherit}
 .node-heading {display:flex;align-items:center;gap:8px;padding:var(--card-pad)}

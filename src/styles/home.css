@@ -6,7 +6,7 @@
 .summary-grid .text-xl,.summary-grid .summary-total {color:var(--foreground);font-size:24px;font-weight:600;line-height:1.35;margin:6px 0}
 .summary-grid .h-7 {height:12px;opacity:.55}
 .node-grid {gap:18px}
-.node-card {--card-pad:18px;border-color:var(--home-line);border-radius:14px;box-shadow:0 2px 8px #13243a04;transition:border-color .16s ease,box-shadow .16s ease}
+.node-card {--card-pad:18px;border-color:var(--home-line);border-radius:14px;box-shadow:0 2px 8px #13243a04;transition:border-color var(--motion-feedback) ease,box-shadow var(--motion-feedback) ease}
 .node-card:hover {border-color:color-mix(in srgb,var(--tone) 27%,var(--border));box-shadow:0 4px 16px #13243a08}
 .dark .node-card {box-shadow:none}
 .node-card .node-heading {padding-top:16px;padding-bottom:12px;gap:7px}
@@ -114,7 +114,7 @@
 .node-card .speed-pair strong {display:flex;align-items:baseline;justify-content:flex-end;flex-wrap:wrap;gap:3px 5px;line-height:1.35}
 .node-card .speed-pair strong small {white-space:nowrap;font-weight:400}
 .node-card .speed-pair .speed-track {height:4px;border-radius:4px;background:var(--muted)}
-.node-card .speed-track i {border-radius:4px;transition:width .16s ease}
+.node-card .speed-track i {border-radius:4px;transition:width var(--motion-feedback) ease}
 .node-card .resource-bar {border-radius:4px}.node-card .resource-bar i {border-radius:4px}
 .node-card .node-secondary b {font-weight:400;color:var(--muted-foreground)}
 .node-card .node-secondary .expiring b {color:var(--warn)}
@@ -125,7 +125,7 @@
 .summary-grid .summary-total {white-space:nowrap}
 .summary-node-count {display:flex;align-items:center;gap:2px}
 .load-history-button {border:0;background:transparent!important;box-shadow:none}
-.node-card .node-open:focus-visible,.load-history-button:focus-visible {outline:2px solid var(--tone);outline-offset:-3px}
+.node-card .node-open:focus-visible,.load-history-button:focus-visible {outline:2px solid var(--ring);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){.node-card .speed-track i {transition:none}}
 
 .node-card:not([data-indicator=ring]) .loss-reading {min-height:44px;justify-content:space-between}
@@ -223,12 +223,12 @@
 .settings-drawer :is(select,[data-slot="select"]) {border-color:var(--border)}
 .settings-drawer :is(.graph-options,.density-options) button {position:relative}
 .settings-drawer :is(.graph-options,.density-options) button[aria-pressed=true]::after {content:'✓';position:absolute;top:2px;right:5px;font-size:11px}
-.next-theme :is(button,select,input,summary):focus-visible {outline:2px solid var(--tone);outline-offset:3px}
-.settings-drawer :is(button,input,summary):focus-visible {outline:2px solid var(--foreground);outline-offset:2px}
+.next-theme :is(button,select,input,summary):focus-visible {outline:2px solid var(--ring);outline-offset:2px}
+.settings-drawer :is(button,input,summary):focus-visible {outline:2px solid var(--ring);outline-offset:2px}
 .settings-drawer :is(select,[data-slot="select"]):focus {outline:2px solid var(--border);outline-offset:2px;box-shadow:none}
 .settings-drawer button:active:not(:disabled) {background:var(--muted)}
 .settings-drawer button:disabled {opacity:.55;cursor:not-allowed}
-.settings-drawer .preferences {padding-bottom:max(32px,env(safe-area-inset-bottom))}
+.settings-drawer .preferences {padding-bottom:max(var(--space-8),env(safe-area-inset-bottom))}
 .settings-drawer {scroll-padding-block:80px 24px}
 @media(max-width:720px){
  .overview-heading {margin-bottom:12px}

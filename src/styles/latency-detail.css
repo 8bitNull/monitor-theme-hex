@@ -1,18 +1,18 @@
 .latency-view .route-chips {padding:4px 0 16px;gap:8px}
 .latency-view .route-chips button {min-height:44px;gap:7px;background:var(--card)}
 .latency-view .route-chips button[aria-pressed=false] {opacity:.65;background:var(--muted)}
-.route-chip-check {display:grid;place-items:center;width:14px;height:14px;flex-shrink:0;border:1px solid var(--border);border-radius:4px;font-size:11px;font-style:normal;color:var(--tone)}
-.latency-chart-caption,.latency-range-caption {display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--muted-foreground);font-size:11px;padding:8px 0}
+.route-chip-check {display:grid;place-items:center;width:14px;height:14px;flex-shrink:0;border:1px solid var(--border);border-radius:4px;font-size:var(--text-small);font-style:normal;color:var(--tone)}
+.latency-chart-caption,.latency-range-caption {display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--muted-foreground);font-size:var(--text-small);padding:8px 0}
 .latency-range-caption {min-height:44px;padding-left:52px;font-variant-numeric:tabular-nums}
 .latency-range-caption button {min-height:44px;padding:0 10px;color:var(--tone)}
 .latency-view .latency-brush .recharts-brush-slide {height:44px;transform:none;fill:var(--tone);fill-opacity:.08}
 .latency-chart-key {display:flex;align-items:center;gap:7px}
-.latency-band-key {width:18px;height:9px;background:currentColor;opacity:.1;border-radius:2px}
-.latency-line-key {width:18px;border-top:2px solid;margin-left:12px}
+.latency-band-key {color:var(--latency-key-color,currentColor);width:18px;height:9px;background:currentColor;opacity:.1;border-radius:2px}
+.latency-line-key {color:var(--latency-key-color,currentColor);width:18px;border-top:2px solid;margin-left:12px}
 .node-detail .latency-view {display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
 .node-detail .latency-view>.route-chips {display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:0;min-width:0}
 .node-detail .latency-view .route-chips button {max-width:min(240px,100%)}
-.node-detail .latency-view .route-chips .expand-routes {max-width:100%;padding:0 12px;border:1px solid var(--detail-line);border-radius:6px;color:var(--tone);background:var(--card);font-size:11px}
+.node-detail .latency-view .route-chips .expand-routes {max-width:100%;padding:0 12px;border:1px solid var(--detail-line);border-radius:var(--radius-control);color:var(--tone);background:var(--card);font-size:var(--text-small)}
 .node-detail .latency-view .route-chips .expand-routes:hover {background:var(--muted)}
 .node-detail .route-chip-list {display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-width:0}
 .node-detail .route-expand-compact {display:none}
@@ -26,7 +26,7 @@
 .latency-route-controls .select-value {display:flex;align-items:center;min-width:0}
 .latency-route-controls .select-value>span {overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .latency-route-controls .select-value>b {flex:none;font-weight:500;white-space:pre}
-.latency-route-controls .expand-routes {flex:none;min-height:44px;padding:0 10px;border-radius:6px;color:var(--tone);font-size:12px}
+.latency-route-controls .expand-routes {flex:none;min-height:44px;padding:0 10px;border-radius:var(--radius-control);color:var(--tone);font-size:12px}
 .latency-route-controls .expand-routes:hover {background:var(--muted)}
 .detail-update-short {display:none}
 @media(min-width:900px){
@@ -40,12 +40,12 @@
  .latency-view>.latency-range-caption {min-height:32px;padding-block:0}
  .latency-view>.latency-range-caption button {min-height:32px}
  .latency-view .loss-track {position:relative;margin-top:8px;padding:12px 0 8px}
- .latency-range-heading {position:absolute;bottom:51px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted-foreground);min-height:28px}
+ .latency-range-heading {position:absolute;bottom:51px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;font-size:var(--text-small);color:var(--muted-foreground);min-height:28px}
  .latency-range-heading b {margin-left:12px;font-weight:500;color:var(--foreground)}
  .latency-range-heading button {min-height:28px;margin-right:12px;color:var(--tone)}
  .loss-track-scrubber {position:absolute;left:10px;top:51px;opacity:0;width:calc(100% - 62px);height:36px}
  .loss-track-scrubber:focus-visible {opacity:1;outline:2px solid var(--tone);outline-offset:2px}
- .loss-track-reading {font-size:10px;min-height:16px}
+ .loss-track-reading {font-size:var(--text-small);min-height:16px}
  .detail-chart-toolbar[data-history-tab=latency] {gap:8px}
  .detail-chart-toolbar[data-history-tab=latency] .detail-tabs {order:0}
  .detail-chart-toolbar[data-history-tab=latency] .detail-submenu-divider {order:1;margin-inline:4px}
@@ -68,15 +68,15 @@
  .node-detail .detail-history .detail-chart-toolbar[data-history-tab=resources] .detail-ranges {grid-column:1/3;grid-row:2;justify-self:start;margin:0;display:flex;gap:2px}
  .node-detail .detail-history .detail-chart-toolbar[data-history-tab=resources] .detail-ranges button {width:44px;min-width:44px;min-height:40px;padding:0}
  .node-detail .detail-history .detail-chart-toolbar[data-history-tab=resources] .detail-refresh {grid-column:3;grid-row:2;justify-self:end;width:44px;min-width:44px;height:44px}
- .node-detail .detail-history .detail-chart-toolbar[data-history-tab=resources] .detail-update {display:block;grid-column:1/-1;grid-row:3;justify-self:end;align-self:center;margin:0;padding:0 2px;min-width:0;font-size:11px;line-height:20px;white-space:nowrap}
+ .node-detail .detail-history .detail-chart-toolbar[data-history-tab=resources] .detail-update {display:block;grid-column:1/-1;grid-row:3;justify-self:end;align-self:center;margin:0;padding:0 2px;min-width:0;font-size:var(--text-small);line-height:20px;white-space:nowrap}
  .node-detail .detail-history .detail-resource-metric-menu {right:0}
  .latency-view .route-chips {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:8px 0 12px}
- .latency-view .route-chips button {min-width:0;padding:6px;gap:5px;font-size:11px}
+ .latency-view .route-chips button {min-width:0;padding:6px;gap:5px;font-size:var(--text-small)}
  .latency-view .route-chips button>span {min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .latency-view .route-chips button>svg {width:12px;flex-shrink:0}
- .latency-view .route-chips button>b {margin-left:auto;white-space:nowrap;font-size:11px}
+ .latency-view .route-chips button>b {margin-left:auto;white-space:nowrap;font-size:var(--text-small)}
  .latency-view .detail-chart-frame {height:310px;min-height:310px}
- .latency-chart-caption {font-size:10px}
+ .latency-chart-caption {font-size:var(--text-small)}
  .latency-chart-key {gap:4px}
  .latency-line-key {margin-left:4px;width:10px}
  .latency-band-key {width:10px}
@@ -93,22 +93,22 @@
  .node-detail .detail-history .detail-chart-toolbar[data-history-tab=latency] .detail-ranges {grid-column:1/-1;grid-row:2;justify-self:start;margin:0;display:flex;gap:2px}
  .node-detail .detail-history .detail-chart-toolbar[data-history-tab=latency] .detail-ranges button {width:44px;min-width:44px;min-height:40px;padding:0}
  .node-detail .detail-history .detail-chart-toolbar[data-history-tab=latency] .detail-refresh {grid-column:3;grid-row:1;justify-self:end;width:44px;min-width:44px;height:44px}
- .node-detail .detail-history .detail-chart-toolbar[data-history-tab=latency] .detail-update {display:block;grid-column:2;grid-row:1;justify-self:end;min-width:0;max-width:100%;margin:0;padding:0;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .node-detail .detail-history .detail-chart-toolbar[data-history-tab=latency] .detail-update {display:block;grid-column:2;grid-row:1;justify-self:end;min-width:0;max-width:100%;margin:0;padding:0;font-size:var(--text-small);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
  .node-detail .detail-history .detail-chart-toolbar[data-history-tab=latency] .detail-update:has(.detail-update-short) .detail-update-full {display:none}
  .node-detail .detail-history .detail-chart-toolbar[data-history-tab=latency] .detail-update .detail-update-short {display:inline}
  .node-detail .detail-history .detail-chart-toolbar[data-history-tab=latency]:has(.detail-update[data-failed=true]) {grid-template-rows:44px 44px auto}
- .node-detail .detail-history .detail-chart-toolbar[data-history-tab=latency] .detail-update[data-failed=true] {display:block;grid-column:1/-1;grid-row:3;justify-self:start;max-width:100%;padding:2px 0;font-size:11px;line-height:16px;white-space:normal}
+ .node-detail .detail-history .detail-chart-toolbar[data-history-tab=latency] .detail-update[data-failed=true] {display:block;grid-column:1/-1;grid-row:3;justify-self:start;max-width:100%;padding:2px 0;font-size:var(--text-small);line-height:16px;white-space:normal}
  .latency-route-controls {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px}
- .node-detail .latency-route-controls [data-slot=select] {width:100%;max-width:none;padding-inline:8px;font-size:11px}
- .latency-route-controls .expand-routes {padding-inline:6px;font-size:11px}
+ .node-detail .latency-route-controls [data-slot=select] {width:100%;max-width:none;padding-inline:8px;font-size:var(--text-small)}
+ .latency-route-controls .expand-routes {padding-inline:6px;font-size:var(--text-small)}
  .latency-route-controls:not(:has(.expand-routes)) {grid-template-columns:minmax(0,1fr)}
  .node-detail .latency-view .loss-track {position:relative}
  .node-detail .latency-view .loss-track-plot {margin:4px 0 0;height:28px}
  .node-detail .latency-view .loss-track-plot svg {height:28px}
  .node-detail .latency-view .loss-track-scrubber {position:absolute;left:0;top:26px;width:100%;height:32px;margin:0;opacity:0}
  .node-detail .latency-view .loss-track-scrubber:focus-visible {opacity:1}
- .node-detail .latency-view .loss-track-note {margin:4px 0;font-size:11px}
- .node-detail .latency-view .loss-track-reading {gap:6px 10px;font-size:11px;min-height:18px}
+ .node-detail .latency-view .loss-track-note {margin:4px 0;font-size:var(--text-small)}
+ .node-detail .latency-view .loss-track-reading {gap:6px 10px;font-size:var(--text-small);min-height:18px}
  .node-detail .detail-history-body:has(.latency-view) {padding-top:8px}
  .node-detail .latency-view {gap:6px}
  .node-detail .latency-view>.route-chips {row-gap:6px}
@@ -132,7 +132,7 @@
  .node-detail .latency-view .route-chips .expand-routes {min-height:44px;white-space:nowrap}
  .node-detail .route-expand-wide {display:none}
  .node-detail .route-expand-compact {display:flex;align-items:center;gap:5px}
- .node-detail .route-expand-compact b {font-size:10px;font-weight:500;color:var(--muted-foreground)}
+ .node-detail .route-expand-compact b {font-size:var(--text-small);font-weight:500;color:var(--muted-foreground)}
 }
 @media(max-width:359px){
  .node-detail .latency-view>.route-chips[data-expanded=true] .route-chip-list {grid-template-columns:minmax(0,1fr)}

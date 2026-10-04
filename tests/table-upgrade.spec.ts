@@ -17,7 +17,7 @@ test('grouped table fits desktop and sorts each network metric independently',as
 })
 test('desktop overflow exposes directional column controls only while needed',async({page})=>{
  await setup(page);await page.setViewportSize({width:1024,height:820});await table(page)
- const shell=page.locator('.table-shell'),toolbar=page.locator('.desktop-results-toolbar .view-toolbar'),left=toolbar.getByRole('button',{name:'向左查看其他列'}),right=toolbar.getByRole('button',{name:'向右查看其他列'})
+ const shell=page.locator('.table-shell'),toolbar=page.locator('.desktop-results-toolbar .table-tools-host'),left=toolbar.getByRole('button',{name:'向左查看其他列'}),right=toolbar.getByRole('button',{name:'向右查看其他列'})
  await expect(shell).toHaveAttribute('data-right','true')
  await expect(left).toBeVisible();await expect(left).toBeDisabled();await expect(right).toBeEnabled()
  await page.locator('th[data-column=loss] button').click();await expect(right).toBeEnabled()

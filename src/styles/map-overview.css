@@ -1,11 +1,11 @@
 /* A quiet overview; navigation controls are reserved for the expanded map. */
 @media (min-width:721px) {
  .map-frame .region-atlas {display:block;isolation:isolate}
- .map-frame .region-atlas .explorer-stage {position:absolute;inset:0;height:100%;border-radius:inherit;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--tone) 3%,var(--card)),var(--card))}
+ .map-frame .region-atlas .explorer-stage {position:absolute;inset:0;height:100%;border-radius:inherit;background:var(--card)}
  .map-frame .region-atlas:not(.is-fullscreen) .explorer-stage>svg {cursor:default;touch-action:pan-y}
  .map-frame .region-atlas .map-grid,.map-frame .region-atlas .map-land {pointer-events:none}
- .map-frame .region-atlas .map-graticule {fill:none;stroke:color-mix(in srgb,var(--tone) 9%,transparent);stroke-width:.65;vector-effect:non-scaling-stroke}
- .map-frame .region-atlas .map-land path {fill:color-mix(in srgb,var(--muted-foreground) 14%,var(--card));stroke:color-mix(in srgb,var(--muted-foreground) 25%,var(--card));stroke-width:.65}
+ .map-frame .region-atlas .map-graticule {fill:none;stroke:color-mix(in srgb,var(--muted-foreground) 7%,transparent);stroke-width:.65;vector-effect:non-scaling-stroke}
+ .map-frame .region-atlas .map-land path {fill:color-mix(in srgb,var(--muted-foreground) 9%,var(--card));stroke:color-mix(in srgb,var(--muted-foreground) 16%,var(--card));stroke-width:.65}
  .map-frame .region-atlas .map-land .populated-region {fill:color-mix(in srgb,var(--tone) 15%,var(--card))}
  .map-frame .region-atlas .map-land .populated-region[data-tone=mixed] {fill:color-mix(in srgb,var(--warn) 15%,var(--card))}
  .map-frame .region-atlas .map-land .populated-region[data-tone=offline] {fill:color-mix(in srgb,var(--destructive) 12%,var(--card))}
@@ -20,8 +20,8 @@
  .map-frame .region-atlas .map-cluster[aria-pressed=true] .region-ring,
  .map-frame .region-atlas .map-cluster:focus-visible .region-ring {stroke-width:2;fill-opacity:1;filter:drop-shadow(0 0 2px var(--marker-color))}
  .map-frame .region-atlas .map-cluster .small-region-hit {fill:transparent;stroke:none;filter:none}
- .map-region-tooltip,.map-open-error {position:absolute;left:12px;bottom:12px;max-width:calc(100% - 24px);padding:7px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card);color:var(--foreground);font-size:12px;overflow-wrap:anywhere;pointer-events:none}
- .map-empty-state {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;padding:10px 14px;max-width:calc(100% - 32px);width:max-content;border-radius:5px;background:var(--card);color:var(--muted-foreground);font-size:13px;line-height:1.6;text-align:center;pointer-events:none}
+ .map-region-tooltip,.map-open-error {position:absolute;left:12px;bottom:12px;max-width:calc(100% - 24px);padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-control);background:var(--card);color:var(--foreground);font-size:12px;overflow-wrap:anywhere;pointer-events:none}
+ .map-empty-state {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;padding:10px 14px;max-width:calc(100% - 32px);width:max-content;border-radius:var(--radius-control);background:var(--card);color:var(--muted-foreground);font-size:13px;line-height:1.6;text-align:center;pointer-events:none}
  .map-region-tooltip {bottom:auto;max-width:calc(100% - 16px);z-index:4}
  .map-frame .region-atlas:fullscreen {display:block;width:100vw;height:100dvh}
  .map-frame .region-atlas:fullscreen .explorer-stage {bottom:64px;height:auto}
