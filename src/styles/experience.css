@@ -118,7 +118,7 @@
 .node-card .speed-indicators>div,.speed-indicators>div {display:grid;grid-template-columns:16px minmax(0,1fr) auto;align-items:center;gap:6px 8px}
 .speed-indicators strong {text-align:right;font-size:20px;line-height:1.4}
 .speed-indicators .speed-track {grid-column:1/-1;display:block;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
-.speed-track i {display:block;height:100%;background:currentColor;border-radius:2px;transition:width .3s ease}
+.speed-track i {display:block;height:100%;background:currentColor;border-radius:2px;transition:width var(--motion-feedback) ease}
 .speed-indicators[data-state=stale] {opacity:.55}
 .speed-indicators[data-state=offline],.speed-indicators[data-state=missing] {color:var(--muted-foreground)}
 .speed-indicators[data-state=offline]>div,.speed-indicators[data-state=missing]>div {color:inherit}
@@ -277,7 +277,7 @@
 .settings-language>div {display:flex;gap:3px;padding:3px;background:var(--muted);border-radius:10px}
 .settings-language button {min-height:40px;padding:8px 14px;border:0;border-radius:7px;background:transparent;color:var(--muted-foreground)}
 .settings-language button[aria-pressed=true] {background:var(--card);color:var(--foreground);box-shadow:0 1px 4px #0000000a}
-.settings-language button:focus-visible {outline:2px solid var(--tone);outline-offset:2px}
+.settings-language button:focus-visible {outline:2px solid var(--ring);outline-offset:2px}
 @media(max-width:360px){.settings-language {align-items:flex-start;flex-direction:column;gap:8px}.settings-language>div {width:100%}.settings-language button {flex:1}}
 /* Settings: quiet groups, consistent touch targets and a persistent close action. */
 .settings-drawer {scrollbar-gutter:stable;overscroll-behavior:contain}
@@ -325,7 +325,7 @@
 .settings-reset-confirm>div {display:flex;justify-content:flex-end;gap:8px}
 .settings-reset-confirm button {min-width:96px;min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:6px}
 .settings-reset-confirm .confirm-destructive {border-color:var(--destructive);background:color-mix(in srgb,var(--destructive) 12%,var(--card));color:var(--destructive)}
-.settings-drawer :is(button,input):focus-visible {outline:2px solid var(--foreground);outline-offset:2px}
+.settings-drawer :is(button,input):focus-visible {outline:2px solid var(--ring);outline-offset:2px}
 .settings-drawer :is(select,[data-slot="select"]):focus {outline:2px solid var(--border);outline-offset:2px;box-shadow:none}
 @media(max-width:600px){
  .settings-drawer .preferences {padding:12px 18px max(24px,env(safe-area-inset-bottom))}

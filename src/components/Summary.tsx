@@ -85,7 +85,7 @@ export function Summary({ nodes, prefs, loadAlerts, onAlert, status, onStatus, o
         return null;
     return (<div className="overview-summary" data-collapsed={prefs.summaryCollapsed}><button className="summary-toggle" aria-expanded={!prefs.summaryCollapsed} onClick={()=>onCollapse(!prefs.summaryCollapsed)}>{prefs.summaryCollapsed?tr("展开总览"):tr("收起总览")}</button>
     <div className="summary-compact">
-      {prefs.modules.online&&<><button aria-pressed={status==='online'} onClick={()=>onStatus(status==='online'?'all':'online')}>{tr("在线")} {online.length}/{nodes.length}</button><button aria-pressed={status==='offline'} onClick={()=>onStatus(status==='offline'?'all':'offline')}>{tr("离线")} {nodes.length-online.length}</button></>}
+      {prefs.modules.online&&<><button aria-pressed={status==='online'} onClick={()=>onStatus(status==='online'?'all':'online')}>{tr("在线")} {online.length}/{nodes.length}</button><button aria-pressed={status==='offline'} onClick={()=>onStatus(status==='offline'?'all':'offline')}>{tr("离线")} {nodes.length-online.length}</button><button aria-pressed={status==='pending'} onClick={()=>onStatus(status==='pending'?'all':'pending')}>{tr("待更新")} {unavailable}</button></>}
       {prefs.modules.speed&&<span>{tr("实时网速")} <b>{fresh.length?rate(now.rx+now.tx):'—'}</b></span>}
       {prefs.modules.busiest&&<span>{tr("高负载")} {loadAlerts.events.filter(e=>e.status==='active').length}</span>}
       {!prefs.modules.online&&!prefs.modules.speed&&!prefs.modules.busiest&&<span>{tr("总览已收起")}</span>}
@@ -96,7 +96,7 @@ export function Summary({ nodes, prefs, loadAlerts, onAlert, status, onStatus, o
         </div>
         
         <div className="mt-auto pt-1 text-xs text-muted-foreground">
-          <button className="summary-offline-filter" data-attention={nodes.length>online.length?'offline':unavailable>0?'pending':undefined} aria-label={tr("筛选离线节点")} aria-pressed={status==='offline'} onClick={()=>onStatus(status==='offline'?'all':'offline')}>{unavailable > 0 ? tr("{0} 离线 · {1} 待更新", nodes.length-online.length, unavailable) : nodes.length - online.length > 0 ? tr("{0} 个离线", nodes.length - online.length) : tr("全部在线")}</button>
+          <button className="summary-offline-filter" data-attention={nodes.length>online.length?'offline':undefined} aria-label={tr("筛选离线节点")} aria-pressed={status==='offline'} onClick={()=>onStatus(status==='offline'?'all':'offline')}>{tr("{0} 离线", nodes.length-online.length)}</button><span aria-hidden="true"> · </span><button className="summary-offline-filter" data-attention={unavailable>0?'pending':undefined} aria-label={tr("筛选待更新节点")} aria-pressed={status==='pending'} onClick={()=>onStatus(status==='pending'?'all':'pending')}>{tr("{0} 待更新",unavailable)}</button>
         </div>
       </Tile>}
 

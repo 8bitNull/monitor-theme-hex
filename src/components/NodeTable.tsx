@@ -60,7 +60,7 @@ export function NodeTable({nodes,page,onPageChange,browse,onSort,onSortChange,on
  const keys=useMemo(()=>[...tableColumns(browse.columns,grouped,mobile),...(showRemarkColumn?['remark']:[])],[browse.columns,grouped,mobile,showRemarkColumn])
  const directions=useMemo(()=>browse.columns.filter(k=>k==='upload'||k==='download'),[browse.columns])
  const [scrollHint,setScrollHint]=useState(()=>{try{return sessionStorage.getItem('monitor-table-scrolled')!=='1'}catch{return true}});
- useLayoutEffect(()=>{const frame=requestAnimationFrame(()=>setToolbar(mobile?null:document.querySelector<HTMLElement>('#node-results .desktop-results-toolbar .view-toolbar')));return()=>cancelAnimationFrame(frame)},[mobile])
+ useLayoutEffect(()=>{const frame=requestAnimationFrame(()=>setToolbar(mobile?null:document.querySelector<HTMLElement>('#node-results .desktop-results-toolbar .table-tools-host')));return()=>cancelAnimationFrame(frame)},[mobile])
  const openRef=useRef(onOpen);useLayoutEffect(()=>{openRef.current=onOpen},[onOpen])
  const openNode=useCallback((id:number)=>openRef.current(id),[])
  const updateEdges=useCallback(()=>{const el=ref.current;if(!el)return

@@ -4,9 +4,9 @@
  .node-detail .detail-live[data-layout="metric-cards"] .detail-module-heading{position:absolute;width:1px;height:1px;min-height:0;margin:0;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
  .node-detail .detail-overview-grid,.node-detail .detail-overview-grid[data-live=false]{display:block;padding:0}
  .node-detail .desktop-detail-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
- .node-detail .detail-metric-card{min-width:0;padding:18px;border:1px solid var(--border);border-radius:8px;background:var(--card);display:flex;flex-direction:column}
- .node-detail .detail-metric-card h3{margin:0 0 10px;font-size:13px;font-weight:500;color:var(--muted-foreground)}
- .node-detail .detail-metric-value{font-size:28px;font-weight:600;line-height:1.2;font-variant-numeric:tabular-nums}
+ .node-detail .detail-metric-card{min-width:0;padding:18px;border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--card);display:flex;flex-direction:column}
+ .node-detail .detail-metric-card h3{margin:0 0 10px;font-size:var(--text-body);font-weight:500;color:var(--muted-foreground)}
+ .node-detail .detail-metric-value{font-size:var(--text-metric);font-weight:600;line-height:1.2;font-variant-numeric:tabular-nums}
  .node-detail .detail-metric-value small{font-size:12px;margin-left:4px;font-weight:400;color:var(--muted-foreground)}
  .node-detail .detail-metric-note,.node-detail .detail-metric-extra{font-size:13px;line-height:1.5;overflow-wrap:anywhere;margin:6px 0 0;color:var(--muted-foreground)}
  .node-detail .detail-metric-track{height:3px;margin-top:12px;background:var(--muted);border-radius:3px;overflow:hidden}
@@ -15,7 +15,7 @@
  .node-detail .detail-metric-track[data-level=danger] i{background:var(--destructive)}
  .node-detail .detail-live .detail-metric-card .resource-trend{margin-top:auto;padding-top:8px;min-height:65px;grid-column:auto;grid-row:auto}
  .node-detail .detail-metric-card .resource-trend-caption{min-height:24px;flex:0 0 auto;font-size:12px;align-items:center}
- .node-detail .resource-trend-action{display:block;flex:1;min-width:0;text-align:right;font-size:11px;opacity:0;color:var(--tone);overflow-wrap:anywhere}
+ .node-detail .resource-trend-action{display:block;flex:1;min-width:0;text-align:right;font-size:var(--text-small);opacity:0;color:var(--tone);overflow-wrap:anywhere}
  .node-detail .resource-trend:is(:hover,:focus-visible) .resource-trend-action{opacity:1}
  .node-detail .detail-metric-card .resource-trend svg{height:30px}
  /* Reserve the plot below captions even when translated action text wraps. */
@@ -24,20 +24,20 @@
  .node-detail .detail-identity{padding-bottom:8px}
  .node-detail .detail-metric-network .detail-speed{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
  .node-detail .detail-metric-network .detail-speed>div{min-width:0;grid-template-columns:14px minmax(0,1fr)}
- .node-detail .detail-metric-network .detail-speed strong{grid-column:1/-1;grid-row:2;justify-self:start;font-size:24px;transform:none}
+ .node-detail .detail-metric-network .detail-speed strong{grid-column:1/-1;grid-row:2;justify-self:start;font-size:var(--text-metric);font-variant-numeric:tabular-nums;transform:none}
  .node-detail .detail-metric-network .detail-speed .speed-direction{grid-column:2;grid-row:1;transform:none}
  .node-detail .detail-metric-network .detail-speed>div>svg:first-child{grid-column:1;grid-row:1;transform:none}
  .node-detail .detail-metric-network .detail-speed .speed-trend{display:block;grid-column:1/-1;grid-row:3;margin-top:6px}
  .node-detail .detail-metric-network .speed-trend .micro-trend{height:24px}
- .node-detail .detail-overview-grid .overview-account{margin-top:12px;padding:12px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card);display:flex;flex-wrap:wrap;gap:12px 32px}
+ .node-detail .detail-overview-grid .overview-account{margin-top:12px;padding:12px 16px;border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--card);display:flex;flex-wrap:wrap;gap:12px 32px}
  .node-detail .overview-billing{flex-wrap:wrap;gap:12px 32px}
  .node-detail .overview-billing>div{flex-wrap:wrap;gap:4px 8px}
  .node-detail .overview-billing b,.node-detail .overview-billing small{white-space:normal;overflow-wrap:anywhere}
  .node-detail .overview-account-footer{margin-left:auto;min-width:0;max-width:100%}
  .node-detail .overview-account-footer .overview-price{display:block;min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
- .node-detail .overview-remarks,.node-detail .overview-remarks.remarks-expanded{margin-top:12px;padding:12px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card)}
- .node-detail .overview-unavailable{padding:20px;border:1px solid var(--border);border-radius:8px;background:var(--card)}
- .node-detail .detail-history{padding:20px;border-radius:12px}
+ .node-detail .overview-remarks,.node-detail .overview-remarks.remarks-expanded{margin-top:12px;padding:12px 16px;border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--card)}
+ .node-detail .overview-unavailable{padding:20px;border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--card)}
+ .node-detail .detail-history{padding:20px;border-radius:var(--radius-panel)}
  .node-detail .detail-history .detail-chart-toolbar[data-history-tab]{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px 20px;min-height:0;padding:0 0 12px}
  .node-detail .detail-toolbar-selection,.node-detail .detail-toolbar-actions{display:flex;align-items:center;flex-wrap:wrap;gap:16px;min-width:0}
  .node-detail .detail-toolbar-actions{margin-left:auto;justify-content:flex-end}
@@ -78,9 +78,9 @@
  .resource-summary-network td{padding:6px 2px 6px 0;vertical-align:top;font-size:15px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
  .resource-summary-details summary{min-height:44px;align-content:center;width:fit-content;min-width:44px;font-size:13px;color:var(--muted-foreground);cursor:pointer}
  .resource-summary-details summary:focus-visible{outline:2px solid var(--ring);outline-offset:2px;border-radius:4px}
- .next-theme .node-detail .ma-panel,.next-theme .node-detail .detail-history{border-radius:16px}
+ .next-theme .node-detail .ma-panel,.next-theme .node-detail .detail-history{border-radius:var(--radius-panel)}
  .next-theme .node-detail .ma-big-grid{gap:20px 16px;align-items:start}
- .next-theme .node-detail .ma-big-metric strong{font-size:26px;line-height:1.25;font-variant-numeric:tabular-nums}
+ .next-theme .node-detail .ma-big-metric strong{font-size:var(--text-metric);line-height:1.25;font-variant-numeric:tabular-nums}
  .next-theme .node-detail .ma-big-metric strong small{font-size:12px;font-weight:400}
  .next-theme .node-detail .ma-big-metric p{font-size:13px;line-height:1.5;overflow-wrap:anywhere}
  .next-theme .node-detail .ma-history-tools .detail-resource-metric-desktop{background:transparent;padding:0;gap:0}
@@ -92,7 +92,7 @@
  .next-theme .node-detail .ma-history-tools{margin:12px 0}
  .next-theme .node-detail .detail-facts>div{border-bottom-color:color-mix(in srgb,var(--border) 55%,transparent)}
  .next-theme .node-detail .detail-fact-groups>section+section{margin-top:20px}
- .next-theme .node-detail button.ma-metric-action{display:block;width:100%;min-height:44px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--foreground);text-align:left;box-shadow:none}
+ .next-theme .node-detail button.ma-metric-action{display:block;width:100%;min-height:44px;padding:0;border:0;border-radius:var(--radius-control);background:transparent;color:var(--foreground);text-align:left;box-shadow:none}
  .next-theme .node-detail .ma-metric-label{display:flex;align-items:center;justify-content:space-between;gap:8px}
  .next-theme .node-detail .ma-metric-label svg{flex-shrink:0;color:var(--tone)}
  .next-theme .node-detail button.ma-metric-action:focus-visible{outline:2px solid var(--tone);outline-offset:5px}
@@ -109,15 +109,19 @@
 /* A shared control hierarchy: filled section tabs, underlined metrics, segmented ranges. */
 @media (min-width: 721px) {
  .next-theme .node-detail .detail-chart-toolbar .detail-tabs { height:auto; gap:4px; }
- .next-theme .node-detail .detail-chart-toolbar .detail-tabs button { border-radius:8px; font-size:13px; padding-inline:10px; }
- .next-theme .node-detail .detail-chart-toolbar .detail-tabs button[aria-pressed=true] { background:var(--tone-soft); color:var(--tone); }
+ .next-theme .node-detail .detail-chart-toolbar .detail-tabs button { border-radius:var(--radius-control); font-size:13px; padding-inline:10px; }
+ .next-theme .node-detail .status-pill { font-size:var(--text-small); }
+ .next-theme .node-detail .status-pill.is-online { color:color-mix(in srgb,var(--ok) 88%,var(--foreground)); }
+ .next-theme .node-detail .detail-chart-toolbar .detail-tabs button[aria-pressed=true] { background:var(--tone-soft); color:var(--tone-ink); }
  .next-theme .node-detail .detail-chart-toolbar .detail-tabs button::after { content:none; }
  .next-theme .node-detail .detail-resource-metric-desktop button { border-radius:0; border-bottom:2px solid transparent; font-size:13px; padding-inline:8px; }
  .next-theme .node-detail .detail-resource-metric-desktop button[aria-pressed=true] { background:transparent; color:var(--tone); border-bottom-color:var(--tone); }
  .next-theme .node-detail .detail-resource-metric-desktop button span { display:inline; }
  .next-theme .node-detail .detail-chart-toolbar .detail-ranges button { font-size:13px; }
  .node-detail .detail-metric-network > small { margin-top:auto; padding-top:6px; font-size:12px; color:var(--muted-foreground); }
- .node-detail .detail-information .detail-facts :is(dt,dd), .node-detail .overview-account { font-size:13px; }
+ .node-detail .detail-information .detail-facts dt { font-size:var(--text-small); }
+ .node-detail .detail-information .detail-facts dd { font-size:var(--text-body); }
+ .node-detail .overview-account { font-size:var(--text-small); }
 }
 @media (max-width: 720px) {
  .next-theme .node-detail .ma-history-tools .detail-resource-metric-desktop button { font-size:13px; }

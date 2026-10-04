@@ -2,7 +2,7 @@
   "name": "HEX",
   "short": "hex",
   "description": "HEX，让服务器状态一目了然。",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "author": "HEX contributors",
   "url": "https://github.com/8bitNull/monitor-theme-hex",
   "config": [

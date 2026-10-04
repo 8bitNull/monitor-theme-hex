@@ -31,7 +31,7 @@
   overflow-wrap: anywhere;
 }
 .node-picker-row-name strong { font-size: 13px; font-weight: 550; line-height: 1.4; }
-.node-picker-row-name small { margin-top: 3px; color: var(--muted-foreground); font-size: 11px; }
+.node-picker-row-name small { margin-top: 3px; color: var(--muted-foreground); font-size: var(--text-small); }
 .node-picker-list .node-picker-group > button > svg,
 .node-picker-list .node-picker-group > button > .flag-icon { flex-shrink: 0; }
 
@@ -52,7 +52,7 @@
     display: block;
     overflow: hidden;
     color: var(--muted-foreground);
-    font-size: 11px;
+    font-size: var(--text-small);
     font-weight: 400;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -79,7 +79,7 @@
   .next-theme .ma-detail-overview .ma-panel {
     padding: 16px;
     margin-bottom: 12px;
-    border-radius: 18px;
+    border-radius: var(--radius-panel);
   }
   .next-theme .ma-detail-overview .ma-panel h2 { margin-bottom: 14px; }
   .next-theme .ma-detail-overview .ma-big-grid { gap: 17px 16px; }
@@ -104,7 +104,7 @@
     display: block;
     padding: 16px;
     border: 0;
-    border-radius: 18px;
+    border-radius: var(--radius-panel);
     background: var(--card);
   }
   .next-theme .detail-information .detail-fact-groups { display: block; }

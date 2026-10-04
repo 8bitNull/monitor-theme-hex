@@ -52,3 +52,22 @@ assert.deepEqual(normalizeBrowse({columnsVersion:5,mobileColumns:['loss']}).mobi
 
 const {english}=await import('./en.ts')
 for(const label of Object.values(tableColumnLabels))if(/[\u4e00-\u9fff]/.test(label))assert.ok(Object.hasOwn(english,label),`Missing column translation: ${label}`)
+
+// Pending is an online availability state, independent of offline status.
+const statusNow=Date.now()
+const fleet=[
+ {...create(1,20),last_seen:statusNow/1000},
+ {...create(2,null),last_seen:statusNow/1000},
+ {...create(3,20),last_seen:(statusNow-120000)/1000,country:'US'},
+ {...create(4,null),online:true,last_seen:statusNow/1000},
+ {...create(5,20),last_seen:statusNow/1000,received_at:statusNow-16000},
+]
+assert.deepEqual(browseNodes(fleet,{...defaultBrowse,status:'pending'}).map(n=>n.id),[3,4,5])
+assert.deepEqual(browseNodes(fleet,{...defaultBrowse,status:'offline'}).map(n=>n.id),[2])
+assert.deepEqual(browseNodes(fleet,{...defaultBrowse,status:'online'}).map(n=>n.id),[1,3,4,5])
+assert.deepEqual(browseNodes(fleet,{...defaultBrowse,status:'pending',region:'JP',query:'Node 4'}).map(n=>n.id),[4])
+assert.equal(normalizeBrowse({status:'pending'}).status,'pending')
+assert.equal(normalizeBrowse({status:'unknown'}).status,'all')
+fleet[3]={...fleet[3],metrics:fleet[0].metrics}
+assert.deepEqual(browseNodes(fleet,{...defaultBrowse,status:'pending'}).map(n=>n.id),[3,5])
+console.log('pending, offline, online, conjunctive filters and recovery passed')

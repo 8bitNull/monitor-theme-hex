@@ -19,7 +19,7 @@
 .node-card[data-indicator=ring] .metric-ring strong {font-size:14px;font-weight:600}
 .node-card[data-indicator=ring] .resource-label {grid-column:2;grid-row:1;justify-content:flex-start;align-self:end}
 .node-card[data-indicator=ring] .resource-label>span {gap:4px;font-size:12px}
-.node-card[data-indicator=ring] .resource small {grid-column:2;grid-row:2;order:0;margin:0;text-align:left;align-self:start;font-size:11px}
+.node-card[data-indicator=ring] .resource small {grid-column:2;grid-row:2;order:0;margin:0;text-align:left;align-self:start;font-size:var(--text-small)}
 .node-card[data-indicator=ring] .speed-indicators>div {grid-template-columns:24px minmax(0,1fr);gap:3px 6px}
 .node-card[data-indicator=ring] .speed-indicators>div>svg:first-child {grid-column:1;grid-row:1;justify-self:center}
 .node-card[data-indicator=ring] .speed-indicators .speed-ring {grid-column:1;grid-row:2;justify-self:center}

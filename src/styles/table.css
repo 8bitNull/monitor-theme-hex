@@ -9,25 +9,25 @@
 }
 .table-scroll-controls {display:flex;align-items:center;gap:4px;padding:0}
 .view-toolbar .table-scroll-controls {margin-left:2px}
-.table-scroll-controls button {display:grid;place-items:center;width:36px;height:36px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--foreground)}
-.table-scroll-controls button:hover:not(:disabled) {background:var(--muted)}
+.table-scroll-controls button {display:grid;place-items:center;width:36px;height:36px;border:1px solid var(--border);border-radius:var(--radius-control);background:var(--card);color:var(--foreground)}
+.table-scroll-controls button:hover:not(:disabled) {background:var(--tone-soft)}
 .table-scroll-controls button:focus-visible {outline:2px solid var(--tone);outline-offset:2px}
 .table-scroll-controls button:disabled {opacity:.4;cursor:default}
 @media(pointer:coarse) {.table-scroll-controls button {width:44px;height:44px}}
 .node-table {table-layout:fixed;width:100%;border-collapse:separate;border-spacing:0;font-size:13px;text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
 .node-table th,.node-table td {padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;height:68px;vertical-align:middle}
-.node-table th {height:44px;padding-block:0;background:var(--muted);font-weight:500;color:var(--muted-foreground)}
+.node-table th {height:44px;padding-block:0;background:var(--muted);font-size:var(--text-small);font-weight:600;color:var(--muted-foreground)}
 .node-table th button {width:100%;text-align:inherit;min-height:44px;background:none}
 .node-table th button span {color:var(--muted-foreground);font-size:var(--text-small)}
 .node-table th :is(select,[data-slot="select"]) {min-width:0;width:auto;field-sizing:content;max-width:100%;min-height:28px;height:28px;padding:2px 4px;text-align:center;font-size:12px;line-height:20px;background:transparent;border:0;border-radius:4px;cursor:pointer;box-shadow:none}
 .node-table th :is(select,[data-slot="select"]):focus {outline:none;box-shadow:none}
 .node-table th :is(select,[data-slot="select"]):focus-visible:not([data-pointer-focus]) {outline:1px solid var(--muted-foreground);outline-offset:2px}
 @media(pointer:coarse) {.node-table th :is(select,[data-slot="select"]) {min-height:44px;height:44px}}
-.node-table th[aria-sort=ascending],.node-table th[aria-sort=descending] {color:var(--foreground);background:color-mix(in srgb,var(--tone) 9%,var(--card))}
+.node-table th[aria-sort=ascending],.node-table th[aria-sort=descending] {color:var(--foreground);background:var(--tone-soft)}
 .node-table tbody tr:last-child td {border-bottom:0}
 .node-table td:first-child,.node-table th:first-child {position:sticky;left:0;z-index:2;background:var(--card);text-align:center;border-right:1px solid var(--border)}
 .node-table th:first-child {background:var(--muted)}
-.node-table tr:is(:hover,:focus-within) td {background:color-mix(in srgb,var(--tone) 4%,var(--card))}
+.node-table tr:is(:hover,:focus-within) td {background:color-mix(in srgb,var(--tone-soft),var(--card))}
 .node-table [data-column=name] {min-width:220px;width:220px;max-width:240px}
 .node-table [data-column=status] {min-width:96px}
 .node-table :is([data-column=cpu],[data-column=memory],[data-column=disk]) {min-width:88px}
@@ -91,7 +91,7 @@
 .column-options[open]>div>label {display:flex;align-items:center;gap:10px;min-height:44px;font-size:12px}
 .column-options label :is(select,[data-slot="select"]) {margin-left:auto;min-height:44px}
 .table-column-title {font-weight:600;font-size:13px}
-.table-column-note {font-size:11px;color:var(--muted-foreground);line-height:1.6;margin:8px 0}
+.table-column-note {font-size:var(--text-small);color:var(--muted-foreground);line-height:1.6;margin:8px 0}
 .table-presets {display:flex;gap:6px;margin:10px 0}
 .table-presets button {flex:1;min-height:44px;border:1px solid var(--border);background:var(--card)}
 .table-presets button[aria-pressed=true] {border-color:var(--tone);color:var(--tone);background:color-mix(in srgb,var(--tone) 6%,var(--card))}
@@ -142,8 +142,8 @@
 .table-network-meta {gap:5px;flex-wrap:wrap;align-items:center}
 .node-table [data-column=remark] {text-align:center}
 .node-table .table-remark {display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px;max-width:100%;width:100%;min-height:44px;white-space:normal;text-align:center;background:none;padding-block:4px}
-.node-table .table-remark .detail-remark-tag {max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;padding:3px 7px}
-.table-remark-more {font-size:11px;color:var(--muted-foreground);padding:3px 5px}
+.node-table .table-remark .detail-remark-tag {max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--text-small);padding:3px 7px}
+.table-remark-more {font-size:var(--text-small);color:var(--muted-foreground);padding:3px 5px}
 .table-remark-full {white-space:pre-wrap}
 .table-order-reset {display:flex;align-items:center;gap:8px;min-height:44px;color:var(--tone);margin-top:8px}
 .table-order-reset:disabled {opacity:.45;cursor:default}
@@ -170,7 +170,7 @@
 .table-column-actions button {min-height:36px;padding:6px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px}
 @media(max-width:720px){.table-column-actions button {min-height:44px}}
 .table-extra {display:flex;flex-direction:column;align-items:center;gap:4px;white-space:normal;overflow-wrap:anywhere;line-height:1.5}
-.table-extra small {color:var(--muted-foreground);font-size:11px}
+.table-extra small {color:var(--muted-foreground);font-size:var(--text-small)}
 .node-table [data-column=probe] .table-route {white-space:normal;overflow-wrap:anywhere}
 .node-table [data-column=lastSeen] time {white-space:normal;font-variant-numeric:tabular-nums}
 .node-table [data-column=loss] [data-loss=true] {color:var(--warn)}

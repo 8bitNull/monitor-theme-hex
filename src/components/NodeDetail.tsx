@@ -54,7 +54,7 @@ type Loss = Record<string, number>;
 const historyError = (error:Error) => error instanceof ApiError
     ? error.status===503 ? tr("历史服务暂时不可用，请稍后重试。") : error.status===429 ? tr("请求过于频繁，请稍后重试。") : tr("历史数据请求失败，请重试。")
     : error.name==='AbortError' ? tr("读取超时，请重试。") : tr("网络连接失败，请重试。");
-const AXIS = { stroke: "currentColor", fontSize: 11, tickLine: false, axisLine: false };
+const AXIS = { stroke: "currentColor", fontSize: 12, tickLine: false, axisLine: false };
 // No grow-in animation: it would spend 1.5 s drawing a line across the panel on
 // every range change, on a page meant to be read at a glance, and on the latency
 // chart across seven hundred points per probe.
@@ -370,7 +370,7 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
                 {(expandedRoutes?pingSeries:collapsedRoutes).map(s=>{const latest=s.points.at(-1),shown=visibleIds.includes(s.id);return <button key={s.id} aria-label={s.name} aria-pressed={shown} title={`${s.name} · ${latest?tr("采样：{0}",new Date(latest.ts*1000).toLocaleString(locale())):tr("暂无探测记录")}`} onMouseEnter={()=>setHighlightProbe(s.id)} onMouseLeave={()=>setHighlightProbe(null)} onFocus={e=>{if(e.currentTarget.matches(':focus-visible'))setHighlightProbe(s.id)}} onBlur={()=>setHighlightProbe(null)} onClick={()=>{setExpandedRoutes(true);setSelectedProbes(shown?visibleIds.filter(id=>id!==s.id):[...visibleIds,s.id])}}><i className="route-chip-check" aria-hidden="true">{shown?'✓':''}</i><svg width="20" height="8" aria-hidden="true"><line x1="0" y1="4" x2="20" y2="4" stroke={style(s.id).stroke} strokeWidth="2"/></svg><span>{s.name}</span><b>{!latest?'—':latest.latency===null?tr("超时"):`${Math.round(latest.latency)} ms`}</b></button>})}
               </div>
             </div>}
-            <div className="latency-chart-caption"><span>{tr("延迟")} · ms</span><span className="latency-chart-key" style={{color:activeRoute?style(activeRoute.id).stroke:undefined}}>{shownProbes.length===1&&<><i className="latency-band-key"/><span title={tr("采样范围（最小–最大）")}>{tr("采样范围")}</span></>}<i className="latency-line-key"/>{smooth?tr("抑制尖峰"):tr("采样中位值")}</span></div>
+            <div className="latency-chart-caption"><span>{tr("延迟")} · ms</span><span className="latency-chart-key" style={{color:'var(--muted-foreground)','--latency-key-color':activeRoute?style(activeRoute.id).stroke:undefined} as React.CSSProperties}>{shownProbes.length===1&&<><i className="latency-band-key"/><span title={tr("采样范围（最小–最大）")}>{tr("采样范围")}</span></>}<i className="latency-line-key"/>{smooth?tr("抑制尖峰"):tr("采样中位值")}</span></div>
             <div className="detail-chart-frame text-muted-foreground" title={tr("拖动两端缩放 · 双击恢复全范围")} onDoubleClick={()=>{setZoom(null);tooltipDismiss()}} ref={tooltipFrame} onClickCapture={tooltipClick} onPointerMove={tooltipMove} onKeyDownCapture={tooltipKey}>
               {shownProbes.length === 0 ? (<HistoryState message={(selectedProbes?.length || selectedProbes === null && probe !== "auto") ? tr("无该线路记录") : tr("没有选中任何探测")} action={tr("选择线路")} onAction={openRoutes}/>) : !shownProbes.some(s=>s.points.length) ? <HistoryState message={tr("这段时间没有延迟数据")} action={tr("调整时间范围")} onAction={chooseRange}/> : (<ResponsiveContainer>
                   <ComposedChart data={mobile?mobileChartRows:pingRows}>

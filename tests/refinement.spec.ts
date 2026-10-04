@@ -35,7 +35,9 @@ for(const [width,height] of [[768,844],[800,844],[850,932],[1024,768],[1440,1000
     const baselines=await card.locator('.speed-pair strong').evaluateAll(elements=>elements.map(el=>{const range=document.createRange();range.selectNodeContents(el.firstChild!);return range.getBoundingClientRect().top}))
     expect(Math.abs(baselines[0]-baselines[1])).toBeLessThanOrEqual(1)
     if(width===800&&graph==='bar'){
-     for(const value of await card.locator('.resource').all().then(rs=>rs.slice(0,2))){await value.scrollIntoViewIfNeeded();const box=(await value.boundingBox())!;expect(box.y+box.height).toBeLessThan(height)}
+     // Nearest scrolling rounds a fractional line box onto the viewport edge.
+     // Center the reading and observe a paint before checking its full bounds.
+     for(const value of await card.locator('.resource').all().then(rs=>rs.slice(0,2))){await value.evaluate(async el=>{el.scrollIntoView({block:'center',inline:'nearest'});await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())))});const box=(await value.boundingBox())!;expect(box.y+box.height).toBeLessThan(height)}
     }
    }
   }

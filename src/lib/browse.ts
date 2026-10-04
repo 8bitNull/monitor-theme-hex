@@ -1,4 +1,4 @@
-import {liveMetrics} from './freshness.ts'
+import {liveMetrics, nodeState} from './freshness.ts'
 import {resolveProbe} from './nodeProbes.ts'
 import { regionKey } from './groups.ts'
 import type { Node } from './api.ts'
@@ -22,7 +22,7 @@ export function normalizeBrowse(input:unknown): Browse {
     return availableTableColumns.filter(c=>selected.includes(c))
   }
   const layout=(key:string,field:string)=>v[key]==='grouped'||v[key]==='separate'?v[key]:Array.isArray(v[field])?'separate':'grouped'
-  return {...defaultBrowse,query:typeof v.query==='string'?v.query:'',status:['all','online','offline'].includes(String(v.status))?v.status as string:'all',region:typeof v.region==='string'?v.region:'all',sort:Object.hasOwn(sortLabels,String(v.sort))?v.sort as SortKey:'default',direction:v.direction==='desc'?'desc':'asc',view:v.view==='table'?'table':'cards',probe:typeof v.probe==='string'?v.probe:'auto',columns:Array.isArray(v.columns)&&![2,3,4,5].includes(Number(v.columnsVersion))?columns([...(v.columns as unknown[]),'traffic'],defaultBrowse.columns):columns(v.columns,defaultBrowse.columns),mobileColumns:columns(v.mobileColumns,defaultBrowse.mobileColumns,true),tableLayout:layout('tableLayout','columns'),mobileTableLayout:layout('mobileTableLayout','mobileColumns')}
+  return {...defaultBrowse,query:typeof v.query==='string'?v.query:'',status:['all','online','offline','pending'].includes(String(v.status))?v.status as string:'all',region:typeof v.region==='string'?v.region:'all',sort:Object.hasOwn(sortLabels,String(v.sort))?v.sort as SortKey:'default',direction:v.direction==='desc'?'desc':'asc',view:v.view==='table'?'table':'cards',probe:typeof v.probe==='string'?v.probe:'auto',columns:Array.isArray(v.columns)&&![2,3,4,5].includes(Number(v.columnsVersion))?columns([...(v.columns as unknown[]),'traffic'],defaultBrowse.columns):columns(v.columns,defaultBrowse.columns),mobileColumns:columns(v.mobileColumns,defaultBrowse.mobileColumns,true),tableLayout:layout('tableLayout','columns'),mobileTableLayout:layout('mobileTableLayout','mobileColumns')}
 }
 export function readBrowse(): Browse {
   try {
@@ -75,10 +75,18 @@ export function sortValue(n: Node, key: SortKey, probe: string): number | string
     default: return n.sort
   }
 }
+export function matchesStatus(node: Node, status: string): boolean {
+  switch (status) {
+    case 'online': return node.online
+    case 'offline': return !node.online
+    case 'pending': { const state=nodeState(node); return state==='stale'||state==='missing' }
+    default: return true
+  }
+}
 export function browseNodes(nodes: Node[], options: Browse): Node[] {
   const q = options.query.trim().toLocaleLowerCase()
   const keys = new Map(nodes.map(n=>[n.id,sortValue(n,options.sort,options.probe)]))
-  return nodes.filter(n => (options.status === 'all' || (options.status === 'online' ? n.online : !n.online)) && (options.region === 'all' || regionKey(n.country) === options.region) && [n.name, n.country, regionName(n.country), englishRegion(n.country), n.os, n.arch].join(' ').toLocaleLowerCase().includes(q)).sort((a, b) => {
+  return nodes.filter(n => matchesStatus(n, options.status) && (options.region === 'all' || regionKey(n.country) === options.region) && [n.name, n.country, regionName(n.country), englishRegion(n.country), n.os, n.arch].join(' ').toLocaleLowerCase().includes(q)).sort((a, b) => {
     const fallback = a.sort - b.sort || a.id - b.id
     if (options.sort === 'default') return fallback
     const av = keys.get(a.id)!, bv = keys.get(b.id)!
