@@ -19,6 +19,7 @@
 @import "./styles/home-refresh.css";
 @import "./styles/mobile-app.css";
 @import "./styles/desktop-refinement.css";
+@import "./styles/top-map-layout.css";
 
 @source "../index.html";
 @source "../src";

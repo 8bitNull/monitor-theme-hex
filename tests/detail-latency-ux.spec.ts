@@ -10,11 +10,11 @@ test('selected lines stay identifiable and node switching starts with its own ro
   return r.fulfill({json:{...d,probes:Object.fromEntries(ids.map(id=>[id,`线路 ${id}`])),ping:d.ping.flatMap(p=>ids.map(id=>({...p,task_id:id,latency:p.latency+id*10})))}})
  })
  await page.goto('/node/1?routes=1,2&lh=24#latency')
- await page.getByRole('button',{name:'比较线路',exact:true}).click()
+ await expect(page.getByRole('button',{name:'比较线路',exact:true})).toHaveCount(0)
  const routes=page.locator('.latency-view>.route-chips')
  await expect(routes.locator('button[aria-pressed=true]')).toHaveCount(2)
  await expect(page.locator('.latency-view .recharts-line-curve')).toHaveCount(2)
- const list=(await routes.boundingBox())!,compare=(await page.getByRole('button',{name:'收起线路',exact:true}).boundingBox())!
+ const list=(await routes.boundingBox())!,compare=(await page.locator('.latency-route-controls').boundingBox())!
  expect(list.y).toBeGreaterThanOrEqual(compare.y+compare.height)
  const overflow=await page.evaluate(()=>({viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,elements:[...document.querySelectorAll('*')].filter(el=>el.getBoundingClientRect().right>innerWidth+1).slice(0,10).map(el=>({tag:el.tagName,className:typeof el.className==='string'?el.className:'',right:el.getBoundingClientRect().right}))}))
  expect(overflow.scrollWidth,JSON.stringify(overflow)).toBeLessThanOrEqual(overflow.viewport)
@@ -22,7 +22,7 @@ test('selected lines stay identifiable and node switching starts with its own ro
  await page.getByRole('dialog',{name:'切换节点'}).getByRole('button',{name:/Hong Kong/}).click()
  await expect(page).not.toHaveURL(/routes=/)
  await expect(page).toHaveURL(/lh=24/)
- await expect(routes).toHaveCount(0)
+ await expect(routes.locator('button[aria-pressed=true]')).toHaveCount(1)
  await expect(page.locator('.latency-route-controls').getByLabel('查看线路',{exact:true})).toContainText('线路 5')
  await expect(page.locator('.latency-view .recharts-line-curve')).toHaveCount(1)
 })
@@ -65,7 +65,7 @@ test('touch can zoom the mobile time sliders and restore the full range',async({
  const page=await context.newPage()
  try{
   await page.goto('/node/1#latency')
-  await page.getByRole('button',{name:'缩放时间范围',exact:true}).click()
+  await expect(page.locator('#ma-chart-zoom')).toBeVisible()
   const slider=page.getByRole('slider',{name:'结束时间',exact:true})
   await slider.scrollIntoViewIfNeeded();const box=(await slider.boundingBox())!
   await page.touchscreen.tap(box.x+box.width/2,box.y+box.height/2)

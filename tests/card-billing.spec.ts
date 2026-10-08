@@ -31,21 +31,16 @@ test('billing rows align, preserve quota states and fit narrow cards',async({pag
 })
 
 
-for(const width of [768,800,1440])test(`compact note tags open complete dialog and restore focus at ${width}`,async({page})=>{
+for(const width of [768,800,1440])test(`complete note tags are directly readable at ${width}`,async({page})=>{
  await page.setViewportSize({width,height:900})
  const note='这是一段很长的完整备注。'.repeat(20)
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],remark:'国际线路;'+note+';Backup;Production'}]}}))
- await page.goto('/');const card=page.locator('.node-card'),notes=card.getByRole('button',{name:'备注',exact:true})
- await expect(card.locator('.node-secondary-disclosure')).toHaveCount(0)
+ await page.goto('/')
+ const card=page.locator('.node-card'),notes=card.locator('.node-remarks')
  await expect(card.locator('.card-billing')).toBeVisible()
- await expect(notes.locator('.detail-remark-tag')).toHaveCount(3);await expect(notes.locator('.remark-more')).toHaveText('+1')
- expect(await notes.evaluate(el=>{const count=el.querySelector('.remark-more')!.getBoundingClientRect(),button=el.getBoundingClientRect();return count.left>=button.left&&count.right<=button.right})).toBeTruthy()
- await expect(notes).toHaveAttribute('title','国际线路 · '+note+' · Backup · Production')
- await card.locator('.ping-stats').scrollIntoViewIfNeeded()
- await card.locator(".latency-reading").first().waitFor();const height=(await card.boundingBox())!.height
- await notes.click();const dialog=page.getByRole('dialog',{name:'备注',exact:true});await expect(dialog).toBeVisible();await expect(dialog).toContainText(note)
- await page.keyboard.press('Escape');await expect(dialog).not.toBeVisible();await expect(notes).toBeFocused();expect((await card.boundingBox())!.height).toBe(height)
- await notes.click();await dialog.getByRole('button',{name:'关闭',exact:true}).click();await expect(notes).toBeFocused();await expect(page).not.toHaveURL(/node\//)
- for(const field of await card.locator('.card-billing>div').all()){await expect(field).toHaveCSS('text-align','center');await expect(field).toHaveCSS('justify-items','center')}
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
+ await expect(notes.locator('.detail-remark-tag')).toHaveCount(4)
+ await expect(notes).toContainText(note)
+ await expect(card.locator('.remark-more,.card-notes-dialog,.node-secondary-toggle')).toHaveCount(0)
+ for(const tag of await notes.locator('.detail-remark-tag').all())expect(await tag.evaluate(el=>el.scrollWidth<=el.clientWidth+1&&el.scrollHeight<=el.clientHeight+1)).toBe(true)
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
 })

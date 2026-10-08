@@ -27,15 +27,15 @@ test('slow map keeps filters and view switching usable without layout jump',asyn
  await expect(page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true})).toHaveAttribute('data-value','JP')
 })
 
-test('loading map can collapse while region filters remain available',async({page})=>{
+test('loading map stays visible while region filters remain available',async({page})=>{
  let finish!:()=>void;const pending=new Promise<void>(resolve=>finish=resolve)
  await page.route('**/assets/WorldMap-*.js',async route=>{await pending;await route.continue()})
  await page.goto('/')
  await expect(page.locator('.map-placeholder')).toBeVisible()
- await page.getByRole('button',{name:'收起地图',exact:true}).click()
- await expect(page.locator('.map-placeholder')).toBeHidden()
- await expect(page.locator('.home-region-bar')).toBeVisible()
- await page.getByRole('button',{name:'展开地图',exact:true}).click()
+ await expect(page.locator('.home-map-toggle')).toHaveCount(0)
+ await chooseOption(page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true}),'JP')
+ await expect(page.locator('.node-card')).toHaveCount(1)
+ await expect(page.locator('.map-placeholder')).toBeVisible()
  await expect(page.locator('.map-fallback-close')).toHaveCount(0)
  finish()
  await expect(page.locator('.region-atlas')).toBeVisible()

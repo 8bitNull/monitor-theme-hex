@@ -27,7 +27,7 @@ test('compact desktop search and visible network facts preserve the primary scan
 })
 
 test('compact desktop detail groups, alignment and history ranges are bounded',async({page})=>{
- await page.setViewportSize({width:800,height:844});await setup(page);await page.goto('/node/1');await page.locator('.detail-facts-toggle').click()
+ await page.setViewportSize({width:800,height:844});await setup(page);await page.goto('/node/1');await expect(page.locator('#detail-fact-groups')).toBeVisible()
  for(const label of ['硬件与系统','网络与流量'])await expect(page.getByRole('region',{name:label}).locator('.detail-fact-section-body')).toBeVisible()
  await expect(page.locator('#detail-fact-groups details')).toHaveCount(0)
  const hardware=page.locator('section[aria-label="硬件与系统"]');await expect(hardware.getByRole('button',{name:'复制：CPU',exact:true})).toHaveCount(0);await expect(hardware.locator('.fact-value').filter({hasText:'AMD EPYC'}).first()).toHaveCSS('text-align','right');await expect(page.getByRole('button',{name:'复制：IPv6',exact:true}).locator('xpath=ancestor::dd').locator('.fact-value')).toHaveCSS('text-align','right')
@@ -39,14 +39,13 @@ test('compact desktop resource selector stays beside chart tabs',async({page})=>
  for(const width of [768,800]){
   await page.setViewportSize({width,height:844});await setup(page);await page.goto('/node/1')
   const toolbar=page.locator('.detail-chart-toolbar[data-history-tab=resources]')
-  const selector=toolbar.locator('.detail-resource-metric-mobile > summary')
+  const selector=toolbar.locator('.detail-resource-metric-desktop')
   const selectionBox=(await toolbar.locator('.detail-toolbar-selection').boundingBox())!,tabsBox=(await toolbar.locator('.detail-tabs').boundingBox())!,selectorBox=(await selector.boundingBox())!
   expect(selectorBox.x).toBeGreaterThanOrEqual(tabsBox.x+tabsBox.width)
   expect(selectorBox.x+selectorBox.width).toBeLessThanOrEqual(selectionBox.x+selectionBox.width+1)
-  await selector.click()
-  const menuBox=(await toolbar.locator('.detail-resource-metric-menu').boundingBox())!
-  expect(menuBox.x).toBeGreaterThanOrEqual(0)
-  expect(menuBox.x+menuBox.width).toBeLessThanOrEqual(width)
+  await expect(selector.getByRole('button')).toHaveCount(4)
+  await selector.getByRole('button',{name:'内存',exact:true}).click()
+  await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric','mem_used')
  }
 })
 

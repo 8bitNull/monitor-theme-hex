@@ -56,13 +56,13 @@ assert.deepEqual(restoreAppearance(display,defaults).mobileCardInfo,display.mobi
 assert.equal(restoreAppearance(display,defaults).mobileInfoMode,'custom')
 assert.equal(restoreAppearance(display,defaults).desktopColumns,'4')
 
-assert.equal(normalizePreferences({}).detailInfoMode,'auto')
+assert.equal(normalizePreferences({}).detailInfoMode,'expanded')
 for(const mode of ['auto','expanded','collapsed'] as const){
  const prefs=normalizePreferences({detailInfoMode:mode})
- assert.equal(parsePreferences(JSON.stringify(prefs)).detailInfoMode,mode)
- assert.equal(restoreAppearance(prefs,defaults).detailInfoMode,mode)
+ assert.equal(parsePreferences(JSON.stringify(prefs)).detailInfoMode,'expanded')
+ assert.equal(restoreAppearance(prefs,defaults).detailInfoMode,'expanded')
 }
-assert.equal(normalizePreferences({detailInfoMode:'invalid'}).detailInfoMode,'auto')
+assert.equal(normalizePreferences({detailInfoMode:'invalid'}).detailInfoMode,'expanded')
 
 assert.equal(legacy.latencyScale,500);assert.equal(legacy.latencyWindow,1);assert.equal(legacy.latencyWarn,150);assert.equal(legacy.latencyHigh,300)
 const customLatency=parsePreferences(JSON.stringify({...defaults,latencyScale:500,latencyWindow:24,latencyWarn:100,latencyHigh:250}))
@@ -84,6 +84,6 @@ assert.equal(normalizePreferences({infoDensity:'invalid'}).infoDensity,'overview
 // Added preferences inherit safely and do not reset selected card fields.
 assert.equal(normalizePreferences({schemaVersion:2,cardInfo:{connections:false}}).summaryCollapsed,false)
 const collapsed=parsePreferences(JSON.stringify({...defaults,summaryCollapsed:true,cardInfo:{...defaults.cardInfo,connections:false}}))
-assert.equal(collapsed.summaryCollapsed,true)
+assert.equal(collapsed.summaryCollapsed,false)
 assert.equal(collapsed.cardInfo.connections,false)
-assert.equal(restoreAppearance(collapsed,defaults).summaryCollapsed,true)
+assert.equal(restoreAppearance(collapsed,defaults).summaryCollapsed,false)

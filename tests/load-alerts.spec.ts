@@ -21,6 +21,7 @@ test('load records persist across recovery, reload and stale data',async({page})
  expect(await page.evaluate(k=>JSON.parse(localStorage.getItem(k)!).length,key)).toBe(4)
 })
 test('load overview and history fit light/dark layouts and restore keyboard focus',async({page})=>{
+ await page.route('**/api/themes/hex/config',r=>r.fulfill({json:{module_map:false,module_busiest:true}}))
  await page.addInitScript(()=>localStorage.setItem('monitor-next',JSON.stringify({designVersion:1,appearance:'light',modules:{busiest:true,map:false}})))
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],name:'高负载节点 · Long node name '.repeat(5),metrics:{...nodes()[0].metrics,cpu:96}}]}}))
  await page.goto('/');await expect(page.locator('.load-alert-tile')).toContainText('1告警中')

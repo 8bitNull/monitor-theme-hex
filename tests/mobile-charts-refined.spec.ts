@@ -54,12 +54,12 @@ test('smoothing changes the curve but preserves raw summary and shared-sheet foc
  await expect(page.locator('.latency-chart-key')).toContainText('抑制尖峰')
 })
 
-test('mobile zoom slices samples, folding preserves the domain, reset restores it',async({page})=>{
+test('mobile zoom slices samples, persistent controls preserve the domain, reset restores it',async({page})=>{
  await setup(page)
- await expect(page.locator('#ma-chart-zoom')).toHaveCount(0)
+ await expect(page.locator('#ma-chart-zoom')).toBeVisible()
  await expect(page.locator('.latency-view .recharts-brush')).toHaveCount(0)
  const initialPath=await curve(page).getAttribute('d'),initialCaption=await page.locator('.latency-range-caption').innerText(),summary=await page.locator('.ma-route-statistics').innerText()
- await page.getByRole('button',{name:'缩放时间范围',exact:true}).click()
+ await expect(page.locator('#ma-chart-zoom')).toBeVisible()
  const start=page.getByRole('slider',{name:'开始时间',exact:true})
  await start.focus();await start.press('Home')
  for(let i=0;i<10;i++)await start.press('ArrowRight')
@@ -68,8 +68,8 @@ test('mobile zoom slices samples, folding preserves the domain, reset restores i
  await expect.poll(()=>page.locator('.latency-range-caption').innerText()).not.toBe(initialCaption)
  const zoomPath=await curve(page).getAttribute('d'),zoomCaption=await page.locator('.latency-range-caption').innerText()
  await expect.poll(()=>page.locator('.ma-route-statistics').innerText()).toBe(summary)
- await page.getByRole('button',{name:'收起缩放',exact:true}).click()
- await expect(page.locator('#ma-chart-zoom')).toHaveCount(0)
+ await expect(page.getByRole('button',{name:'收起缩放',exact:true})).toHaveCount(0)
+ await expect(page.locator('#ma-chart-zoom')).toBeVisible()
  await expect(curve(page)).toHaveAttribute('d',zoomPath!)
  await expect.poll(()=>page.locator('.latency-range-caption').innerText()).toBe(zoomCaption)
  await page.getByRole('button',{name:'恢复全范围',exact:true}).click()

@@ -19,9 +19,9 @@ for(const width of [768,800,1024,1440])test(`overview groups and full-width hist
    return {order:history.top>=live.bottom&&remarks.top>=groups.bottom-1,fullWidth:Math.abs(history.width-live.width)<2,priceContained:price.left>=footer.left&&price.right<=footer.right,overflow:document.documentElement.scrollWidth>innerWidth||[...document.querySelectorAll('.detail-metric-card,.detail-speed>div,.overview-billing>div')].some(el=>el.scrollWidth>el.clientWidth+1)}
   })
   expect(geometry).toEqual({order:true,fullWidth:true,priceContained:true,overflow:false})
-  await page.locator('.detail-remarks-toggle').click()
+  await expect(page.locator('.detail-remarks-toggle')).toHaveCount(0)
   await expect(page.locator('.overview-remarks')).toContainText('更多备注用于检查展开后的完整内容')
-  if(width<900)await page.locator('.detail-facts-toggle').click()
+  await expect(page.locator('#detail-fact-groups')).toBeVisible()
   await expect(page.locator('.detail-fact-groups>section')).toHaveCount(2)
   await expect(page.locator('.copy-fact')).toHaveCount(2)
   if(language==='zh'&&[800,1440].includes(width))await page.locator('.node-detail').screenshot({path:`tests/artifacts/detail-overview/${width}-${appearance}.png`,style:'header {visibility:hidden} '})

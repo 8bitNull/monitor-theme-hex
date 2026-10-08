@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "node scripts/build-app-icons.mjs && node scripts/build-map.mjs && tsc -b && vite build",
     "lint": "oxlint",
-    "test": "node src/lib/format.test.ts && node src/lib/api.test.ts && node src/lib/versions.test.ts && node src/lib/ping.test.ts && node src/lib/browse.test.ts && node src/lib/traffic.test.ts && node src/lib/appearance.test.ts && node src/lib/groups.test.ts && node src/lib/mapMarkers.test.ts && node src/lib/mobileMap.test.ts && node src/lib/i18n.test.ts && node src/lib/design.test.ts && node src/lib/loadAlerts.test.ts && node src/lib/trends.test.ts && node src/lib/resourceTrend.test.ts && node scripts/check-i18n.mjs && node src/lib/resourceSummary.test.ts && node src/lib/mobileMapLabel.test.ts",
+    "test": "node src/lib/format.test.ts && node src/lib/api.test.ts && node src/lib/versions.test.ts && node src/lib/ping.test.ts && node src/lib/browse.test.ts && node src/lib/traffic.test.ts && node src/lib/appearance.test.ts && node src/lib/groups.test.ts && node src/lib/mapMarkers.test.ts && node src/lib/mapViewport.test.ts && node src/lib/mobileMap.test.ts && node src/lib/i18n.test.ts && node src/lib/design.test.ts && node src/lib/loadAlerts.test.ts && node src/lib/trends.test.ts && node src/lib/resourceTrend.test.ts && node scripts/check-i18n.mjs && node src/lib/resourceSummary.test.ts && node src/lib/mobileMapLabel.test.ts",
     "preview": "vite preview",
     "demo": "node scripts/demo.mjs",
     "test:e2e": "playwright test",

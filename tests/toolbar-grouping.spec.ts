@@ -24,12 +24,12 @@ test('desktop controls share one row with selected conditions below',async({page
  await expect(primary.locator('.table-tools-host .table-reset-columns')).toBeVisible()
 })
 
-test('toolbar stays in node area through collapsed disabled and fullscreen map states',async({page})=>{
+test('toolbar stays in node area through persistent disabled and fullscreen map states',async({page})=>{
  await page.goto('/');await page.getByRole('button',{name:'放大查看',exact:true}).click()
  await page.locator('.region-atlas').getByRole('button',{name:'表格视图',exact:true}).click()
  await page.getByRole('button',{name:'退出全屏',exact:true}).click()
  await expect(page.locator('.node-toolbar-primary .table-reset-columns')).toBeVisible()
- await page.getByRole('button',{name:'收起地图',exact:true}).click()
+ await expect(page.locator('.home-map-toggle')).toHaveCount(0)
  await expect(page.locator('.node-toolbar-primary')).toBeVisible()
  await page.route('**/api/themes/hex/config',r=>r.fulfill({json:{module_map:false}}));await page.reload()
  await expect(page.locator('.map-frame')).toHaveCount(0);await expect(page.locator('.node-toolbar-primary')).toBeVisible()

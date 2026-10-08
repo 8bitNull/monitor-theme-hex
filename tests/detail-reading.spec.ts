@@ -12,18 +12,16 @@ test('compact desktop latency controls provide one selector and comparison above
  await page.setViewportSize({width:800,height:844})
  await setup(page);await page.getByRole('button',{name:'网络延迟',exact:true}).click()
  const toolbar=page.locator('.detail-chart-toolbar'),controls=page.locator('.latency-route-controls');await expect(toolbar.locator('.detail-smooth')).toBeVisible()
- const route=controls.getByLabel('查看线路',{exact:true}),compare=controls.locator('.expand-routes');await expect(route).toBeVisible()
+ const route=controls.getByLabel('查看线路',{exact:true});await expect(route).toBeVisible()
  await expect(page.getByLabel('查看线路',{exact:true})).toHaveCount(1)
  await expect(toolbar.getByLabel('查看线路',{exact:true})).toHaveCount(0)
- await expect(compare).toHaveAttribute('aria-label','比较线路')
+ await expect(controls.locator('.expand-routes')).toHaveCount(0)
  const smooth=(await toolbar.locator('.detail-smooth').boundingBox())!,selector=(await route.boundingBox())!,tabs=(await toolbar.locator('.detail-tabs').boundingBox())!,bar=(await toolbar.boundingBox())!,plot=(await page.locator('.detail-chart-frame').boundingBox())!
  expect(selector.y).toBeGreaterThanOrEqual(bar.y+bar.height)
  expect(plot.y).toBeGreaterThanOrEqual(selector.y+selector.height)
  expect(Math.abs(smooth.y+smooth.height/2-tabs.y-tabs.height/2)).toBeLessThanOrEqual(2)
  await expect(toolbar.locator('.detail-probe-legend')).toHaveCount(0)
- await expect(page.locator('.route-chips')).toHaveCount(0)
- await expandRoutes(page);await expect(compare).toHaveAttribute('aria-label','收起线路');await expect(page.locator('.route-chips button[aria-pressed]')).toHaveCount(3)
- await compare.click();await expect(compare).toHaveAttribute('aria-label','比较线路');await expect(page.locator('.route-chips')).toHaveCount(0)
+ await expect(page.locator('.route-chips button[aria-pressed]')).toHaveCount(3)
 })
 for(const width of [768,800,850,899,900,1024,1440,1920])test(`detail reading and toolbar geometry at ${width}`,async({page})=>{
  test.setTimeout(90000);await page.setViewportSize({width,height:844})
@@ -68,22 +66,22 @@ for(const width of [768,800,850,899,900,1024,1440,1920])test(`detail reading and
    expect(tabs.x).toBeGreaterThanOrEqual(selection.x-1)
    expect(await page.locator('.detail-history').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
   }
-  if(width<900)await expect(page.locator('.detail-facts-toggle')).toHaveAttribute('aria-expanded','false')
-  else {await expect(page.locator('.detail-facts-toggle')).toHaveCount(0);await expect(page.locator('#detail-fact-groups')).toBeVisible()}
+  await expect(page.locator('.detail-facts-toggle')).toHaveCount(0);await expect(page.locator('#detail-fact-groups')).toBeVisible()
  }
 })
-test('device information disclosure persists across reload and viewport changes',async({page})=>{
+test('device information stays visible across reload and viewport changes',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('monitor-next',JSON.stringify({detailInfoMode:'collapsed'})))
  await page.setViewportSize({width:899,height:900});await setup(page)
- const toggle=page.locator('.detail-facts-toggle');await expect(toggle).toHaveAttribute('aria-expanded','false')
- await page.setViewportSize({width:900,height:900});await expect(toggle).toHaveCount(0);await expect(page.locator('#detail-fact-groups')).toBeVisible()
- await page.setViewportSize({width:899,height:900});await expect(toggle).toHaveAttribute('aria-expanded','false');await toggle.click();await page.reload();await expect(toggle).toHaveAttribute('aria-expanded','true')
- await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('monitor-next')||'{}').detailInfoMode)).toBe('expanded')
- await page.setViewportSize({width:800,height:844});await expect(toggle).toHaveAttribute('aria-expanded','true')
+ for(const width of [900,899,800]){
+  await page.setViewportSize({width,height:900});await page.reload()
+  await expect(page.locator('.detail-facts-toggle')).toHaveCount(0)
+  await expect(page.locator('#detail-fact-groups')).toBeVisible()
+ }
  await expect(page.getByRole('region',{name:'硬件与系统',exact:true})).toContainText('1.2.3')
 })
 test('320px facts keep short labels beside values and wrap long facts without overflow',async({page})=>{
  await page.setViewportSize({width:768,height:844});await setup(page,3,{cpu_name:'AMD EPYC 7B13 '.repeat(5)})
- await page.locator('.detail-facts-toggle').click()
+ await expect(page.locator('#detail-fact-groups')).toBeVisible()
  for(const label of ['Agent','系统','交换空间','流量重置']){
   const row=page.locator('.detail-facts>div').filter({has:page.locator(`dt:text-is("${label}")`)}),dt=await row.locator('dt').boundingBox(),dd=await row.locator('dd').boundingBox()
   expect(Math.abs(dt!.y-dd!.y)).toBeLessThanOrEqual(1)
@@ -106,7 +104,7 @@ for(const count of [1,3,20])test(`route legends handle ${count} routes without r
  await page.setViewportSize({width:800,height:844});await setup(page,count);await page.getByRole('button',{name:'网络延迟',exact:true}).click()
  const plot=page.locator('.detail-chart-frame');const height=(await plot.boundingBox())!.height
  if(count===1){
-  await expect(page.locator('.route-chips')).toHaveCount(0)
+  await expect(page.locator('.route-chips button[aria-pressed]')).toHaveCount(1)
   await expect(plot.locator('.recharts-line-curve')).toHaveCount(1)
   return
  }
@@ -120,8 +118,8 @@ test('long identity notes expand and copy feedback does not move facts',async({p
  await context.grantPermissions(['clipboard-read','clipboard-write']);await setup(page)
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],name:'超长名称'.repeat(20),ipv4:'192.0.2.1',remark:Array.from({length:8},(_,i)=>`备注${i} ${'长文本'.repeat(30)}`).join(';')}]}}));await page.reload()
  await page.setViewportSize({width:768,height:568});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
- await page.getByRole('button',{name:'展开备注',exact:true}).click();await expect(page.locator('.detail-meta-tags .detail-remark-tag')).toHaveCount(8)
- await page.getByRole('button',{name:'收起备注',exact:true}).click();await page.locator('.detail-facts-toggle').click()
+ await expect(page.getByRole('button',{name:'展开备注',exact:true})).toHaveCount(0);await expect(page.locator('.overview-remarks .detail-remark-tag')).toHaveCount(8)
+ await expect(page.getByRole('button',{name:'收起备注',exact:true})).toHaveCount(0);await expect(page.locator('#detail-fact-groups')).toBeVisible()
  await expect(page.getByRole('button',{name:'复制：CPU',exact:true})).toHaveCount(0);const button=page.getByRole('button',{name:'复制：IPv4',exact:true}),row=button.locator('xpath=ancestor::dd');const before=(await row.boundingBox())!.height
  await button.click();await expect(page.getByRole('status')).toHaveText('已复制');expect((await row.boundingBox())!.height).toBe(before)
  await page.evaluate(()=>Object.defineProperty(navigator.clipboard,'writeText',{value:()=>Promise.reject(new Error('denied')),configurable:true}));await button.click()

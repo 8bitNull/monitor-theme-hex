@@ -29,7 +29,7 @@ test('site card information choices remove empty rows and preserve detail inform
   expect(await card.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
  }
  config={...config,cardInfo:Object.fromEntries(keys.map(key=>[key,false]))};await page.reload()
- await card.locator('.node-open').click();await expect(page.locator('.detail-metric-network')).toContainText('TCP');await page.locator('.detail-facts-toggle').click();await expect(page.locator('.detail-fact-groups')).toBeVisible();await expect(page.locator('.overview-account')).toContainText('$5.00')
+ await card.locator('.node-open').click();await expect(page.locator('.detail-metric-network')).toContainText('TCP');await expect(page.locator('#detail-fact-groups')).toBeVisible();await expect(page.locator('.detail-fact-groups')).toBeVisible();await expect(page.locator('.overview-account')).toContainText('$5.00')
 })
 test('site mobile card choices respect the 720px boundary and follow mode',async({page})=>{
  await page.setViewportSize({width:390,height:1000})

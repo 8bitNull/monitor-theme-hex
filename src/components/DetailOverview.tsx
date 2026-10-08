@@ -5,7 +5,6 @@ import {liveMetrics,nodeState} from '@/lib/freshness'
 import {tr,locale} from '@/lib/i18n'
 import {osName,bytes,daysUntil,money,CYCLES,FOREVER} from '@/lib/format'
 import {Activity,Clock,Monitor,MapPin} from 'lucide-react'
-import {useState} from 'react'
 import {NodePicker} from './NodePicker'
 import {Status} from './NodeIdentity'
 import {RemarkTags} from './RemarkTags'
@@ -25,8 +24,6 @@ export function DetailLiveOverview({node,preview,onSelectResource}:{node:Node;pr
  const m=liveMetrics(node)
  const state=nodeState(node)
  const remarkTags=(node.remark??'').split(/[;；]/).map(text=>text.trim()).filter(Boolean)
- const [expanded,setExpanded]=useState(false)
- const crowded=remarkTags.length>3 || remarkTags.some(text=>Array.from(text).length>48)
  const traffic=trafficUsage(node),days=daysUntil(node.expires_at)
  const expiry=days===null?tr('未设到期'):days<0?tr('已过期 {0} 天',-days):tr('{0} 天后到期',days)
  return <section className="detail-live" data-layout="metric-cards" aria-label={tr("实时指标")}>
@@ -41,6 +38,6 @@ export function DetailLiveOverview({node,preview,onSelectResource}:{node:Node;pr
     <div className="overview-account-footer"><span className="overview-price">{node.price>0?`${money(node.price,node.currency)} / ${tr(Object.hasOwn(CYCLES,node.billing_cycle)?CYCLES[node.billing_cycle]:node.billing_cycle)}`:node.price===0?tr("免费 / 未填写"):tr("价格未知")}</span></div>
    </section>
   </div>
-  {remarkTags.length>0&&<div className={`detail-meta-tags overview-remarks${expanded?' remarks-expanded':''}`} aria-label={tr("备注")}><span className="overview-remarks-label">{tr("备注")}</span><RemarkTags texts={expanded?remarkTags:remarkTags.slice(0,3)} compact={crowded&&!expanded}/>{crowded&&<button className="detail-remarks-toggle" aria-expanded={expanded} onClick={()=>setExpanded(!expanded)}>{expanded?tr("收起备注"):tr("展开备注")}</button>}</div>}
+  {remarkTags.length>0&&<div className="detail-meta-tags overview-remarks remarks-expanded" aria-label={tr("备注")}><span className="overview-remarks-label">{tr("备注")}</span><RemarkTags texts={remarkTags}/></div>}
  </section>
 }

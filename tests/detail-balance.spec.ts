@@ -15,18 +15,18 @@ for(const width of [900,1024,1440,1920])test(`facts span the desktop workspace a
  expect(await page.locator('.detail-fact-groups>section').first().getAttribute('aria-label')).toBe('硬件与系统')
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
 })
-for(const count of [6,7,20])test(`compact desktop route legends expand to show ${count}`,async({page})=>{
+for(const count of [6,7,20])test(`compact desktop route legends directly show ${count}`,async({page})=>{
  await page.setViewportSize({width:800,height:844});await setup(page,count);await page.getByRole('button',{name:'网络延迟',exact:true}).click()
  const legend=page.locator('.route-chips');await expandRoutes(page)
  const options=legend.locator('button[aria-pressed]');await expect(options).toHaveCount(count);await expect(page.locator('.probe-bulk-actions,.route-search,.probe-solo,.probe-restore')).toHaveCount(0)
  const targetName=`线路 Tokyo ${Math.min(7,count)}`,target=legend.getByRole('button',{name:targetName,exact:true});await target.click();await expect(target).toHaveAttribute('aria-pressed','true');await expect(target.locator('.route-chip-check')).toHaveText('✓');await expect(legend).toBeVisible()
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();await expect(target).toBeFocused()
 })
-test('long title expands separately and copy expires without moving rows',async({page,context})=>{
+test('long title remains readable and copy expires without moving rows',async({page,context})=>{
  await context.grantPermissions(['clipboard-read','clipboard-write']);await page.setViewportSize({width:768,height:844});await setup(page,7,true)
- const name=page.locator('.node-title-text'),expand=page.getByRole('button',{name:'展开名称',exact:true});await expect(expand).toBeVisible();const h=(await name.boundingBox())!.height
- await expand.click();expect((await name.boundingBox())!.height).toBeGreaterThan(h);await expect(page.getByRole('dialog')).toHaveCount(0);await page.getByRole('button',{name:'收起名称',exact:true}).click();expect((await name.boundingBox())!.height).toBe(h)
- await page.locator('.detail-facts-toggle').click();const copy=page.getByRole('button',{name:'复制：IPv6',exact:true}),row=copy.locator('xpath=ancestor::dd');const height=(await row.boundingBox())!.height
+ await expect(page.locator('.node-title-text')).toContainText('Tokyo 东京超长节点名称 '.repeat(16).trim())
+ await expect(page.getByRole('button',{name:'展开名称',exact:true})).toHaveCount(0)
+ await expect(page.locator('#detail-fact-groups')).toBeVisible();const copy=page.getByRole('button',{name:'复制：IPv6',exact:true}),row=copy.locator('xpath=ancestor::dd');const height=(await row.boundingBox())!.height
  await page.clock.install();await copy.click();await expect(row.getByRole('status')).toHaveText('已复制');expect(await page.evaluate(()=>navigator.clipboard.readText())).toBe('2001:db8:1234:5678:abcd:1234:5678:abcd');await page.clock.runFor(2001);await expect(row.getByRole('status')).toHaveCount(0,{timeout:3000});expect((await row.boundingBox())!.height).toBe(height)
  await page.evaluate(()=>{let calls=0;Object.defineProperty(navigator.clipboard,'writeText',{configurable:true,value:()=>new Promise((resolve,reject)=>setTimeout(()=>++calls===1?reject(Error('denied')):resolve(undefined),300))})});await copy.click();await copy.click();await page.clock.runFor(301);await expect(row.getByRole('status')).toHaveText('已复制');expect((await row.boundingBox())!.height).toBe(height)
 })
@@ -37,7 +37,7 @@ for(const width of [768,800])for(const tab of ['resources','latency'])test(`comp
  const frame=page.locator('.detail-chart-frame');await frame.scrollIntoViewIfNeeded();const height=(await frame.boundingBox())!.height,tip=frame.locator('.recharts-tooltip-wrapper')
  for(const x of [180,150,((await frame.boundingBox())!.width-75)]){await frame.click({position:{x,y:110}});await expect(frame).toHaveAttribute('data-tooltip-open','true');await expect(tip,`chart click at ${x}px`).toBeVisible();const b=(await tip.boundingBox())!;expect(b.x).toBeGreaterThanOrEqual(0);expect(b.x+b.width).toBeLessThanOrEqual(width);const close=page.getByRole('button',{name:'关闭图表提示',exact:true});await expect.poll(async()=> (await close.boundingBox())?.height??0).toBeGreaterThanOrEqual(44);await close.click();await expect(tip).toBeHidden()}
  await frame.click({position:{x:180,y:110}});await expect(tip).toBeVisible();if(tab==='latency')await expect.poll(()=>tip.locator('.recharts-default-tooltip').evaluate(el=>el.scrollHeight>el.clientHeight)).toBeTruthy()
- await page.locator('.detail-facts-toggle').click();await expect(tip).toBeHidden();await frame.click({position:{x:180,y:110}});await expect(tip).toBeVisible();await page.getByRole('button',{name:'24 小时',exact:true}).click();await expect(page.locator('.recharts-tooltip-wrapper')).toBeHidden();expect((await frame.boundingBox())!.height).toBe(height)
+ await page.locator('.detail-information h3').first().click();await expect(tip).toBeHidden();await frame.click({position:{x:180,y:110}});await expect(tip).toBeVisible();await page.getByRole('button',{name:'24 小时',exact:true}).click();await expect(page.locator('.recharts-tooltip-wrapper')).toBeHidden();expect((await frame.boundingBox())!.height).toBe(height)
 })
 test('selecting a distant legend preserves catalog order and keyboard focus',async({page})=>{
  await page.setViewportSize({width:800,height:844});await setup(page,20);await page.getByRole('button',{name:'网络延迟',exact:true}).click();await expandRoutes(page)

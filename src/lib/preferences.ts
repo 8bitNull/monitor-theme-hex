@@ -2,12 +2,12 @@ import { useEffect, useState, useMemo, useCallback, type SetStateAction } from '
 import { normalizePreferences, type Preferences, type DisplayPatch } from './appearance'
 export { palettes } from './appearance'
 export type { Preferences } from './appearance'
-const personalKeys = ['appearance', 'probe', 'summaryCollapsed', 'detailInfoMode'] as const
+const personalKeys = ['appearance', 'probe'] as const
 export type DesktopPreferences = {mapExpanded?:boolean;cardDensity:'compact'|'detailed'}
 const desktopKey='hex-desktop-v1'
 export function useDesktopPreferences(){
  const [desktop,setDesktop]=useState<DesktopPreferences>(()=>{
-  try {const saved=JSON.parse(localStorage.getItem(desktopKey)||'{}');return {mapExpanded:typeof saved.mapExpanded==='boolean'?saved.mapExpanded:undefined,cardDensity:saved.cardDensity==='detailed'?'detailed':'compact'}}
+  try {const saved=JSON.parse(localStorage.getItem(desktopKey)||'{}');return {cardDensity:saved.cardDensity==='detailed'?'detailed':'compact'}}
   catch {return {cardDensity:'compact'}}
  })
  useEffect(()=>{try{localStorage.setItem(desktopKey,JSON.stringify(desktop))}catch{/* Optional personal preference. */}},[desktop])

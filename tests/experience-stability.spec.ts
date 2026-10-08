@@ -90,6 +90,11 @@ for(const [width,height,language,appearance,count] of [
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
  const core=first.locator(width<=720?'.ma-meters':'.resources')
  await page.screenshot({path:`artifacts/experience-audit-2026-09-30/fleet-${count}-${width}-${appearance}.png`})
+ if(width===1024){
+  const map=(await page.locator('.map-frame').boundingBox())!,node=(await cards.first().boundingBox())!
+  expect(map.y+map.height).toBeLessThanOrEqual(node.y)
+  await core.scrollIntoViewIfNeeded()
+ }
  expect((await core.boundingBox())!.y).toBeLessThan(height-60)
  // Returning from a distant node should retain the node's viewport position.
  const target=cards.nth(Math.min(count-1,15)).locator('button[data-node-id]')

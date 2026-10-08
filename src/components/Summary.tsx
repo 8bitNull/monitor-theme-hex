@@ -67,9 +67,9 @@ function CurrentTime() {
     useEffect(() => { const timer = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(timer); }, []);
     return <Tile icon={Clock} label={tr("当前时间")}><strong className="summary-time">{time.toLocaleTimeString(locale(), { hour12: false })}</strong><small className="text-muted-foreground">{time.toLocaleDateString(locale())}{tr("\u00B7 本地时间")}</small></Tile>;
 }
-export function Summary({ nodes, prefs, loadAlerts, onAlert, status, onStatus, onCollapse }: {
+export function Summary({ nodes, prefs, loadAlerts, onAlert, status, onStatus }: {
     nodes: Node[];
-    status:string; onStatus:(value:string)=>void; onCollapse:(value:boolean)=>void;
+    status:string; onStatus:(value:string)=>void;
     prefs: Preferences;
     loadAlerts: {events:LoadAlert[];saved:boolean};
     onAlert:(event:LoadAlert)=>void;
@@ -83,13 +83,8 @@ export function Summary({ nodes, prefs, loadAlerts, onAlert, status, onStatus, o
     const regions = new Set(nodes.map(n => regionKey(n.country)).filter(c => c !== UNKNOWN_REGION));
     if (!Object.entries(prefs.modules).some(([key, on]) => key !== 'map' && on))
         return null;
-    return (<div className="overview-summary" data-collapsed={prefs.summaryCollapsed}><button className="summary-toggle" aria-expanded={!prefs.summaryCollapsed} onClick={()=>onCollapse(!prefs.summaryCollapsed)}>{prefs.summaryCollapsed?tr("展开总览"):tr("收起总览")}</button>
-    <div className="summary-compact">
-      {prefs.modules.online&&<><button aria-pressed={status==='online'} onClick={()=>onStatus(status==='online'?'all':'online')}>{tr("在线")} {online.length}/{nodes.length}</button><button aria-pressed={status==='offline'} onClick={()=>onStatus(status==='offline'?'all':'offline')}>{tr("离线")} {nodes.length-online.length}</button><button aria-pressed={status==='pending'} onClick={()=>onStatus(status==='pending'?'all':'pending')}>{tr("待更新")} {unavailable}</button></>}
-      {prefs.modules.speed&&<span>{tr("实时网速")} <b>{fresh.length?rate(now.rx+now.tx):'—'}</b></span>}
-      {prefs.modules.busiest&&<span>{tr("高负载")} {loadAlerts.events.filter(e=>e.status==='active').length}</span>}
-      {!prefs.modules.online&&!prefs.modules.speed&&!prefs.modules.busiest&&<span>{tr("总览已收起")}</span>}
-    </div><div className="summary-grid grid gap-3" data-load-alerts={prefs.modules.busiest}>
+    return (<section className="overview-summary" aria-label={tr("运行概况")}><h2 className="overview-panel-title">{tr("运行概况")}</h2>
+    <div className="summary-grid grid gap-3" data-load-alerts={prefs.modules.busiest}>
       {prefs.modules.online && <Tile icon={Server} label={tr("节点")}>
         <div className="summary-node-count tnum mt-1 text-xl font-semibold">
           <button aria-label={tr("筛选在线节点")} aria-pressed={status==='online'} onClick={()=>onStatus(status==='online'?'all':'online')}><span>{tr("在线")}</span><b>{online.length}</b></button><span aria-hidden="true">/</span><button aria-label={tr("显示全部节点")} aria-pressed={status==='all'} onClick={()=>onStatus('all')}><span>{tr("全部")}</span><b>{nodes.length}</b></button>
@@ -118,5 +113,5 @@ export function Summary({ nodes, prefs, loadAlerts, onAlert, status, onStatus, o
       {prefs.modules.busiest && <LoadAlertTile {...loadAlerts} onOpen={onAlert} available={nodes.map(n=>n.id)}/>}
       {prefs.modules.regions && <Tile icon={Globe} label={tr("地区统计")}><div className="tnum mt-1 text-xl font-semibold">{regions.size}{tr("个地区")}</div><small className="text-muted-foreground">{nodes.filter(n => regionKey(n.country) === UNKNOWN_REGION).length}{tr("个节点未定位")}</small></Tile>}
       {prefs.modules.clock && <CurrentTime />}
-    </div></div>);
+    </div></section>);
 }

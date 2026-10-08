@@ -260,3 +260,20 @@ npm run test:e2e
 - `npm test` (958 literal translation calls), `npm run lint`, build and whitespace checks passed. The five relevant Chromium suites passed 35/35: resource-trends, detail-overview, detail-resources, detail-toolbar-audit and mobile-app. Added unit cases cover zeroes, gaps, invalid values, ordering/deduplication and memory units.
 - Eight before and eight after screenshots use the same fixture across 1440/900/721/390px and light Chinese/dark English. Desktop images were inspected; the two 390px phone overview PNGs are byte-identical before/after. Independent read-only review approved. Evidence stays local in `artifacts/resource-trends/`.
 - This is targeted Chromium and local-fixture validation, not a new full-suite, Safari or physical-device certification. No version bump, deployment or publication accompanies this feature.
+
+
+## 顶部地图与无折叠布局（2026-10-08）
+
+- 基于本地 0.3.7 实现批准的视觉方案：桌面运行概况与地图并列，节点列表紧随其后；地图按真实地区放大适配，保留所有定位标记、数量与状态提示，地区点击联动筛选。
+- 内容折叠入口已移除，历史折叠偏好迁移为展开；手机地图改为常驻画面与普通滚动列表，账单和设备资料直接展示。
+- `npm run lint`、`npm test`、`npm run build` 与 `git diff --check` 通过。相关 Chromium 回归覆盖 59 项；首次整组 58 项通过，首次地图测量测试改为等待 ResizeObserver 尺寸更新后，地图专项 13 项重新通过。未运行全仓库浏览器测试，未进行 Safari 或实体手机验收。
+- Antigravity 独立审查未发现严重或重要问题。正式截图保存在 `artifacts/top-map-layout/desktop.png` 与 `mobile-detail.png`，本地 fixture 预览端口 4191。
+- 未提交、推送、发布或部署至 ipw.cc；版本号仍为 0.3.7。
+
+
+## 顶部地图发布准备（2026-10-08）
+
+- 实现与首批历史测试迁移已提交至 `0f79cfc` 并推送 `feat/top-map-layout`。收尾修复：窄桌面概况保持两列或四列；关闭地图后的模块按行铺满；新容器遵循毛玻璃设置；长地区标签支持标记上下方放置；路由渲染前同步保存手机标签页滚动位置。后台失效的设备资料折叠选项已移除，README 首页预览与用户指南已更新。
+- 完整 Chromium 首轮 503 项：453 通过、17 既有跳过、33 失败。失败包含旧折叠交互、0.3.7 旧样式断言以及实际布局和快速历史切换问题；早期两项请求遇到同时构建的资源删除，已在构建完成后复测。修复与断言迁移后，受影响文件及地图专项 177 项复测：172 通过、2 跳过、3 失败。最后三项处理后，导航、地图、位置恢复、高负载及资料专项 55 项：54 通过、1 既有跳过、0 失败。全部首轮失败项目均有最终通过结果；未声称单次完整回归全绿。
+- 最终 lint、业务单测、生产构建、diff 检查通过；安装包 317 项允许范围、SHA-256 和包内文件与最终构建逐字节核对通过。浏览器日志位于本地 `artifacts/releases/top-map-validation/`；手机地图截图位于 `artifacts/top-map-layout/mobile-map.png`。未验证实体手机和 Safari。
+- 正式发布流程尚未完成：功能分支已推送，GitHub CLI 未登录，尚未创建或合并 PR。根据 CONTRIBUTING 约定，需 PR 的 CI 通过后合入 main，再更新版本为 0.3.8 并创建标签及 Release；当前包元数据仍为 0.3.7，不作为新的正式发布包。未部署至 ipw.cc。

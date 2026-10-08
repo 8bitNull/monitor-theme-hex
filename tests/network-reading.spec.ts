@@ -42,7 +42,7 @@ for(const width of [768,800,899,900,1200,1350,1360,1440])test(`network readings 
   await expect(page.locator('.detail-chart-frame .recharts-line-curve')).toHaveCount(3)
   await expandRoutes(page);await expect(page.locator('.route-chips button>span').first()).toHaveCSS('text-overflow','ellipsis');await page.keyboard.press('Escape')
   const billing=page.locator('.overview-account')
-  if(width<900){await page.locator('.detail-facts-toggle').click()}
+  await expect(page.locator('#detail-fact-groups')).toBeVisible()
   const status=(await billing.locator('.overview-account-footer').boundingBox())!,facts=(await billing.locator('.overview-billing').boundingBox())!;if(width>=900)expect(status.x).toBeGreaterThanOrEqual(facts.x+facts.width);else expect(status.y).toBeGreaterThanOrEqual(facts.y+facts.height-1)
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
   if(language==='zh'&&appearance==='light')await page.locator('.detail-history').screenshot({path:`tests/artifacts/v013/latency-${width}.png`})

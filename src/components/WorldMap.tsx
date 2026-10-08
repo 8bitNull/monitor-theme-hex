@@ -5,11 +5,12 @@ import {createPortal} from 'react-dom'
 import geometry from '@/data/map-paths.json'
 import {groupRegions} from '@/lib/groups'
 import {countryName} from '@/lib/regionNames'
+import {fitOverview} from '@/lib/mapViewport'
 import {placeMapMarkers} from '@/lib/mapMarkers'
 import {DesktopRegionFilter} from './DesktopRegionFilter'
 import '../styles/map-overview.css'
 export {countryName} from '@/lib/regionNames'
-export type MapNode={id:number;name:string;country:string;online:boolean}
+export type MapNode={id:number;name:string;country:string;online:boolean;attention?:boolean}
 const coordinates=geometry.points as Record<string,number[]>
 type View={x:number;y:number;k:number}
 function fitRegions(points:{point:number[]}[],height=480,padding=32):View{
@@ -33,7 +34,6 @@ export const WorldMap=memo(function WorldMap({pendingNodes=false,nodes,region='a
  },[])
  useEffect(()=>()=>cancelAnimationFrame(frame.current),[])
  const [size,setSize]=useState({width:1000,height:240}),[homeSize,setHomeSize]=useState({width:1000,height:240})
- const [framingPoints,setFramingPoints]=useState(points)
  useEffect(()=>{
   const el=svg.current!;const update=()=>{
    const r=el.getBoundingClientRect();if(!r.width||!r.height)return
@@ -43,14 +43,12 @@ export const WorldMap=memo(function WorldMap({pendingNodes=false,nodes,region='a
   }
   update();const observer=new ResizeObserver(update);observer.observe(el);return()=>observer.disconnect()
  },[])
- const homeHeight=1000*homeSize.height/homeSize.width,headerSpace=44*1000/homeSize.width
- const homeFit=fitRegions(framingPoints,homeHeight-headerSpace,24*1000/homeSize.width)
- const homeView={...homeFit,y:homeFit.y+headerSpace}
+ const homeHeight=1000*homeSize.height/homeSize.width
+ const fitted=fitOverview(points,homeSize.width,homeSize.height)
+ const homeView={x:fitted.x*1000/homeSize.width,y:fitted.y*1000/homeSize.width,k:fitted.k*1000/homeSize.width}
  const renderedView=full?view:homeView,viewHeight=full?480:homeHeight
  const screenScale=Math.min(size.width/1000,size.height/viewHeight)
  const unit=1/screenScale,offsetX=(size.width-1000*screenScale)/2,offsetY=(size.height-viewHeight*screenScale)/2
- const initiallyFramed=useRef(points.length>0)
- useEffect(()=>{if(!initiallyFramed.current&&points.length){initiallyFramed.current=true;setFramingPoints(points);setView(fitRegions(points))}},[points,setView])
  const markers=useMemo(()=>placeMapMarkers(points.map(r=>({...r,x:(r.point[0]*renderedView.k+renderedView.x)*screenScale+offsetX,y:(r.point[1]*renderedView.k+renderedView.y)*screenScale+offsetY}))),[points,renderedView.x,renderedView.y,renderedView.k,screenScale,offsetX,offsetY])
  const tooltipRef=useRef<HTMLDivElement>(null),[tooltipPosition,setTooltipPosition]=useState({x:8,y:8})
  const tooltipText=active?tr('{0}：{1} / {2} 在线',countryName(active.code),active.online,active.total):''
@@ -58,7 +56,7 @@ export const WorldMap=memo(function WorldMap({pendingNodes=false,nodes,region='a
   const marker=markers.find(r=>r.code===active?.code),el=tooltipRef.current
   if(!marker||!el)return
   const r=el.getBoundingClientRect(),x=Math.max(8,Math.min(size.width-r.width-8,marker.x-r.width/2))
-  const top=full?8:52
+  const top=8
   const preferred=marker.y-r.height-14
   const y=Math.max(top,Math.min(size.height-r.height-8,preferred>=top?preferred:marker.y+14))
   setTooltipPosition(old=>Math.abs(old.x-x)<.1&&Math.abs(old.y-y)<.1?old:{x,y})
@@ -85,7 +83,7 @@ export const WorldMap=memo(function WorldMap({pendingNodes=false,nodes,region='a
   catch{setError(true)}
  }
  const drag=useRef<{id:number;x:number;y:number;moved:boolean}|null>(null),suppressClick=useRef(false)
- const tone=(r:typeof regions[number])=>r.online===r.total?'good':r.online===0?'offline':'mixed'
+ const tone=(r:typeof regions[number])=>r.online===0?'offline':r.online<r.total||r.nodes.some(n=>n.attention)?'mixed':'good'
  const byCode=useMemo(()=>new Map(regions.map(r=>[r.code,r])),[regions])
  const land=useMemo(()=>geometry.shapes.map((f,i)=>{
   const r=byCode.get(f.code)
@@ -109,7 +107,8 @@ export const WorldMap=memo(function WorldMap({pendingNodes=false,nodes,region='a
     {markers.map(r=><g key={r.code} transform={`translate(${(r.x-offsetX)*unit} ${(r.y-offsetY)*unit}) scale(${unit})`} className="map-cluster" data-tone={tone(r)} data-region={r.code} role="button" tabIndex={0} aria-pressed={region===r.code} aria-label={tr('{0}：{1} / {2} 在线',countryName(r.code),r.online,r.total)} aria-describedby={active?.code===r.code?tooltipId:undefined}
      onMouseEnter={()=>setHovered(r.code)} onMouseLeave={()=>setHovered(null)} onFocus={()=>setFocused(r.code)} onBlur={()=>setFocused(null)}
      onClick={()=>chooseRegion(r.code)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();chooseRegion(r.code)}}}>
-     <circle className="small-region-hit" r={14}/><circle className="region-ring" r={6}/><circle className="region-core" r={2.5}/>
+     <circle className="small-region-hit" r={18}/><circle className="region-ring" r={12}/><text className="region-count" textAnchor="middle" dominantBaseline="central">{r.total}</text>
+     {(region===r.code||markers.every(other=>other.code===r.code||Math.hypot(other.x-r.x,other.y-r.y)>55))&&<text className="region-name" textAnchor="middle" y={27}>{countryName(r.code)}</text>}
     </g>)}
    </svg>
    {!pendingNodes&&points.length===0&&<p className="map-empty-state" role="status">{tr('暂无可定位的地区信息，仍可在下方查看节点')}</p>}
