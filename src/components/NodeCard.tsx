@@ -66,7 +66,7 @@ export function NodeCard({ node, onOpen, onOpenRoutes, probe = 'auto', prefs, in
       </div></>}
     </button>
       {mobile && billing && <div className="mobile-card-extra">{billing}</div>}
-      <PingStats scale={prefs.latencyScale} latencyWindow={prefs.latencyWindow} warn={prefs.latencyWarn} high={prefs.latencyHigh} count={prefs.homeRoutes} online={node.online} id={node.id} probe={probe} onOpenRoutes={onOpenRoutes}/>
+      <PingStats showStaleRecord={mobile} scale={prefs.latencyScale} latencyWindow={prefs.latencyWindow} warn={prefs.latencyWarn} high={prefs.latencyHigh} count={prefs.homeRoutes} online={node.online} id={node.id} probe={probe} onOpenRoutes={onOpenRoutes}/>
       {mobile && secondary && <div className="mobile-card-extra">{secondary}</div>}
       {!mobile&&hasSupplementary&&<section id={supplementaryId} className="node-supplementary" aria-label={tr('更多信息')}>{connections}{billing}{secondary}</section>}
   </article>;

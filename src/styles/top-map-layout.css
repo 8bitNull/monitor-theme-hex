@@ -43,7 +43,7 @@
  .next-theme .persistent-map .region-atlas:fullscreen .explorer-stage{height:auto;bottom:64px;background:var(--card)}
  .next-theme .node-card .node-supplementary{display:flex;flex-direction:column;gap:8px;padding:10px var(--card-pad) 12px;border-top:1px solid var(--border)}
  .next-theme .node-card .node-supplementary .card-billing{margin:0;padding:0;gap:9px}
- .next-theme .node-card .node-supplementary .node-connections{margin:0;padding:0;border:0;display:flex;gap:16px;font-size:11px}
+ .next-theme .node-card .node-supplementary .node-connections{margin:0;padding:0;border:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;font-size:11px}
  .next-theme .node-card .node-supplementary .node-secondary{margin:0;padding:0}
  .next-theme .node-card .node-supplementary .node-footer{padding:0!important}
  .next-theme .node-card .node-supplementary .node-remarks{display:flex;flex-wrap:wrap;white-space:normal;max-height:none;overflow:visible}
