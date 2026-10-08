@@ -260,3 +260,12 @@ npm run test:e2e
 - `npm test` (958 literal translation calls), `npm run lint`, build and whitespace checks passed. The five relevant Chromium suites passed 35/35: resource-trends, detail-overview, detail-resources, detail-toolbar-audit and mobile-app. Added unit cases cover zeroes, gaps, invalid values, ordering/deduplication and memory units.
 - Eight before and eight after screenshots use the same fixture across 1440/900/721/390px and light Chinese/dark English. Desktop images were inspected; the two 390px phone overview PNGs are byte-identical before/after. Independent read-only review approved. Evidence stays local in `artifacts/resource-trends/`.
 - This is targeted Chromium and local-fixture validation, not a new full-suite, Safari or physical-device certification. No version bump, deployment or publication accompanies this feature.
+
+
+## 顶部地图与无折叠布局（2026-10-08）
+
+- 基于本地 0.3.7 实现批准的视觉方案：桌面运行概况与地图并列，节点列表紧随其后；地图按真实地区放大适配，保留所有定位标记、数量与状态提示，地区点击联动筛选。
+- 内容折叠入口已移除，历史折叠偏好迁移为展开；手机地图改为常驻画面与普通滚动列表，账单和设备资料直接展示。
+- `npm run lint`、`npm test`、`npm run build` 与 `git diff --check` 通过。相关 Chromium 回归覆盖 59 项；首次整组 58 项通过，首次地图测量测试改为等待 ResizeObserver 尺寸更新后，地图专项 13 项重新通过。未运行全仓库浏览器测试，未进行 Safari 或实体手机验收。
+- Antigravity 独立审查未发现严重或重要问题。正式截图保存在 `artifacts/top-map-layout/desktop.png` 与 `mobile-detail.png`，本地 fixture 预览端口 4191。
+- 未提交、推送、发布或部署至 ipw.cc；版本号仍为 0.3.7。

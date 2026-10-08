@@ -5,7 +5,7 @@ import {tr} from '@/lib/i18n'
 import {bytes,osName} from '@/lib/format'
 import {useEffect,useRef,useState} from 'react'
 import type {ComponentType,ReactNode} from 'react'
-import {Database,Copy,Check,ChevronDown, Cpu, Network} from 'lucide-react'
+import {Copy,Check,Cpu,Network} from 'lucide-react'
 
 function Fact({ label, value, warning=false,copy=false }: {
     label: string;
@@ -28,8 +28,7 @@ function Fact({ label, value, warning=false,copy=false }: {
 function FactSection({label,Icon,children}:{label:string;Icon:ComponentType<{size?:number}>;children:ReactNode}){
     return <section aria-label={label}><div className="detail-fact-disclosure"><div className="fact-section-heading"><h3><Icon size={15}/>{label}</h3></div><div className="detail-fact-section-body">{children}</div></div></section>;
 }
-export function DetailFacts({node,mode,compact,mobile=false,onMode}:{node:Node;mode:Preferences['detailInfoMode'];compact:boolean;mobile?:boolean;onMode:(mode:Preferences['detailInfoMode'])=>void}){
- const expanded=!compact || mode==='expanded';
+export function DetailFacts({node,mobile=false}:{node:Node;mode:Preferences['detailInfoMode'];compact:boolean;mobile?:boolean;onMode:(mode:Preferences['detailInfoMode'])=>void}){
  const m=liveMetrics(node)
  const hardware=[
    {key:'agent',label:'Agent',value:node.agent_version},
@@ -40,7 +39,7 @@ export function DetailFacts({node,mode,compact,mobile=false,onMode}:{node:Node;m
    {key:'swap',label:tr('交换空间'),value:m?`${bytes(m.swap_used)} / ${bytes(m.swap_total)}`:'—'},
  ]
  const orderedHardware=mobile?['cpu','capacity','system','arch','swap','agent'].map(key=>hardware.find(item=>item.key===key)!):hardware
- return <div className="detail-information">{compact&&<button className="detail-facts-toggle" aria-expanded={expanded} aria-controls="detail-fact-groups" onClick={()=>onMode(expanded?'collapsed':'expanded')}><span className="detail-facts-title"><Database size={15}/>{tr("设备资料")}</span><ChevronDown size={16}/></button>}<div id="detail-fact-groups" className="detail-fact-groups" hidden={!expanded}>
+ return <div className="detail-information"><div id="detail-fact-groups" className="detail-fact-groups">
    <FactSection label={tr("硬件与系统")} Icon={Cpu}>
      <dl className="detail-facts">
        {orderedHardware.map(item=><Fact key={item.key} label={item.label} value={item.value}/>)}

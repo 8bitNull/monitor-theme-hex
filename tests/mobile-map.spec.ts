@@ -86,7 +86,6 @@ for(const width of [320,390,430])test(`phone layout and controls at ${width}px`,
  const marker=page.locator('.mm-marker[data-region=US]'),code='US'
  for(const code of ['DE','GB']){await chooseOption(select,code);await expect(page.locator('.mm-node')).toHaveCount(1)}
  await chooseOption(select,'all')
- await page.getByRole('button',{name:'收起节点列表',exact:true}).click()
  await page.getByRole('button',{name:'查看全球',exact:true}).click()
  await marker.tap();await expect(select).toHaveAttribute('data-value',code!)
  await marker.focus();await page.keyboard.press('Enter');await expect(select).toHaveAttribute('data-value','all')
@@ -114,17 +113,15 @@ test('touch pan and pinch do not select a region; world button restores world',a
  await page.getByRole('button',{name:'查看全球',exact:true}).click()
  await expect(land).toHaveAttribute('transform',initial!)
  await page.setViewportSize({width:390,height:600})
- await page.getByRole('button',{name:'展开节点列表',exact:true}).click()
  await page.locator('.mm-node').last().scrollIntoViewIfNeeded()
- expect(await page.locator('.mm-sheet-content').evaluate(el=>el.scrollTop)).toBeGreaterThan(0)
- expect(await page.evaluate(()=>scrollY)).toBe(0)
+ await expect(page.locator('.mm-sheet-content')).toBeVisible()
+ expect(await page.evaluate(()=>scrollY)).toBeGreaterThan(0)
 })
 
 test('pending node data does not falsely show empty map',async({page})=>{
  let finish!:()=>void;const pending=new Promise<void>(r=>finish=r)
  await page.route('**/api/nodes',async r=>{await pending;await r.continue()})
  await page.goto('/?page=map')
- await page.getByRole('button',{name:'展开节点列表',exact:true}).click()
  await expect(page.getByText('等待节点数据',{exact:true})).toBeVisible()
  await expect(page.locator('.mm-canvas > svg')).toBeVisible()
  await expect(page.locator('.mm-map-message')).toHaveCount(0)
@@ -166,7 +163,7 @@ test('map selection preserves node search and overview scroll; short landscape f
  await expect(page.locator('.ma-node')).toHaveCount(1)
  await page.setViewportSize({width:667,height:375});await page.goto('/?page=map')
  await expect(page.locator('.mm-canvas > svg')).toBeVisible()
- expect((await page.locator('.mm-canvas').boundingBox())!.height).toBe(375)
+ expect((await page.locator('.mm-canvas').boundingBox())!.height).toBeLessThanOrEqual(375*.55)
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
 })
 
@@ -212,55 +209,33 @@ test('saved map camera stays stable when node data changes',async({page})=>{
  await expect(page.locator('.mm-results-heading')).toContainText('1 / 1 在线')
 })
 
-test('immersive map starts collapsed and exposes nodes without page scrolling',async({page})=>{
+test('map and node list are permanent and use normal page scrolling',async({page})=>{
  await page.goto('/?page=map')
  await expect(page.locator('.mm-canvas > svg')).toBeVisible()
  await expect(page.locator('.ma-nav')).toBeHidden()
- const box=(await page.locator('.mm-canvas').boundingBox())!
- expect(box.x).toBe(0);expect(box.y).toBe(0);expect(box.height).toBe(844)
- await expect(page.locator('.mm-sheet')).toHaveAttribute('data-state','collapsed')
- await expect(page.locator('.mm-node').first()).toBeHidden()
- await page.getByRole('button',{name:'展开节点列表',exact:true}).click()
  await expect(page.locator('.mm-node').first()).toBeVisible()
- await page.getByRole('button',{name:'收起节点列表',exact:true}).click()
+ await expect(page.locator('.mm-sheet-toggle,.mm-sheet-handle')).toHaveCount(0)
+ const map=(await page.locator('.mm-canvas').boundingBox())!,list=(await page.locator('.mm-sheet').boundingBox())!
+ expect(list.y).toBeGreaterThanOrEqual(map.y+map.height)
  await page.getByRole('button',{name:'查看全球',exact:true}).click()
  await page.locator('.mm-marker[data-region=US]').tap()
- await expect(page.locator('.mm-sheet')).toHaveAttribute('data-state','half')
- await expect(page.locator('.mm-node').first()).toBeVisible()
- expect(await page.evaluate(()=>scrollY)).toBe(0)
+ await expect(page.locator('.mm-node')).toHaveCount(1)
  await page.getByRole('button',{name:'返回概览',exact:true}).click()
  await expect(page.locator('.ma-nav')).toBeVisible()
 })
 
-test('sheet handle supports touch and keyboard while list scroll leaves camera still',async({page,context})=>{
- await page.goto('/?page=map');await expect(page.locator('.mm-marker').first()).toBeVisible()
- const toggle=page.getByRole('button',{name:'展开节点列表',exact:true})
- const toggleBox=(await toggle.boundingBox())!
- expect(toggleBox.y+toggleBox.height).toBeLessThanOrEqual(844)
- const handle=page.getByRole('button',{name:'调整列表高度',exact:true})
- const b=(await handle.boundingBox())!,x=b.x+b.width/2,y=b.y+b.height/2
- const client=await context.newCDPSession(page)
- await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:1}]})
- await client.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y-100,id:1}]})
- await client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]})
- await expect(page.locator('.mm-sheet')).toHaveAttribute('data-state','half')
- await handle.focus();await page.keyboard.press('Enter')
- await expect(page.locator('.mm-sheet')).toHaveAttribute('data-state','expanded')
+test('scrolling the persistent list keeps the map camera still',async({page})=>{
+ await page.goto('/?page=map')
+ await expect(page.locator('.mm-marker').first()).toBeVisible()
  await page.setViewportSize({width:390,height:600})
+ await expect(page.getByRole('group',{name:'世界节点分布地图',exact:true})).toHaveAttribute('viewBox',/^0 0 \d+ 328$/)
  const camera=await page.locator('.mm-land').getAttribute('transform')
  await page.locator('.mm-node').last().scrollIntoViewIfNeeded()
  await expect(page.locator('.mm-land')).toHaveAttribute('transform',camera!)
- expect(await page.evaluate(()=>scrollY)).toBe(0)
- await handle.press('Enter')
- await expect(page.locator('.mm-sheet')).toHaveAttribute('data-state','half')
- const down=(await handle.boundingBox())!,dx=down.x+down.width/2,dy=down.y+down.height/2
- await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:dx,y:dy,id:1}]})
- await client.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:dx,y:dy+90,id:1}]})
- await client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]})
- await expect(page.locator('.mm-sheet')).toHaveAttribute('data-state','collapsed')
+ expect(await page.evaluate(()=>scrollY)).toBeGreaterThan(0)
 })
 
-test('approved visual uses a close default, floating summary and recoverable world view',async({page})=>{
+test('close default keeps a recoverable world view beside the permanent list',async({page})=>{
  await page.goto('/?page=map')
  await expect(page.locator('.mm-marker').first()).toBeVisible()
  const camera=()=>page.evaluate(()=>JSON.parse(sessionStorage.getItem('hex-mobile-map-v1')!).camera)
@@ -269,8 +244,7 @@ test('approved visual uses a close default, floating summary and recoverable wor
  const panel=(await page.locator('.mm-sheet').boundingBox())!
  expect(panel.x).toBeGreaterThanOrEqual(15)
  expect(panel.width).toBeLessThan(390)
- expect(panel.y+panel.height).toBeLessThan(834)
- expect(panel.height).toBeLessThanOrEqual(82)
+ await expect(page.locator('.mm-sheet-content')).toBeVisible()
  await page.getByRole('button',{name:'查看全球',exact:true}).click()
  await expect.poll(async()=>Number((await camera()).k)).toBeLessThanOrEqual(.94)
  await expect(page.locator('.mm-marker[data-region=US]')).toBeVisible()

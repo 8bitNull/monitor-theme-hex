@@ -23,7 +23,7 @@ test('single resource plot retains selection across refresh and time/tab changes
  await page.getByRole('button',{name:'网络延迟',exact:true}).click();await page.getByRole('button',{name:'资源',exact:true}).click()
  await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric','network')
  await expect(page.locator('.detail-metric-network .detail-metric-note').first()).toContainText('TCP 102 · UDP 24')
- await expect(page.locator('.detail-meta-tags')).toContainText('2.5Gbps');await expect(page.locator('.detail-information')).toContainText('1.0.0')
+ await expect(page.locator('.overview-remarks')).toContainText('2.5Gbps');await expect(page.locator('.detail-information')).toContainText('1.0.0')
 })
 test('responsive composition and stable hover with many routes in light and dark',async({page})=>{
  test.setTimeout(90000)
@@ -69,7 +69,7 @@ test('unlimited quota, long facts and condensed offline overview remain readable
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],online:false,traffic_limit:0,name:'节点名称'.repeat(30),cpu_name:'Long processor model '.repeat(20),remark:'无分号长备注'.repeat(40)}]}}))
  await page.reload();await expect(page.locator('.overview-unavailable')).toContainText('离线');await expect(page.locator('.detail-connections,.detail-resources')).toHaveCount(0);await expect(page.locator('.overview-account')).toBeVisible();await expect(page.locator('.overview-usage progress')).toHaveCount(0)
  for(const width of [768,1024]){await page.setViewportSize({width,height:1000});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()}
- await page.getByRole('button',{name:'展开备注',exact:true}).click();await expect(page.locator('.detail-meta-tags')).toContainText('无分号长备注')
+ await expect(page.getByRole('button',{name:'展开备注',exact:true})).toHaveCount(0);await expect(page.locator('.overview-remarks')).toContainText('无分号长备注')
 })
 
 test('missing samples and long time gaps break curves without hiding zero',async({page})=>{

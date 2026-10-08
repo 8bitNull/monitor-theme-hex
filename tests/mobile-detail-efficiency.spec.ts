@@ -23,7 +23,7 @@ test('overview resource actions preserve independent resource and network ranges
  await expect(page.getByRole('button',{name:'1 小时',exact:true})).toHaveAttribute('aria-pressed','true')
 })
 
-test('single route summary keeps raw statistics and expands into a comparison table',async({page})=>{
+test('single route summary keeps raw statistics and compares via persistent route controls',async({page})=>{
  await setup(page)
  await page.route('**/api/nodes/*/metrics?*',r=>{const now=Math.floor(Date.now()/1000);return r.fulfill({json:{metrics:[],probes:{'1':'Primary','2':'Backup'},loss:{'1':0},ping:[1,2].flatMap(task_id=>Array.from({length:20},(_,i)=>({task_id,ts:now-(19-i)*60,latency:task_id===1?(i===19?null:i===18?1000:10):40})))}})})
  await page.goto('/node/1?routes=1#latency')
@@ -33,15 +33,11 @@ test('single route summary keeps raw statistics and expands into a comparison ta
  await page.getByRole('button',{name:'统计口径',exact:true}).click()
  await expect(page.getByRole('dialog')).toContainText('不平均各采样桶的百分比')
  await page.keyboard.press('Escape')
- await page.getByRole('button',{name:'比较线路',exact:true}).click()
  await page.getByRole('group',{name:'线路图例'}).getByRole('button',{name:'Backup',exact:true}).click()
  await expect(page.locator('.ma-route-statistics tbody tr')).toHaveCount(2)
  await expect(page.locator('.ma-route-statistics tbody tr').filter({hasText:'Backup'})).toContainText('未统计')
- await page.getByRole('button',{name:'收起线路',exact:true}).click()
  await expect(page.locator('.ma-route-statistics tbody tr')).toHaveCount(2)
- await page.getByRole('button',{name:'比较线路',exact:true}).click()
  await page.getByRole('group',{name:'线路图例'}).getByRole('button',{name:'Primary',exact:true}).click()
- await page.getByRole('button',{name:'收起线路',exact:true}).click()
  await expect(summary.locator('dd')).toHaveText(['40.0 ms','40.0 ms','未统计'])
  await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({status:503}))
  await page.getByRole('button',{name:'刷新历史',exact:true}).click()

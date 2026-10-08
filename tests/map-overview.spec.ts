@@ -10,10 +10,8 @@ test('overview uses one persistent region selector including unknown regions',as
  await expect(page.locator('.map-status-sidebar,.home-region-list')).toHaveCount(0)
  await expect(page.getByRole('button',{name:'放大地图',exact:true})).toHaveCount(0)
  await chooseOption(select,'unknown');await expect(page.locator('.node-card')).toHaveCount(1)
- await page.getByRole('button',{name:'收起地图',exact:true}).click()
- await expect(map).toHaveCount(0);await expect(select).toHaveAttribute('data-value','unknown')
+ await expect(page.locator('.home-map-toggle')).toHaveCount(0)
  await chooseOption(select,'all');await expect(page.locator('.node-card')).toHaveCount(3)
- await page.getByRole('button',{name:'展开地图',exact:true}).click()
  const jp=page.locator('.map-cluster[data-region="JP"]')
  await jp.focus();await expect(page.getByRole('tooltip')).toContainText('日本')
  await expect(page.getByRole('tooltip')).toContainText('1 / 1')
@@ -23,7 +21,10 @@ test('overview uses one persistent region selector including unknown regions',as
 test('overview ignores navigation gestures and expanded view restores overview framing',async({page})=>{
  await page.goto('/')
  const land=page.locator('.map-land'),svg=page.getByLabel('世界节点分布地图',{exact:true})
- await expect(land).toBeVisible();const initial=await land.getAttribute('transform')
+ await expect(land).toBeVisible()
+ await expect(page.locator('.map-cluster')).toHaveCount(6)
+ await expect.poll(()=>svg.evaluate(el=>Math.abs(el.viewBox.baseVal.height-1000*el.getBoundingClientRect().height/el.getBoundingClientRect().width)<.01)).toBe(true)
+ const initial=await land.getAttribute('transform')
  await svg.focus();await page.keyboard.press('+');await expect(land).toHaveAttribute('transform',initial!)
  await svg.hover();await page.keyboard.down('Control');await page.mouse.wheel(0,-200);await page.keyboard.up('Control')
  await expect(land).toHaveAttribute('transform',initial!)
@@ -42,11 +43,11 @@ test('overview ignores navigation gestures and expanded view restores overview f
 for(const width of [721,900,1440])test(`overview remains compact at ${width}px`,async({page})=>{
  await page.setViewportSize({width,height:900});await page.goto('/')
  await expect(page.locator('.map-graticule')).toBeVisible()
- expect(await page.locator('.region-atlas').evaluate(el=>el.getBoundingClientRect().height)).toBe(240)
+ expect(await page.locator('.region-atlas').evaluate(el=>el.getBoundingClientRect().height)).toBe(215)
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
 })
 
-test('late located data frames once and refresh preserves the overview and stale filter',async({page})=>{
+test('late regions reframe safely and preserve the stale filter',async({page})=>{
  let country=''
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],country}]}}))
  await page.goto('/')
@@ -56,13 +57,13 @@ test('late located data frames once and refresh preserves the overview and stale
  await expect(page.locator('.map-empty-state')).toContainText('暂无可定位的地区信息')
  country='JP'
  await expect(page.locator('.map-cluster[data-region=JP]')).toHaveCount(1,{timeout:10000})
- await expect(land).toHaveAttribute('transform',/scale\(2\)/)
+ await expect(land).not.toHaveAttribute('transform',/scale\(2\)/)
  await expect(page.locator('.map-empty-state')).toHaveCount(0)
  const initial=await land.getAttribute('transform')
  await chooseOption(select,'JP')
  country='DE'
  await expect(page.locator('.map-cluster[data-region=DE]')).toHaveCount(1,{timeout:10000})
- await expect(land).toHaveAttribute('transform',initial!)
+ await expect(land).not.toHaveAttribute('transform',initial!)
  await expect(select).toHaveAttribute('data-value','JP');await expect(select).toContainText('0')
  await chooseOption(select,'all');await expect(page.locator('.node-card')).toHaveCount(1)
 })
@@ -71,7 +72,7 @@ test('fullscreen rejection leaves a usable overview and explanation',async({page
  await page.addInitScript(()=>{Element.prototype.requestFullscreen=()=>Promise.reject(new Error('Unavailable'))})
  await page.goto('/');await page.getByRole('button',{name:'放大查看',exact:true}).click()
  await expect(page.locator('.map-open-error')).toHaveText('无法打开全屏，请使用支持全屏的浏览器。')
- await expect(page.getByRole('button',{name:'收起地图',exact:true})).toBeVisible()
+ await expect(page.locator('.map-frame')).toBeVisible()
  await chooseOption(page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true}),'JP')
  await expect(page.locator('.node-card')).toHaveCount(1)
 })
@@ -125,17 +126,14 @@ test('integrated map controls preserve compact height and safe marker space',asy
   await page.setViewportSize({width,height:1000});await page.goto('/')
   await expect(page.locator('.map-cluster').first()).toBeVisible()
   const frame=page.locator('.map-frame'),bar=page.locator('.home-region-bar')
-  expect((await frame.boundingBox())!.height).toBe(240)
+  expect((await frame.locator('.explorer-stage').boundingBox())!.height).toBe(215)
   const header=(await bar.boundingBox())!
   for(const marker of await page.locator('.map-cluster').all()){
    expect((await marker.boundingBox())!.y).toBeGreaterThanOrEqual(header.y+header.height)
    await marker.focus()
    expect((await page.getByRole('tooltip').boundingBox())!.y).toBeGreaterThanOrEqual(header.y+header.height)
   }
-  await page.getByRole('button',{name:'收起地图',exact:true}).click()
-  await expect(page.getByRole('button',{name:'展开地图',exact:true})).toBeVisible()
-  expect((await frame.boundingBox())!.height).toBeLessThanOrEqual(44)
-  await page.getByRole('button',{name:'展开地图',exact:true}).click()
+  await expect(frame.locator('.home-map-toggle')).toHaveCount(0)
  }
 })
 
@@ -151,7 +149,7 @@ test('Macau marker remains on its projected coordinate in fullscreen',async({pag
   const distance=await page.locator(`.map-cluster[data-region="${code}"]`).evaluate((el,point)=>{
    const m=(document.querySelector('.map-land') as SVGGraphicsElement).getScreenCTM()!
    const anchor=new DOMPoint(point[0],point[1]).matrixTransform(m)
-   const core=el.querySelector('.region-core')!.getBoundingClientRect()
+   const core=el.querySelector('.region-ring')!.getBoundingClientRect()
    return Math.hypot(anchor.x-core.x-core.width/2,anchor.y-core.y-core.height/2)
   },points[code])
   expect(distance).toBeLessThan(.1)

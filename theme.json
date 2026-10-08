@@ -66,11 +66,6 @@
     { "key": "mobile_card_info_expiry", "type": "boolean", "label": "手机卡片：到期信息", "default": true },
     { "key": "mobile_card_info_remarks", "type": "boolean", "label": "手机卡片：备注标签", "default": true },
     { "key": "mobile_card_info_price", "type": "boolean", "label": "手机卡片：价格", "default": true },
-    { "key": "detailInfoMode", "type": "select", "label": "设备资料展开方式", "default": "auto", "help": "桌面端始终展开；折叠选项仅影响手机端", "options": [
-      { "value": "auto", "label": "自动" },
-      { "value": "expanded", "label": "展开" },
-      { "value": "collapsed", "label": "折叠" }
-    ] },
 
     { "type": "title", "label": "首页模块" },
     { "key": "module_online", "type": "boolean", "label": "在线节点", "default": true },

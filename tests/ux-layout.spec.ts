@@ -14,46 +14,31 @@ async function fixture(page:Page,{grouped=false,warnings=false,longName=false}:{
  await page.route('**/api/nodes/*/metrics?*',route=>route.fulfill({json:metrics()}))
 }
 
-test('short desktop starts with map expanded and retains region filtering after collapse',async({page})=>{
+test('short desktop keeps map visible and retains region filtering',async({page})=>{
  await page.setViewportSize({width:1024,height:768});await fixture(page);await page.goto('/')
  const map=page.locator('.map-frame')
- await expect(map.getByRole('button',{name:'收起地图'})).toBeVisible()
- await map.getByRole('button',{name:'收起地图'}).click()
- await expect(map.getByRole('button',{name:'展开地图'})).toBeVisible()
- await expect(map.locator('.home-region-bar')).toBeVisible()
- const core=page.locator('.node-card .resources').first()
- await expect(core).toBeVisible()
- expect((await core.boundingBox())!.y).toBeLessThan(768)
+ await expect(map.locator('.region-atlas')).toBeVisible()
+ await expect(map.locator('.home-map-toggle')).toHaveCount(0)
  await chooseOption(page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true}),'JP')
  await expect(page.locator('.node-card')).toHaveCount(1)
- await map.getByRole('button',{name:'展开地图'}).click()
- await expect(map.getByRole('button',{name:'收起地图'})).toBeVisible()
- await expect(page.locator('.node-card')).toHaveCount(1)
- await map.getByRole('button',{name:'收起地图'}).click()
+ await expect(map.locator('.map-cluster')).toHaveCount(6)
+ await page.reload()
+ await expect(map.locator('.region-atlas')).toBeVisible()
  await expect(page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true})).toHaveAttribute('data-value','JP')
 })
 
-test('desktop map and card density preferences survive reload while compact cards retain warnings',async({page})=>{
+test('desktop density survives reload while card facts and warnings remain visible',async({page})=>{
  await page.setViewportSize({width:1440,height:900});await fixture(page,{warnings:true});await page.goto('/')
- await expect(page.locator('.map-frame').getByRole('button',{name:'收起地图'})).toBeVisible()
- await page.locator('.map-frame').getByRole('button',{name:'收起地图'}).click()
- await page.locator('.map-frame').getByRole('button',{name:'展开地图'}).click()
- await page.reload()
- await expect(page.locator('.map-frame').getByRole('button',{name:'收起地图'})).toBeVisible()
- await page.locator('.map-frame').getByRole('button',{name:'收起地图'}).click()
  await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'detailed')
  await expect(page.locator('.node-card').first().locator('.card-billing')).toBeVisible()
  await page.reload()
- await expect(page.locator('.map-frame').getByRole('button',{name:'展开地图'})).toBeVisible()
+ await expect(page.locator('.map-frame .region-atlas')).toBeVisible()
  await expect(page.getByRole('combobox',{name:'卡片密度'})).toHaveAttribute('data-value','detailed')
  await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'compact')
  const card=page.locator('.node-card').first()
- await expect(card).toContainText('高负载')
- await expect(card).toContainText('即将到期')
- await expect(card).toContainText('流量额度已用尽')
- await expect(card.locator('.card-billing')).toBeHidden()
- await card.getByRole('button',{name:'更多信息'}).click()
+ for(const warning of ['高负载','即将到期','流量额度已用尽'])await expect(card).toContainText(warning)
  await expect(card.locator('.card-billing')).toBeVisible()
+ await expect(card.locator('.node-secondary-toggle')).toHaveCount(0)
 })
 
 test('desktop reset columns keeps search and sort and persists the default layout',async({page})=>{
@@ -71,7 +56,7 @@ test('desktop reset columns keeps search and sort and persists the default layou
  await expect(page.locator('.node-table th[data-column=traffic]')).toBeVisible()
 })
 
-test('grouped mobile list shows its first card near the top and detail billing expands',async({page})=>{
+test('grouped mobile list shows its first card near the top and detail billing is visible',async({page})=>{
  await page.setViewportSize({width:390,height:844});await fixture(page,{grouped:true});await page.goto('/')
  const card=page.locator('.ma-node').first()
  await expect(card).toBeVisible()
@@ -79,10 +64,8 @@ test('grouped mobile list shows its first card near the top and detail billing e
  console.log(`Grouped first card y=${firstCardY}`)
  expect(firstCardY).toBeLessThanOrEqual(300)
  await card.locator('>button').click()
- const billing=page.getByRole('button',{name:'流量与账单'})
- await expect(billing).toHaveAttribute('aria-expanded','false')
- await billing.click()
- await expect(billing).toHaveAttribute('aria-expanded','true')
+ await expect(page.getByRole('heading',{name:'流量与账单'})).toBeVisible()
+ await expect(page.locator('#ma-billing-details')).toBeVisible()
  await expect(page.locator('.ma-detail-overview')).toContainText('费用')
 })
 
@@ -105,7 +88,7 @@ for (const width of [320,390]) test(`mobile facts keep long values readable at $
  await page.goto('/node/1')
  await page.getByRole('navigation',{name:'详情分区'}).getByRole('button',{name:'资料'}).click()
  const facts=page.locator('.detail-information')
- for(const [label,alignment] of [['Agent','right'],['系统','left'],['CPU','left'],['IPv6','left']] as const){
+ for(const [label,alignment] of [['Agent','right'],['系统','right'],['CPU','right'],['IPv6','right']] as const){
   const row=facts.locator('.detail-facts > div').filter({has:page.locator('dt').filter({hasText:new RegExp(`^${label}$`)})})
   await expect(row.locator('dd')).toBeVisible()
   await expect(row.locator('dd')).toHaveCSS('text-align',alignment)
@@ -141,26 +124,19 @@ test('desktop and mobile layouts fit light, dark and English long-name viewports
  }
 })
 
-test('desktop supplementary information expands together below routes without moving core readings or keyboard focus',async({page})=>{
+test('desktop supplementary information stays visible below routes without moving core readings',async({page})=>{
  await fixture(page);await page.goto('/')
  const card=page.locator('.node-card').first()
  await expect(card.locator('.latency-reading')).toBeVisible()
  const routeOffset=()=>card.locator('.route-matrix').evaluate(el=>el.getBoundingClientRect().top-el.closest('.node-card')!.getBoundingClientRect().top)
  const routeBefore=await routeOffset()
- const toggle=card.locator('.node-secondary-toggle')
- await expect(toggle).toHaveAccessibleName('更多信息')
- await toggle.focus();await page.keyboard.press('Enter')
- await expect(toggle).toHaveAccessibleName('收起信息')
- await expect(toggle).toBeFocused()
+ await expect(card.locator('.node-secondary-toggle')).toHaveCount(0)
  const panel=card.locator('.node-supplementary')
- await expect(toggle).toHaveAttribute('aria-controls',await panel.getAttribute('id')||'missing')
  for(const selector of ['.node-connections','.card-billing','.node-price'])await expect(panel.locator(selector)).toBeVisible()
  const routeAfter=(await card.locator('.route-matrix').boundingBox())!
  expect(await routeOffset()).toBeCloseTo(routeBefore,0)
  expect((await panel.boundingBox())!.y).toBeGreaterThanOrEqual(routeAfter.y+routeAfter.height)
- await page.keyboard.press('Enter')
- await expect(panel).toBeHidden()
- await expect(card.getByRole('button',{name:'更多信息',exact:true})).toBeFocused()
+
 })
 
 test('single-route loading keeps the card height stable when probe data arrives',async({page})=>{

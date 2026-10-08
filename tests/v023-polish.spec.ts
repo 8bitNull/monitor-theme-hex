@@ -27,7 +27,7 @@ test('compact desktop search and visible network facts preserve the primary scan
 })
 
 test('compact desktop detail groups, alignment and history ranges are bounded',async({page})=>{
- await page.setViewportSize({width:800,height:844});await setup(page);await page.goto('/node/1');await page.locator('.detail-facts-toggle').click()
+ await page.setViewportSize({width:800,height:844});await setup(page);await page.goto('/node/1');await expect(page.locator('#detail-fact-groups')).toBeVisible()
  for(const label of ['硬件与系统','网络与流量'])await expect(page.getByRole('region',{name:label}).locator('.detail-fact-section-body')).toBeVisible()
  await expect(page.locator('#detail-fact-groups details')).toHaveCount(0)
  const hardware=page.locator('section[aria-label="硬件与系统"]');await expect(hardware.getByRole('button',{name:'复制：CPU',exact:true})).toHaveCount(0);await expect(hardware.locator('.fact-value').filter({hasText:'AMD EPYC'}).first()).toHaveCSS('text-align','right');await expect(page.getByRole('button',{name:'复制：IPv6',exact:true}).locator('xpath=ancestor::dd').locator('.fact-value')).toHaveCSS('text-align','right')

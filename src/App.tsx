@@ -1,3 +1,4 @@
+import {liveMetrics} from '@/lib/freshness'
 import {BillingReminders} from './components/BillingReminders';
 import {MapPanel} from './components/MapPanel';
 import {MobileApp} from './components/MobileApp';
@@ -17,7 +18,7 @@ import {  Moon, Sun, Wrench, LogIn, Globe, LayoutGrid, ArrowLeft, Radio, Table2,
 import { usePreferences, useAppearance, useDesktopPreferences } from '@/lib/preferences';
 import { type Preferences as ThemePreferences, defaults } from '@/lib/appearance';
 import { Background, useBackground } from '@/components/Background';
-import { readBrowse, browseNodes, matchesStatus, defaultBrowse, type Browse, type SortKey } from '@/lib/browse';
+import { readBrowse, browseNodes, defaultBrowse, type Browse, type SortKey } from '@/lib/browse';
 import { getPing, watchPing, pingRevision, subscribePing } from '@/lib/ping';
 import { NodeTable } from '@/components/NodeTable';
 import { NodeCard } from "@/components/NodeCard";
@@ -157,8 +158,6 @@ export default function App({ siteDefaults = defaults }: {
         return () => removeEventListener('scroll', update);
     }, [open]);
     const mapVisible = prefs.modules.map && !compactViewport;
-    const mapExpanded=desktop.mapExpanded??true;
-    const toggleMap=()=>setDesktop(current=>({...current,mapExpanded:!mapExpanded}));
     useEffect(()=>{
         if(open!==null)return;
         let stopped=false,idle:number|undefined;
@@ -218,7 +217,7 @@ export default function App({ siteDefaults = defaults }: {
       {nodeGroups.map(name => <option key={name} value={'='+name}>{name}</option>)}
       {hasUngrouped && <option value="none">{tr("未分组")}</option>}
     </Select> : null;
-    const mapKey=JSON.stringify(sorted.filter(n=>matchesStatus(n,browse.status)&&(system==='all'||systemKey(n.os)===system)).map(({id,name,country,online})=>({id,name,country,online})));
+    const mapKey=JSON.stringify(sorted.map(n=>({id:n.id,name:n.name,country:n.country,online:n.online,attention:(liveMetrics(n)?.cpu??0)>=85})));
     const selected = sorted.find((n) => n.id === open);
     const filtered = browseNodes(sorted, browse.view === "cards" ? {...browse,sort:"default"} : browse).filter(n => (system === 'all' || systemKey(n.os) === system) && (group === 'all' || (n.group || '') === (group === 'none' ? '' : group.slice(1))));
     const activeConditionCount = [status !== 'all', !!browse.query, region !== 'all', system !== 'all', group !== 'all'].filter(Boolean).length;
@@ -293,15 +292,17 @@ export default function App({ siteDefaults = defaults }: {
         {open !== null ? (!nodes ? (<Skeleton className="detail-loading" aria-label={tr("正在加载…")} aria-busy="true"/>) : selected ? (<Suspense fallback={<Skeleton className="detail-loading" aria-label={tr("正在加载…")} aria-busy="true"/>}>
               <NodeDetail onBack={()=>go(null)} mobilePreferences={mobilePreferences} detailInfoMode={prefs.detailInfoMode} onDetailInfoMode={detailInfoMode=>selectDisplay({detailInfoMode})} key={selected.id} node={selected} probe={compactViewport?resolveProbe(selected.id,prefs.probe):prefs.probe} nodes={sorted} onSwitch={id=>{const q=new URLSearchParams(location.search);q.delete("eventStart");q.delete("eventEnd");q.delete("routes");go(id,location.hash.slice(1),q.size?"?"+q:"")}}/>
             </Suspense>) : (<p className="py-16 text-center text-sm text-muted-foreground">{tr("节点不存在或未公开。")}<button className="underline" onClick={() => go(null)}>{tr("返回列表")}</button>
-            </p>)) : compactViewport ? null : !nodes ? (<>{mapVisible&&<MapPanel viewSwitch={viewSwitch} nodeSnapshot={mapKey} region={region} onRegion={setRegion} expanded={mapExpanded} onExpanded={toggleMap} pendingNodes/>}<div className="node-grid home-loading" aria-label={tr("正在加载节点")} aria-busy="true">
+            </p>)) : compactViewport ? null : !nodes ? (<>{mapVisible&&<MapPanel viewSwitch={viewSwitch} nodeSnapshot={mapKey} region={region} onRegion={setRegion} pendingNodes/>}<div className="node-grid home-loading" aria-label={tr("正在加载节点")} aria-busy="true">
             {[0, 1, 2].map((i) => (<div key={i} className="loading-card" aria-hidden="true"><Skeleton className="loading-title"/><div className="loading-metrics">{[0,1,2,3].map(n=><Skeleton key={n}/>)}</div><Skeleton className="loading-speed"/><Skeleton className="loading-route"/></div>))}
           </div></>) : (<>
             <section className="overview-heading"><div className="page-heading"><h1>{tr("服务器总览")}</h1><span className={`live-label connection-${connection}`} role="status" title={[{connecting:tr("正在连接"),realtime:tr("实时连接"),polling:tr("轮询更新"),disconnected:tr("连接中断 \u00B7 数据可能已过期")}[connection],lastUpdated ? new Date(lastUpdated).toLocaleString(locale()) : tr("等待首次数据")].join(" · ")}><Radio size={14}/><span>{{ connecting: tr("正在连接"), realtime: tr("实时连接"), polling: tr("轮询更新"), disconnected: tr("连接中断 \u00B7 数据可能已过期") }[connection]}</span></span></div>
             <BillingReminders nodes={sorted} onOpen={id=>go(id)}/>
             <p className="update-time">{lastUpdated ? tr("最后更新：{0}", new Date(lastUpdated).toLocaleString(locale())) : tr("等待首次数据")}</p></section>
-            <Summary status={status} onStatus={setStatus} onCollapse={summaryCollapsed=>setPrefs(prev=>({...prev,summaryCollapsed}))} nodes={sorted} prefs={prefs} loadAlerts={loadAlerts} onAlert={event=>go(event.nodeId,"",`?eventStart=${event.start}&eventEnd=${event.end??event.last}`)}/>
+            <div className="home-overview-grid" data-map={mapVisible}>
+            <Summary status={status} onStatus={setStatus} nodes={sorted} prefs={prefs} loadAlerts={loadAlerts} onAlert={event=>go(event.nodeId,"",`?eventStart=${event.start}&eventEnd=${event.end??event.last}`)}/>
             <>{compactViewport&&<div className="mobile-node-toolbar"><div className="mobile-toolbar-main"><RegionPicker nodes={sorted} region={region} onChange={setRegion}/></div></div>}</>
-            {mapVisible && <MapPanel viewSwitch={viewSwitch} nodeSnapshot={mapKey} region={region} onRegion={setRegion} expanded={mapExpanded} onExpanded={toggleMap}/>}
+            {mapVisible && <MapPanel viewSwitch={viewSwitch} nodeSnapshot={mapKey} region={region} onRegion={setRegion}/>}
+            </div>
 
             <div id="node-results" tabIndex={-1}><div className={compactViewport ? "mobile-results-toolbar" : "desktop-results-toolbar"}><div className="node-toolbar-primary"><div className="results-heading">{!compactViewport&&<h2>{tr("节点")}</h2>}{groupPicker}{!compactViewport&&<span>{tr("匹配 {0} 个节点",filtered.length)}</span>}</div><div className="results-actions">{!compactViewport&&<DesktopRegionFilter nodes={sorted} region={region} onChange={setRegion}/>} {!compactViewport&&browse.view==='cards'&&<label className="desktop-card-density">{tr('卡片密度')}<Select aria-label={tr('卡片密度')} value={desktop.cardDensity} onChange={event=>setDesktop(current=>({...current,cardDensity:event.target.value as 'compact'|'detailed'}))}><option value="compact">{tr('紧凑')}</option><option value="detailed">{tr('详细')}</option></Select></label>}{!compactViewport&&browse.view==='table'&&<div className="table-tools-host"/>}{viewSwitch}</div></div><section hidden={!showSystemFilters && !showActiveFilters} className="node-browser streamlined-browser" aria-label={tr("节点浏览")}>
             <div className="filters" hidden={!showSystemFilters}><div className="filter-categories"><div className="system-pills" role="group" aria-label={tr("系统快速筛选")}>{['all',...systems].map(key=><button key={key} aria-pressed={system===key} onClick={()=>setSystem(key)}>{key==='all'?tr("所有系统"):key==='other'?tr("其他 / 未知系统"):key}</button>)}</div>

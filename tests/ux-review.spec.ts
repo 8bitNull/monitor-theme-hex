@@ -57,7 +57,8 @@ for(const width of [320,360,390,430])test(`mobile node list fits ${width}px and 
 })
 test('all routes have legends and keyboard zoom has readable dates',async({page})=>{
  await setup(page);await page.goto('/node/1?routes=all#latency');await expect(page.locator('.route-chips button[aria-pressed=true]')).toHaveCount(8)
- await expect(page.locator('.latency-route-controls .expand-routes')).toBeVisible()
+ await expect(page.locator('.latency-route-controls .expand-routes')).toHaveCount(0)
+ await expect(page.locator('.route-chips')).toBeVisible()
  const start=page.getByRole('slider',{name:'开始时间',exact:true});await expect(start).toHaveAttribute('aria-valuenow','0');await start.focus();await page.keyboard.press('ArrowRight');await expect(start).toHaveAttribute('aria-valuenow','1');await expect(start).toHaveAttribute('aria-valuetext',/\d/);await expect(page.getByRole('button',{name:'恢复范围',exact:true})).toBeVisible();await page.getByRole('button',{name:'恢复范围',exact:true}).click()
  await page.setViewportSize({width:800,height:844});await expect(page.locator('.route-chips button[aria-pressed=true]')).toHaveCount(8)
 })

@@ -11,11 +11,11 @@ async function setup(page:any,long=false){
 for(const width of [768,800,1024,1440])test(`primary metrics and long identity fit at ${width}`,async({page})=>{
  await page.setViewportSize({width,height:900});await setup(page,true)
  await expect(page.locator('.desktop-detail-metrics>.detail-metric-card')).toHaveCount(4);await expect(page.locator('.detail-metric-card[data-metric=cpu]')).toContainText('负载')
- const expand=page.getByRole('button',{name:'展开名称',exact:true}),heading=(await page.locator('.detail-title h2').boundingBox())!;expect((await expand.boundingBox())!.y).toBeGreaterThanOrEqual(heading.y+heading.height)
- await expand.click();await expect(page.getByRole('dialog')).toHaveCount(0);await page.getByRole('button',{name:'收起名称',exact:true}).click()
- await page.getByRole('button',{name:'展开备注',exact:true}).click();await expect(page.locator('.detail-meta-tags .detail-remark-tag')).toHaveCount(8)
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();await page.getByRole('button',{name:'收起备注',exact:true}).click()
- if(width<900)await page.locator('.detail-facts-toggle').click()
+ await expect(page.locator('.node-title-text')).toContainText('Tokyo 东京超长名称 '.repeat(18).trim())
+ await expect(page.getByRole('button',{name:'展开名称',exact:true})).toHaveCount(0)
+ await expect(page.getByRole('button',{name:'展开备注',exact:true})).toHaveCount(0);await expect(page.locator('.overview-remarks .detail-remark-tag')).toHaveCount(8)
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();await expect(page.getByRole('button',{name:'收起备注',exact:true})).toHaveCount(0)
+ await expect(page.locator('#detail-fact-groups')).toBeVisible()
  const cpuRow=page.locator('section[aria-label="硬件与系统"] .detail-facts>div').filter({hasText:'CPU'}).first();await expect(cpuRow.getByRole('button',{name:'复制：CPU',exact:true})).toHaveCount(0);await expect(cpuRow.locator('.fact-value')).toBeVisible()
  await expect(page.locator('.overview-account')).toBeVisible()
  for(const graph of ['bar','ring','columns','minimal']){await setSiteDefault(page,'graph',graph);expect(await page.locator('.detail-live').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy();const tracks=await page.locator('.detail-metric-track').evaluateAll(elements=>elements.map(el=>el.getBoundingClientRect()));expect(tracks).toHaveLength(3);expect(Math.abs(tracks[0].bottom-tracks[1].bottom)).toBeLessThanOrEqual(1)}

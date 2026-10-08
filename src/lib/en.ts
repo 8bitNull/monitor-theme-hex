@@ -1,4 +1,10 @@
 export const english: Record<string, string> = {
+"运行概况":"Operating overview",
+"地图状态":"Map status",
+"需关注":"Attention",
+"点击地区筛选节点":"Select a region to filter nodes",
+"恢复外观保留显示内容；全部重置将恢复站点默认并清空线路偏好和筛选。":"Reset appearance keeps display content; reset all restores site defaults and clears route preferences and filters.",
+
 "待更新":"Awaiting update",
 "{0} 待更新":"{0} awaiting update",
 "筛选待更新节点":"Filter nodes awaiting update",

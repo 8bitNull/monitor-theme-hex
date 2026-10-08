@@ -60,7 +60,7 @@ test('compact desktop search keeps query, and detail has a single facts disclosu
  await page.getByRole('searchbox',{name:'搜索节点',exact:true}).fill('Tokyo')
  await expect(page.locator('.node-card')).toHaveCount(1)
  await expect(page.locator('.active-filters')).toContainText('Tokyo')
- await page.locator('.node-open').click();await page.locator('.detail-facts-toggle').click()
+ await page.locator('.node-open').click();await expect(page.locator('#detail-fact-groups')).toBeVisible()
  await expect(page.locator('#detail-fact-groups details')).toHaveCount(0)
  await expect(page.getByRole('region',{name:'网络与流量'}).locator('dl')).toBeVisible()
  await page.getByRole('button',{name:'返回总览',exact:true}).click();await expect(page.locator('.active-filters')).toContainText('Tokyo')

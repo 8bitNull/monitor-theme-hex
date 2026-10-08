@@ -1,11 +1,11 @@
-import {useId,useRef,useState} from 'react'
+import {useId} from 'react'
 import type {OpenRoutes} from '@/lib/routeSelection'
 import {liveMetrics,nodeState} from '@/lib/freshness'
 import {SpeedIndicators} from './SpeedIndicators'
 import {ResourceMetric} from './ResourceMetric'
 import {Status} from './NodeIdentity'
 import { locale, tr } from '../lib/i18n.ts'
-import { Clock3, Server, ArrowDownUp, CalendarDays, ChevronDown } from 'lucide-react';
+import { Clock3, Server, ArrowDownUp, CalendarDays } from 'lucide-react';
 import type { Node } from '@/lib/api';
 import type { Preferences, CardInfo } from '@/lib/appearance';
 import { Flag, OsIcon } from './NodeIcons';
@@ -23,11 +23,8 @@ export function NodeCard({ node, onOpen, onOpenRoutes, probe = 'auto', prefs, in
     mobile?: boolean;
     density?: 'compact'|'detailed';
 }) {
-    const [secondaryOpen,setSecondaryOpen]=useState(false);
     const notes = (info.remarks ? node.remark ?? "" : "").split(/[;；]/).map(text=>text.trim()).filter(Boolean);
-    const notesId=useId();
     const supplementaryId=useId();
-    const notesDialog=useRef<HTMLDialogElement>(null);
     const notesText=notes.join(' · ');
     const m = liveMetrics(node);
     const traffic = trafficUsage(node);
@@ -42,13 +39,12 @@ export function NodeCard({ node, onOpen, onOpenRoutes, probe = 'auto', prefs, in
     const highCpu = m !== null && m.cpu >= 85;
     const expiring = info.expiry && days !== null && days <= 7;
     const offline = !node.online;
-    const showSecondary=mobile||density==='detailed'||secondaryOpen;
     const reported = node.last_seen > 0 ? new Date(node.last_seen * 1000) : null;
     const reportTime = reported && Number.isFinite(reported.getTime()) ? reported : null;
     const hasSecondary = (info.price && node.price > 0) || notes.length > 0;
     const secondary = hasSecondary && <div className="node-secondary"><section className="node-more" aria-label={tr("更多信息")}>
       <div className="node-footer">
-        {notes.length > 0 && <><button type="button" className="node-remarks" aria-label={tr("备注")} title={notesText} aria-haspopup="dialog" onClick={()=>notesDialog.current?.showModal()}><RemarkTags texts={notes.slice(0,3)} compact/>{notes.length>3&&<span className="remark-more">+{notes.length-3}</span>}</button><dialog ref={notesDialog} className="card-notes-dialog" aria-labelledby={notesId} onClick={event=>{if(event.target===event.currentTarget){const box=event.currentTarget.getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)event.currentTarget.close()}}}><div className="card-notes-heading"><h2 id={notesId}>{tr("备注")}</h2><button type="button" autoFocus onClick={()=>notesDialog.current?.close()}>{tr("关闭")}</button></div><p>{notes.join('\n')}</p></dialog></>}
+        {notes.length > 0 && <div className="node-remarks" aria-label={tr("备注")} title={notesText}><RemarkTags texts={notes}/></div>}
 
         {info.price && node.price > 0 && <span className="tag node-price">{money(node.price, node.currency)} / {tr(Object.hasOwn(CYCLES, node.billing_cycle) ? CYCLES[node.billing_cycle] : node.billing_cycle)}</span>}
       </div>
@@ -60,7 +56,6 @@ export function NodeCard({ node, onOpen, onOpenRoutes, probe = 'auto', prefs, in
     </div>;
     const connections=!offline&&info.connections&&<div className="node-connections">{([['TCP',m?.tcp],['UDP',m?.udp]] as const).map(([label,value])=><div key={label}><span>{label}</span><b>{value === undefined ? '—' : value.toLocaleString()}</b></div>)}</div>;
     const hasSupplementary=Boolean(billing||connections||secondary);
-    const hasDisclosure=!mobile&&density==='compact'&&hasSupplementary;
     return <article data-density={prefs.layout==='compact'?'overview':'full'} data-card-density={density} data-indicator={prefs.graph} data-metric-state={nodeState(node)} className={`node-card compact-network-card graphic-card ${offline ? 'node-offline' : ''}`}>
     <button data-node-id={node.id} className="node-open" onClick={onOpen} aria-label={tr("查看 {0}", node.name)}>
       <div className="node-heading"><div className="node-symbol">{node.country ? (prefs.icons ? <Flag code={node.country} key={node.country}/> : node.country) : <Server size={20}/>}</div><div className="node-identity"><div className="node-name-row"><h3 title={node.name}>{node.name}</h3>{(highCpu || (mobile && expiring)) && <span className="card-issue">{highCpu && <span>{tr("高负载")} · CPU {Math.round(m!.cpu)}%</span>}{mobile && expiring && <span className={days!==null&&days<0?'is-expired':undefined}>{days!==null&&days>0&&<>{tr("即将到期")} · </>}{expiry}</span>}</span>}</div><div className="node-os-row"><p>{prefs.icons && node.os && <OsIcon os={node.os} key={node.os}/>}{node.os ? osName(node.os) : tr("等待首次上报")}</p>{!mobile && expiring && <span className="card-issue card-expiry-tag"><span className={days!==null&&days<0?'is-expired':undefined}>{days!==null&&days>0&&<>{tr("即将到期")} · </>}{expiry}</span></span>}{!mobile&&quotaExhausted&&<span className="card-issue card-quota-tag"><span>{tr('流量额度已用尽')}</span></span>}</div></div><div className="node-status-group">{(node.ipv4 || node.ipv4_pin || node.ipv6 || node.ipv6_pin) && <div className="node-ip-tags" aria-label={tr("IP 协议")} >{(node.ipv4 || node.ipv4_pin) && <span className="tag">V4</span>}{(node.ipv6 || node.ipv6_pin) && <span className="tag">V6</span>}</div>}<Status node={node}/></div></div>
@@ -73,7 +68,6 @@ export function NodeCard({ node, onOpen, onOpenRoutes, probe = 'auto', prefs, in
       {mobile && billing && <div className="mobile-card-extra">{billing}</div>}
       <PingStats scale={prefs.latencyScale} latencyWindow={prefs.latencyWindow} warn={prefs.latencyWarn} high={prefs.latencyHigh} count={prefs.homeRoutes} online={node.online} id={node.id} probe={probe} onOpenRoutes={onOpenRoutes}/>
       {mobile && secondary && <div className="mobile-card-extra">{secondary}</div>}
-      {hasDisclosure&&<button type="button" className="node-secondary-toggle" aria-controls={supplementaryId} aria-expanded={secondaryOpen} onClick={()=>setSecondaryOpen(value=>!value)}>{secondaryOpen?tr('收起信息'):tr('更多信息')}<ChevronDown size={15} aria-hidden="true"/></button>}
-      {!mobile&&hasSupplementary&&<section id={supplementaryId} className="node-supplementary" aria-label={tr('更多信息')} hidden={!showSecondary}>{connections}{billing}{secondary}</section>}
+      {!mobile&&hasSupplementary&&<section id={supplementaryId} className="node-supplementary" aria-label={tr('更多信息')}>{connections}{billing}{secondary}</section>}
   </article>;
 }

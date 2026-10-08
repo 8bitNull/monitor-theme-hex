@@ -43,7 +43,8 @@ test('hovering card remarks does not fill the whole row',async({page})=>{
  await remarks.hover()
  await expect(remarks).toHaveCSS('background-color',background)
  await remarks.click()
- await expect(page.locator('.card-notes-dialog')).toBeVisible()
+ await expect(page.locator('.card-notes-dialog')).toHaveCount(0)
+ await expect(remarks.locator('.detail-remark-tag')).toHaveText(['20T','10Gbps','国际线路'])
 })
 
 test('home speed curves use new reports and offline cards retain durable facts and routes',async({page})=>{

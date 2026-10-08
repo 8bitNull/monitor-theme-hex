@@ -57,9 +57,9 @@ test('768px hard navigation from browse loads detail without page errors',async(
 for(const [width,height] of [[320,568],[667,375]])test(`immersive map remains operable at ${width}x${height}`,async({page},testInfo)=>{
  await page.setViewportSize({width,height});await fixture(page);await page.goto('/?page=map')
  await expect(page.locator('.mm-land')).toBeVisible();await fits(page)
- await page.getByRole('button',{name:'展开节点列表',exact:true}).click();await expect(page.locator('.mm-sheet-content')).toBeVisible()
+ await expect(page.locator('.mm-sheet-toggle')).toHaveCount(0);await expect(page.locator('.mm-sheet-content')).toBeVisible()
  await page.locator('.mm-node').first().click();await expect(page.locator('.ma-detail-header')).toBeVisible();await page.getByRole('button',{name:'返回总览',exact:true}).click()
- await expect(page.locator('.mm-land')).toBeVisible();await page.getByRole('button',{name:'收起节点列表',exact:true}).click()
+ await expect(page.locator('.mm-land')).toBeVisible();await expect(page.locator('.mm-sheet-content')).toBeVisible()
  const map=page.getByRole('group',{name:'世界节点分布地图',exact:true});await map.focus();const initial=await page.locator('.mm-land').getAttribute('transform');await map.press('+');await expect(page.locator('.mm-land')).not.toHaveAttribute('transform',initial!)
  await page.getByRole('button',{name:'查看全球',exact:true}).click();await fits(page);await capture(page,testInfo,'map')
  await page.getByRole('button',{name:'返回概览',exact:true}).click();await expect(page.locator('.ma-hero')).toBeVisible()
