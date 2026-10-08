@@ -9,7 +9,7 @@ import { Unlink } from 'lucide-react'
 import { usePing } from '@/lib/usePing'
 import { summarizePing, probeCatalog, recentPingRows, type PingWindow } from '@/lib/ping'
 import {isRecentPingSample} from '@/lib/pingRecency'
-export function PingStats({ online = true, id, probe = "auto", onOpenRoutes, count = 1, scale = 200, latencyWindow = 1, warn = 80, high = 160 }: { scale?:200|500; latencyWindow?:PingWindow; warn?:number; high?:number; count?:number; online?:boolean; id:number; probe?:string; onOpenRoutes:(route:OpenRoutes)=>void }) {
+export function PingStats({ online = true, showStaleRecord = true, id, probe = "auto", onOpenRoutes, count = 1, scale = 200, latencyWindow = 1, warn = 80, high = 160 }: { scale?:200|500; latencyWindow?:PingWindow; warn?:number; high?:number; count?:number; online?:boolean; showStaleRecord?:boolean; id:number; probe?:string; onOpenRoutes:(route:OpenRoutes)=>void }) {
  const choice=useNodeProbe(id,probe)
  const {ref,snapshot}=usePing(id)
  const stats=snapshot?.data?summarizePing(snapshot.data):null
@@ -28,7 +28,7 @@ export function PingStats({ online = true, id, probe = "auto", onOpenRoutes, cou
      </div>
      {shown.length>1&&<LossMetric value={s.loss}/>}
     </div>
-    {!isRecentPingSample(s.latest.ts)&&<p className="ping-stale">{tr("较旧记录")}</p>}
+    {showStaleRecord&&!isRecentPingSample(s.latest.ts)&&<p className="ping-stale">{tr("较旧记录")}</p>}
    </div>)}
   </>}
  </section>
