@@ -54,7 +54,8 @@ function useNodeRoute() {
     const pending=useRef(false);
     useEffect(()=>{
         const previous=history.scrollRestoration;history.scrollRestoration='manual';
-        const sync=()=>{const next=read();pending.current=next===null;setId(next);setPage(next===null?homePage():readReturnContext(history.state)?.page??'nodes');};
+        // Save the outgoing mobile tab before rendering removes its listeners.
+        const sync=()=>{dispatchEvent(new Event('hex:before-history-navigation'));const next=read();pending.current=next===null;setId(next);setPage(next===null?homePage():readReturnContext(history.state)?.page??'nodes');};
         addEventListener('popstate',sync);
         return()=>{removeEventListener('popstate',sync);history.scrollRestoration=previous;};
     },[]);

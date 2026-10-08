@@ -67,7 +67,7 @@ export function MobileApp({active,page,onNavigate,nodes,prefs,onPrefs,mobile,onM
  const scroll=useRef<Record<Page,number>>({nodes:0,overview:0,settings:0,map:0})
  const previousPage=useRef(page),restoringScroll=useRef(false)
  useEffect(()=>{try{sessionStorage.setItem('hex-mobile-browse',JSON.stringify({query,filter}))}catch{/* Optional storage. */}},[query,filter])
- useEffect(()=>{if(!active)return;const record=()=>{if(!restoringScroll.current&&location.pathname==='/'&&homePage()===page)scroll.current[page]=window.scrollY};addEventListener('scroll',record,{passive:true});return()=>removeEventListener('scroll',record)},[active,page])
+ useEffect(()=>{if(!active)return;const record=()=>{if(!restoringScroll.current&&location.pathname==='/'&&homePage()===page)scroll.current[page]=window.scrollY};const remember=()=>{scroll.current[page]=window.scrollY};addEventListener('scroll',record,{passive:true});addEventListener('hex:before-history-navigation',remember);return()=>{removeEventListener('scroll',record);removeEventListener('hex:before-history-navigation',remember)}},[active,page])
  useLayoutEffect(()=>{
   if(!active||previousPage.current===page)return
   previousPage.current=page

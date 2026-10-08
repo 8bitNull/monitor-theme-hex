@@ -19,7 +19,7 @@ test('zoom quick ranges follow returned sample timestamps and keep full-range P9
  await page.getByRole('button',{name:'统计口径',exact:true}).click()
  await expect(page.getByRole('dialog')).toContainText('95% 的有效采样延迟不高于此值。')
  await page.getByRole('dialog').getByRole('button',{name:'关闭',exact:true}).click()
- await page.getByRole('button',{name:'缩放时间范围',exact:true}).click()
+ await expect(page.locator('#ma-chart-zoom')).toBeVisible()
  const start=page.getByRole('slider',{name:'开始时间',exact:true})
  const end=page.getByRole('slider',{name:'结束时间',exact:true})
  await page.getByRole('button',{name:'最近 15 分钟',exact:true}).click()

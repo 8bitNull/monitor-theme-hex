@@ -23,7 +23,7 @@ test('filter drafts, independent removal, group search and fixed sheet actions',
 })
 test('overview reminders and settings records, reset and undo preserve unrelated preferences',async({page})=>{
  await setup(page);const nav=page.getByRole('navigation',{name:'主导航'})
- await nav.getByRole('button',{name:'概览',exact:true}).click();await expect(page.locator('.ma-region')).toHaveCount(3);await page.getByRole('button',{name:'查看全部地区',exact:true}).click();await expect(page.locator('.ma-region')).toHaveCount(6)
+ await nav.getByRole('button',{name:'概览',exact:true}).click();await expect(page.locator('.ma-region')).toHaveCount(6);await expect(page.getByRole('button',{name:'查看全部地区',exact:true})).toHaveCount(0)
  await page.locator('.ma-reminder-shortcuts').getByRole('button',{name:/流量提醒/}).click();await expect(page.locator('.ma-node')).toHaveCount(1);await expect(page.getByRole('button',{name:'移除筛选：流量提醒',exact:true})).toBeVisible()
  await nav.getByRole('button',{name:/设置$/}).click();await page.getByRole('button',{name:/本机负载记录/}).click();await expect(page.getByRole('dialog')).toContainText('高负载观测记录');await page.getByRole('button',{name:'关闭',exact:true}).click();await expect(nav.getByRole('button',{name:/设置$/})).toHaveAttribute('aria-current','page')
  await page.getByLabel('明暗模式',{exact:true}).selectOption('dark');await page.getByLabel('节点列表',{exact:true}).selectOption('detailed');await page.getByLabel('新详情页默认历史范围',{exact:true}).selectOption('24');await page.getByRole('checkbox',{name:'详情页显示资源容量',exact:true}).uncheck()

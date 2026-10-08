@@ -64,7 +64,8 @@ test('compact desktop search keeps query, and detail has a single facts disclosu
  await expect(page.locator('#detail-fact-groups details')).toHaveCount(0)
  await expect(page.getByRole('region',{name:'网络与流量'}).locator('dl')).toBeVisible()
  await page.getByRole('button',{name:'返回总览',exact:true}).click();await expect(page.locator('.active-filters')).toContainText('Tokyo')
- expect((await page.locator('.summary-grid').boundingBox())!.height).toBeLessThanOrEqual(260)
+ const rows=await page.locator('.summary-grid > div').evaluateAll(tiles=>tiles.map(tile=>Math.round(tile.getBoundingClientRect().top)))
+ expect(rows).toHaveLength(4);expect(rows[0]).toBe(rows[1]);expect(rows[2]).toBe(rows[3]);expect(rows[2]).toBeGreaterThan(rows[0])
 })
 test('legacy phone columns do not alter the desktop table',async({page})=>{
  await setup(page);await page.goto('/');await page.getByRole('button',{name:'表格视图',exact:true}).click()

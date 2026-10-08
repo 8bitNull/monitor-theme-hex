@@ -1,14 +1,14 @@
 import {test,expect} from './desktopTest'
-test('expanded map remains compact with only expand and collapse controls',async({page})=>{
+test('persistent map remains compact with fullscreen viewing',async({page})=>{
  await page.goto('/')
  const frame=page.locator('.map-frame')
  for(const width of [721,900,1440]){
   await page.setViewportSize({width,height:900})
   await expect(frame.locator('.map-land')).toBeVisible()
   await expect(frame.getByRole('button',{name:'放大查看',exact:true})).toBeVisible()
-  await expect(frame.getByRole('button',{name:'收起地图',exact:true})).toBeVisible()
+  await expect(frame.locator('.home-map-toggle')).toHaveCount(0)
   await expect(frame.locator('.map-tools,.map-scale')).toHaveCount(0)
-  expect(await frame.locator('.region-atlas').evaluate(el=>el.getBoundingClientRect().height)).toBe(240)
+  expect(await frame.locator('.region-atlas').evaluate(el=>el.getBoundingClientRect().height)).toBe(215)
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
  }
  await page.reload();await expect(frame.locator('.map-land')).toBeVisible()
@@ -17,8 +17,9 @@ test('expanded map remains compact with only expand and collapse controls',async
 test('old collapsed preference does not override current map preference',async({page})=>{
  await page.addInitScript(()=>{localStorage.setItem('monitor-next-map-open-v1','closed');localStorage.setItem('monitor-next-map-height-v1','compact')})
  await page.goto('/');await expect(page.locator('.region-atlas')).toBeVisible()
- await page.getByRole('button',{name:'收起地图',exact:true}).click();await page.reload()
- await expect(page.locator('.region-atlas')).toHaveCount(0)
+ await page.reload()
+ await expect(page.locator('.region-atlas')).toBeVisible()
+ await expect(page.locator('.home-map-toggle')).toHaveCount(0)
  await expect(page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true})).toBeVisible()
 })
 

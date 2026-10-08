@@ -51,7 +51,7 @@ type LabelAnchor={code:string;x:number;y:number;width:number}
 export function placeMobileMapLabels(points:LabelAnchor[],width:number,top:number,bottom:number):LabelAnchor[]{
  const placed:LabelAnchor[]=[]
  for(const p of points){
-  for(const [x,y] of [[p.x+15,p.y-31],[p.x-p.width-15,p.y-31],[p.x+15,p.y+10],[p.x-p.width-15,p.y+10]]){
+  for(const [x,y] of [[p.x+15,p.y-31],[p.x-p.width-15,p.y-31],[p.x+15,p.y+10],[p.x-p.width-15,p.y+10],[Math.max(12,Math.min(width-12-p.width,p.x-p.width/2)),p.y+24],[Math.max(12,Math.min(width-12-p.width,p.x-p.width/2)),p.y-52]]){
    if(x<12||x+p.width>width-12||y<top||y+28>bottom)continue
    if(placed.some(b=>x<b.x+b.width+6&&x+p.width+6>b.x&&y<b.y+34&&y+34>b.y))continue
    if(points.some(b=>b.code!==p.code&&x<b.x+22&&x+p.width>b.x-22&&y<b.y+22&&y+28>b.y-22))continue

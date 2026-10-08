@@ -39,14 +39,13 @@ test('compact desktop resource selector stays beside chart tabs',async({page})=>
  for(const width of [768,800]){
   await page.setViewportSize({width,height:844});await setup(page);await page.goto('/node/1')
   const toolbar=page.locator('.detail-chart-toolbar[data-history-tab=resources]')
-  const selector=toolbar.locator('.detail-resource-metric-mobile > summary')
+  const selector=toolbar.locator('.detail-resource-metric-desktop')
   const selectionBox=(await toolbar.locator('.detail-toolbar-selection').boundingBox())!,tabsBox=(await toolbar.locator('.detail-tabs').boundingBox())!,selectorBox=(await selector.boundingBox())!
   expect(selectorBox.x).toBeGreaterThanOrEqual(tabsBox.x+tabsBox.width)
   expect(selectorBox.x+selectorBox.width).toBeLessThanOrEqual(selectionBox.x+selectionBox.width+1)
-  await selector.click()
-  const menuBox=(await toolbar.locator('.detail-resource-metric-menu').boundingBox())!
-  expect(menuBox.x).toBeGreaterThanOrEqual(0)
-  expect(menuBox.x+menuBox.width).toBeLessThanOrEqual(width)
+  await expect(selector.getByRole('button')).toHaveCount(4)
+  await selector.getByRole('button',{name:'内存',exact:true}).click()
+  await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric','mem_used')
  }
 })
 
