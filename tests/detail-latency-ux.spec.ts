@@ -65,6 +65,8 @@ test('touch can zoom the mobile time sliders and restore the full range',async({
  const page=await context.newPage()
  try{
   await page.goto('/node/1#latency')
+  await expect(page.locator('#ma-chart-zoom')).toBeHidden()
+  await page.getByText('调整视野',{exact:true}).click()
   await expect(page.locator('#ma-chart-zoom')).toBeVisible()
   const slider=page.getByRole('slider',{name:'结束时间',exact:true})
   await slider.scrollIntoViewIfNeeded();const box=(await slider.boundingBox())!

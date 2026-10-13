@@ -39,8 +39,10 @@
  .next-theme .mobile-app .ma-live small{font-size:12px}
  /* The node home shares its connection status with the brand row. */
  .next-theme .mobile-app[data-page=nodes] .ma-header{align-items:center;min-height:calc(48px + env(safe-area-inset-top));padding-bottom:4px}
- .next-theme .mobile-app[data-page=nodes] .ma-header>div{flex:1;min-width:0;width:auto}
- .next-theme .mobile-app[data-page=nodes] .ma-header .ma-live{flex:0 1 45%;overflow-wrap:anywhere}
+ .next-theme .mobile-app[data-page=nodes] .ma-header>div{flex:1;min-width:0;width:auto;max-width:none}
+ .next-theme .mobile-app[data-page=nodes] .ma-header .ma-live{flex:0 0 auto;max-width:35%;overflow-wrap:anywhere}
+ .next-theme .mobile-app[data-page=nodes] .ma-header h1{font-size:20px;gap:8px}
+ .next-theme .mobile-app[data-page=nodes] .ma-site-name{white-space:normal;overflow-wrap:anywhere;overflow:visible;text-overflow:clip}
  .next-theme .mobile-app[data-page=nodes] .ma-search input{height:44px}
  .next-theme .mobile-app[data-page=nodes] .ma-search>.ma-icon{min-height:44px;width:44px;min-width:44px}
  .next-theme .mobile-app[data-page=nodes] .ma-heading{margin:4px 0 8px}

@@ -87,7 +87,8 @@ for(const [width,height,language,appearance,count] of [
  const cards=page.locator(width<=720?'.ma-node':'.node-card')
  await expect(cards).toHaveCount(count)
  const first=cards.first()
- await expect(first).toContainText(language==='en'?'High load':'高负载')
+ if(width<=720){await expect(first).not.toContainText(language==='en'?'High load':'高负载');await expect(first.locator('.ma-meter b').first()).toHaveText('96.0%')}
+ else await expect(first).toContainText(language==='en'?'High load':'高负载')
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
  const core=first.locator(width<=720?'.ma-meters':'.resources')
  await page.screenshot({path:`artifacts/experience-audit-2026-09-30/fleet-${count}-${width}-${appearance}.png`})

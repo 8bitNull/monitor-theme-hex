@@ -65,7 +65,7 @@
 @media(max-width:720px){
  .next-theme .mobile-app[data-map-page]{position:relative;inset:auto;height:auto;min-height:100dvh;overflow:visible;padding:88px 16px 24px}
  .next-theme .mm-page{position:relative;inset:auto}
- .next-theme .mm-map-surface{position:relative;height:360px;max-height:55dvh;border:1px solid var(--mm-line);border-radius:12px;overflow:hidden}
+ .next-theme .mm-map-surface{position:relative;height:280px;max-height:42dvh;border:1px solid var(--mm-line);border-radius:12px;overflow:hidden}
  .next-theme .mm-sheet{position:relative;inset:auto;height:auto;margin-top:16px;border-radius:12px;overflow:visible;padding:0 12px}
  .next-theme .mm-sheet .mm-results-heading{min-height:68px}
  .next-theme .mm-sheet-content{overflow:visible;overscroll-behavior:auto}

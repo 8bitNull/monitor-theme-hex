@@ -74,3 +74,20 @@ for(const state of ['empty','missing'] as const)test(`${state} overview never cl
  if(state==='empty')await expect(page.locator('.ma-hero')).toContainText('还没有节点')
  else await expect(page.locator('.ma-rows').first()).toContainText('等待数据')
 })
+
+test('single available route does not repeat a legend below its selector',async({page})=>{
+ await setup(page);await page.goto('/node/1#latency')
+ await expect(page.locator('.ma-route-summary')).toBeVisible()
+ await expect(page.getByLabel('查看线路',{exact:true})).toContainText('Tokyo gateway')
+ await expect(page.getByRole('group',{name:'线路图例',exact:true})).toHaveCount(0)
+})
+
+test('single-route empty selection recovers through the visible route selector',async({page})=>{
+ await setup(page);await page.goto('/node/1?routes=2#latency')
+ await page.getByRole('button',{name:'选择线路',exact:true}).click()
+ const sheet=page.getByRole('dialog')
+ await expect(sheet).toBeVisible()
+ await sheet.getByRole('button',{name:'Tokyo gateway',exact:true}).click()
+ await expect(page.locator('.latency-view .recharts-line-curve')).toBeVisible()
+ await expect(page.locator('.ma-route-summary')).toContainText('ms')
+})

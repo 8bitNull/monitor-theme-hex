@@ -41,21 +41,20 @@ test('mobile route summaries use raw P95 and explicit whole-window loss',async({
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
 })
 
-test('smoothing changes the curve but preserves raw summary and shared-sheet focus',async({page})=>{
+test('inline smoothing changes the curve but preserves raw summary',async({page})=>{
  await setup(page)
  const summary=await page.locator('.ma-route-statistics').innerText(),rawPath=await curve(page).getAttribute('d')
- await page.getByRole('button',{name:'图表设置',exact:true}).click()
- await expect(page.getByRole('dialog')).toHaveClass(/ma-sheet-fixed/)
- await page.getByRole('dialog').getByRole('checkbox',{name:'抑制尖峰',exact:true}).check()
- await page.keyboard.press('Escape')
- await expect(page.getByRole('button',{name:'图表设置',exact:true})).toBeFocused()
+ await expect(page.getByRole('button',{name:'图表设置',exact:true})).toHaveCount(0)
+ await page.getByRole('checkbox',{name:'抑制尖峰',exact:true}).check()
  await expect.poll(()=>curve(page).getAttribute('d')).not.toBe(rawPath)
  await expect.poll(()=>page.locator('.ma-route-statistics').innerText()).toBe(summary)
  await expect(page.locator('.latency-chart-key')).toContainText('抑制尖峰')
 })
 
-test('mobile zoom slices samples, persistent controls preserve the domain, reset restores it',async({page})=>{
+test('mobile zoom disclosure preserves selected domain and raw statistics',async({page})=>{
  await setup(page)
+ await expect(page.locator('#ma-chart-zoom')).toBeHidden()
+ await page.getByText('调整视野',{exact:true}).click()
  await expect(page.locator('#ma-chart-zoom')).toBeVisible()
  await expect(page.locator('.latency-view .recharts-brush')).toHaveCount(0)
  const initialPath=await curve(page).getAttribute('d'),initialCaption=await page.locator('.latency-range-caption').innerText(),summary=await page.locator('.ma-route-statistics').innerText()
@@ -68,7 +67,10 @@ test('mobile zoom slices samples, persistent controls preserve the domain, reset
  await expect.poll(()=>page.locator('.latency-range-caption').innerText()).not.toBe(initialCaption)
  const zoomPath=await curve(page).getAttribute('d'),zoomCaption=await page.locator('.latency-range-caption').innerText()
  await expect.poll(()=>page.locator('.ma-route-statistics').innerText()).toBe(summary)
- await expect(page.getByRole('button',{name:'收起缩放',exact:true})).toHaveCount(0)
+ await page.getByText('调整视野',{exact:true}).click()
+ await expect(page.locator('#ma-chart-zoom')).toBeHidden()
+ await expect(curve(page)).toHaveAttribute('d',zoomPath!)
+ await page.getByText('调整视野',{exact:true}).click()
  await expect(page.locator('#ma-chart-zoom')).toBeVisible()
  await expect(curve(page)).toHaveAttribute('d',zoomPath!)
  await expect.poll(()=>page.locator('.latency-range-caption').innerText()).toBe(zoomCaption)
