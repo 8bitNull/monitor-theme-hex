@@ -4,7 +4,7 @@ import {bytes,rate} from '@/lib/format'
 import {tr,locale} from '@/lib/i18n'
 import type {ResourceMetricKey} from './ResourceHistory'
 
-export function ResourceSummary({rows,metric,hours}:{rows:readonly ResourceSample[];metric:ResourceMetricKey;hours:number}){
+export function ResourceSummary({rows,metric,hours,card=false}:{card?:boolean;rows:readonly ResourceSample[];metric:ResourceMetricKey;hours:number}){
  const groups=useMemo(()=>{
   const keys:ResourceSampleKey[]=metric==='network'?['net_tx','net_rx']:[metric]
   return keys.map(key=>({key,...summarizeResource(rows,key)}))
@@ -19,9 +19,10 @@ export function ResourceSummary({rows,metric,hours}:{rows:readonly ResourceSampl
     const [amount,unit]=value.split(' ')
     return <td key={i}><span>{amount}</span>{unit&&<small> {unit}</small>}</td>
    })}</tr>)}</tbody>
-  </table>:<dl>{labels.map((label,i)=><div key={label}><dt>{label}</dt><dd>{values(groups[0])[i]}</dd></div>)}</dl>}
+  </table>:<dl>{labels.map((label,i)=>card&&i===0?null:<div key={label}><dt>{label}</dt><dd>{values(groups[0])[i]}</dd></div>)}</dl>}
   <details key={`${metric}:${hours}`} className="resource-summary-details">
    <summary>{tr('统计说明')}</summary>
+   {card&&<p>{tr('最新采样')}：{format(groups[0].latest,groups[0].key)}</p>}
    {groups.map(group=><p key={group.key}>{metric==='network'&&<>{group.key==='net_tx'?tr('上行'):tr('下行')} · </>}{tr('有效样本：{0}',group.count)} · {tr('样本时间：{0}',group.latestAt===null?'—':new Date(group.latestAt).toLocaleString(locale()))}</p>)}
    <p>{tr('基于返回样本，非连续时间加权统计。')}</p>
   </details>

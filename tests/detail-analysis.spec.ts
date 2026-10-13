@@ -23,7 +23,7 @@ test('route legends can clear the final route without restoring removed actions'
 })
 for(const width of [390,1440])for(const tab of ['latency','resources'])test(`Escape dismisses and reopens ${tab} tooltip at ${width}`,async({page})=>{
  await setup(page,width);if(tab==='resources')await page.getByRole('button',{name:'资源',exact:true}).click()
- const frame=page.locator('.detail-chart-frame'),tip=frame.locator('.recharts-tooltip-wrapper');await frame.scrollIntoViewIfNeeded()
+ const frame=page.locator(width<=720&&tab==='resources'?'[data-resource-card=cpu] .detail-chart-frame':'.detail-chart-frame'),tip=frame.locator('.recharts-tooltip-wrapper');await frame.scrollIntoViewIfNeeded()
  if(width<900)await frame.click({position:{x:160,y:100}});else await frame.hover({position:{x:160,y:100}})
  await expect(tip).toBeVisible();if(width<900)await page.getByRole('button',{name:'关闭图表提示',exact:true}).focus();await page.keyboard.press('Escape');await expect(tip).toBeHidden();if(width<900)await expect(frame.locator('.recharts-surface[tabindex]')).toBeFocused()
  if(width<900)await frame.click({position:{x:180,y:100}});else await frame.hover({position:{x:180,y:100}})

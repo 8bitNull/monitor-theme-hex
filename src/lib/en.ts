@@ -1,4 +1,6 @@
 export const english: Record<string, string> = {
+"当前使用率":"Current usage",
+"网速历史":"Network speed history",
 "调整视野":"Adjust view",
 "详细模式增加用量、时长和连接数。":"Detailed mode adds usage, uptime and connections.",
 "仅记录此浏览器的观测":"Observations from this browser only",

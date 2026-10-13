@@ -3,7 +3,7 @@
   "short": "hex",
   "description": "HEX，让服务器状态一目了然。",
   "version": "1.0.1",
-  "author": "HEX contributors",
+  "author": "8bitNull",
   "url": "https://github.com/8bitNull/monitor-theme-hex",
   "config": [
     { "type": "title", "label": "外观与布局" },

@@ -58,5 +58,5 @@ test('long record sheet scrolls independently and opens the observed resource in
  const sheet=page.getByRole('dialog');await expect(sheet.locator('article')).toHaveCount(30);await expect(sheet.getByRole('button',{name:'Observed node 0 with a long production name',exact:true})).toBeDisabled()
  expect(await sheet.locator('.ma-sheet-body').evaluate(el=>el.scrollHeight>el.clientHeight)).toBe(true)
  await sheet.getByRole('button',{name:'Observed node 29 with a long production name',exact:true}).scrollIntoViewIfNeeded();await expect(sheet.getByRole('button',{name:'关闭',exact:true})).toBeInViewport()
- await sheet.getByRole('button',{name:'Observed node 29 with a long production name',exact:true}).click();await expect(page).toHaveURL(/eventStart=/);await expect(page.locator('.detail-resource-charts')).toBeVisible();await expect(page.locator('.event-context')).toBeVisible();await expect(page.locator('body')).not.toHaveCSS('overflow','hidden')
+ await sheet.getByRole('button',{name:'Observed node 29 with a long production name',exact:true}).click();await expect(page).toHaveURL(/eventStart=/);await expect(page.locator('.detail-resource-charts').first()).toBeVisible();await expect(page.locator('.event-context')).toBeVisible();await expect(page.locator('body')).not.toHaveCSS('overflow','hidden')
 })

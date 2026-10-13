@@ -104,6 +104,8 @@ test('dense regions stay near anchors and remain selectable at different overvie
   const select=page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true})
   for(const code of width===721?countries:['HK','MO']){await chooseOption(select,code);await expect(page.locator('.node-card')).toHaveCount(1)}
   await chooseOption(select,'all')
+  // Wait for the menu's focus restoration before moving focus to a map marker.
+  await expect(select).toBeFocused()
   for(const code of ['HK','MO']){
    await page.locator(`.map-cluster[data-region="${code}"]`).focus()
    await page.keyboard.press("Enter")
