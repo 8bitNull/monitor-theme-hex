@@ -1,4 +1,10 @@
 export const english: Record<string, string> = {
+"调整视野":"Adjust view",
+"详细模式增加用量、时长和连接数。":"Detailed mode adds usage, uptime and connections.",
+"仅记录此浏览器的观测":"Observations from this browser only",
+"适用范围":"Scope",
+"重置手机显示偏好":"Reset mobile display preferences",
+"无匹配地区":"No matching regions",
 "仅上传":"Upload only",
 "仅下载":"Download only",
 "上传与下载取较大值":"Larger of upload and download",

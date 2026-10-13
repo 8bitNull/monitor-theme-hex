@@ -23,7 +23,7 @@ export default function MobileMapCanvas({nodes,pending,region,camera,onCamera,on
  const pointers=useRef(new Map<number,Pointer>()),moved=useRef(false),start=useRef<Pointer|null>(null)
  useLayoutEffect(()=>{
   const el=root.current!
-  const update=()=>{const width=el.clientWidth,height=el.clientHeight,top=(el.closest('.mobile-app')?.querySelector('.mm-page-header')?.getBoundingClientRect().bottom??64)+12;if(width&&height)setSize(s=>s.width===width&&s.height===height&&s.top===top?s:{width,height,top})}
+  const update=()=>{const width=el.clientWidth,height=el.clientHeight,top=Math.max(12,(el.closest('.mobile-app')?.querySelector('.mm-page-header')?.getBoundingClientRect().bottom??el.getBoundingClientRect().top)-el.getBoundingClientRect().top+12);if(width&&height)setSize(s=>s.width===width&&s.height===height&&s.top===top?s:{width,height,top})}
   update();const observer=new ResizeObserver(update);observer.observe(el);return()=>observer.disconnect()
  },[])
  useLayoutEffect(()=>{live.current=view},[view])

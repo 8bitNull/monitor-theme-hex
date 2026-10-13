@@ -25,6 +25,8 @@ test('two samples twenty minutes apart disable 15 minutes but allow 30 minutes',
   {task_id:1,ts:last,latency:14},
  ])
  await expect(page.locator('.latency-view .detail-chart-frame')).toBeVisible()
+ await expect(page.locator('#ma-chart-zoom')).toBeHidden()
+ await page.getByText('调整视野',{exact:true}).click()
  await expect(page.locator('#ma-chart-zoom')).toBeVisible()
  await expect(page.getByRole('button',{name:'最近 15 分钟',exact:true})).toBeDisabled()
  await expect(page.getByRole('button',{name:'最近 30 分钟',exact:true})).toBeEnabled()
@@ -43,6 +45,8 @@ test('sparse 30-minute preset selects returned samples and reset restores the fu
  ])
  await expect(page.locator('.latency-view .detail-chart-frame')).toBeVisible()
  const summary=await page.locator('.ma-route-summary').innerText()
+ await expect(page.locator('#ma-chart-zoom')).toBeHidden()
+ await page.getByText('调整视野',{exact:true}).click()
  await expect(page.locator('#ma-chart-zoom')).toBeVisible()
  const start=page.getByRole('slider',{name:'开始时间',exact:true})
  const end=page.getByRole('slider',{name:'结束时间',exact:true})

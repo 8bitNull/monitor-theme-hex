@@ -28,7 +28,7 @@ export function MobileMapPage({nodes,enabled,state,onRegion,onCamera,onOpen,upda
   <div className="mm-map-surface"><DrawingBoundary fallback={failed}><Suspense fallback={loading}><Canvas nodes={nodes??[]} pending={nodes===null} region={selected} camera={state.camera} onRegion={selectRegion} onCamera={onCamera} bottom={0}/></Suspense></DrawingBoundary></div>
   <div className="mm-sheet">
   <div className="ma-heading mm-results-heading">
-  <Select className="mm-region-picker" displayValue={<span className="mm-region-title"><b>{label(selected)}</b><small>{selected==='all'?tr('{0} 个地区',regions.length):tr('{0} 个节点',shown.length)}</small></span>} aria-label={tr('地图地区')} value={selected} onChange={e=>selectRegion(e.target.value)}>
+  <Select sheet role="combobox" searchLabel={tr('搜索地区')} emptyText={tr('无匹配地区')} sheetHint={null} className="mm-region-picker" displayValue={<span className="mm-region-title"><b>{label(selected)}</b><small>{selected==='all'?tr('{0} 个地区',regions.length):tr('{0} 个节点',shown.length)}</small></span>} aria-label={tr('地图地区')} value={selected} onChange={e=>selectRegion(e.target.value)}>
    <option value="all">{tr('所有地区')}</option>
    {regions.map(r=><option key={r.code} value={r.code}>{label(r.code)} · {r.total}</option>)}
    {selected!=='all'&&!regions.some(r=>r.code===selected)&&<option value={selected}>{label(selected)} · 0</option>}

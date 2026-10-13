@@ -79,11 +79,16 @@ function useNodeRoute() {
         const observer=new ResizeObserver(restore);
         const main=document.querySelector('main');if(main)observer.observe(main);
         const stop=()=>{stopped=true;observer.disconnect();};
+        const focusChanged=(event:FocusEvent)=>{
+            const returningNode=document.querySelector<HTMLElement>(`[data-node-id="${home.current.node}"]`);
+            if(event.target!==returningNode)stop();
+        };
+        addEventListener('focusin',focusChanged);
         for(const event of ['wheel','touchstart','pointerdown','keydown'])addEventListener(event,stop,{passive:true,once:true});
         // Cached and newly loaded cards can exchange height without resizing main.
         let frame=0;const settle=()=>{restore();if(!stopped)frame=requestAnimationFrame(settle);};
         frame=requestAnimationFrame(settle);const timer=setTimeout(()=>{restore();stop();},500);
-        return()=>{stop();cancelAnimationFrame(frame);clearTimeout(timer);for(const event of ['wheel','touchstart','pointerdown','keydown'])removeEventListener(event,stop);};
+        return()=>{stop();removeEventListener('focusin',focusChanged);cancelAnimationFrame(frame);clearTimeout(timer);for(const event of ['wheel','touchstart','pointerdown','keydown'])removeEventListener(event,stop);};
     },[id]);
     const go=(next:number|null,section?:string,query='')=>{
         if(id===null && next!==null){const target=document.querySelector<HTMLElement>(`[data-node-id="${next}"]`);const table=document.querySelector<HTMLElement>('.table-scroll');home.current={y:scrollY,node:next,offset:target?.getBoundingClientRect().top || 0,width:innerWidth,table:!!table,tableX:table?.scrollLeft||0,tableY:table?.scrollTop||0,tableOffset:target&&table?target.getBoundingClientRect().top-table.getBoundingClientRect().top:0};}

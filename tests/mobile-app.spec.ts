@@ -48,6 +48,6 @@ test('mobile uses route sheets, retains browse position and does not poll hidden
 })
 test('mobile stale and unknown values never become healthy zeroes',async({page})=>{
  await page.setViewportSize({width:320,height:844});await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],last_seen:Math.floor(Date.now()/1000)-3600,metrics:{...nodes()[0].metrics,cpu:99}}]}}));await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({status:503}));await page.goto('/')
- await expect(page.locator('.ma-node')).toContainText('数据已过期');await expect(page.locator('.ma-meter b')).toHaveText(['—','—']);await expect(page.locator('.ma-net')).not.toContainText('0 Mbps');await expect(page.locator('.ma-summary')).toContainText('高负载 0');await fits(page)
+ await expect(page.locator('.ma-node')).toContainText('数据已过期');await expect(page.locator('.ma-meter b')).toHaveText(['—','—']);await expect(page.locator('.ma-net')).not.toContainText('0 Mbps');await expect(page.locator('.ma-summary')).not.toContainText('高负载');await fits(page)
  await page.locator('.ma-node>button').click();await expect(page.locator('.ma-detail-overview')).toContainText('数据已过期');await expect(page.locator('.ma-big-grid')).toHaveCount(0)
 })

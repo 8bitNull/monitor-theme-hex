@@ -99,9 +99,9 @@ import {ArrowLeft} from 'lucide-react'
 import {MobileSheet} from './ui/mobile-sheet'
 import {Status} from './NodeIdentity'
 
-function ChartSettingsSheet({kind,onClose,smooth,onSmooth}:{kind:'settings'|'statistics';onClose:()=>void;smooth:boolean;onSmooth:(value:boolean)=>void}){
-    return <MobileSheet title={tr(kind==='settings'?'图表设置':'统计口径')} onClose={onClose}>
-      <div className="ma-chart-sheet-body">{kind==='settings'?<><label className="ma-chart-smoothing"><span>{tr('抑制尖峰')}</span><input type="checkbox" checked={smooth} onChange={e=>onSmooth(e.target.checked)}/></label><p>{tr('抑制尖峰仅改变图线显示，不修改原始数据。')}</p><p>{tr('摘要与提示仍使用原始采样，缺失与超时保留断点。')}</p></>:<><p>{tr('P95 表示 95% 的有效采样延迟不高于此值。')}</p><p>{tr('P95 根据完整查询范围内有效采样桶的原始延迟中位值计算，不包含超时和缺失采样。')}</p><p>{tr('丢包率使用服务端提供的完整时间范围统计，不平均各采样桶的百分比；未提供统计时不推断为零。')}</p><p>{tr('缩放只改变图表视野，不改变摘要统计范围。')}</p></>}</div>
+function ChartStatisticsSheet({onClose}:{onClose:()=>void}){
+    return <MobileSheet title={tr('统计口径')} onClose={onClose}>
+      <div className="ma-chart-sheet-body"><p>{tr('P95 表示 95% 的有效采样延迟不高于此值。')}</p><p>{tr('P95 根据完整查询范围内有效采样桶的原始延迟中位值计算，不包含超时和缺失采样。')}</p><p>{tr('丢包率使用服务端提供的完整时间范围统计，不平均各采样桶的百分比；未提供统计时不推断为零。')}</p><p>{tr('缩放只改变图表视野，不改变摘要统计范围。')}</p></div>
     </MobileSheet>;
 }
 
@@ -137,12 +137,12 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
     const legend=useRef<HTMLDivElement>(null);
     const [retry, setRetry] = useState(0);
     const [smooth, setSmooth] = useState(false);
-    const [chartSheet,setChartSheet]=useState<'settings'|'statistics'|null>(null);
+    const [chartSheet,setChartSheet]=useState<'statistics'|null>(null);
     useEffect(()=>{if(location.hash === "#latency"){const frame=requestAnimationFrame(()=>{if(matchMedia('(max-width:720px)').matches)window.scrollTo(0,0);else document.getElementById("latency")?.scrollIntoView()});return ()=>cancelAnimationFrame(frame)}},[]);
     // Probes switched off. Hiding a slow one is what makes the fast ones readable,
     // as the axis rescales to what remains.
     const expandedRoutes=true;
-    const openRoutes=()=>{requestAnimationFrame(()=>{legend.current?.scrollIntoView({block:'nearest'});legend.current?.querySelector<HTMLButtonElement>('button')?.focus()})};
+    const openRoutes=()=>{requestAnimationFrame(()=>{if(mobile){document.querySelector<HTMLButtonElement>('.ma-network-summary [data-slot=select]')?.click();return}legend.current?.scrollIntoView({block:'nearest'});legend.current?.querySelector<HTMLButtonElement>('button')?.focus()})};
     const chooseRange=()=>document.querySelector<HTMLElement>('.detail-ranges button')?.focus();
     const [highlightProbe, setHighlightProbe] = useState<number | null>(null);
     const [selectedProbes, setSelectedProbes] = useState<RouteSelection>(()=>readRouteSelection(params.get("routes")));
@@ -358,14 +358,14 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
 
          <div className="ma-chart-scope"><span>{tr('统计：完整 {0} 小时范围',hours)}</span>{mobileStats.length===1&&<button className="ma-statistics-help" aria-label={tr('统计口径')} onClick={()=>setChartSheet('statistics')}>ⓘ</button>}</div>
        </div>}
-       <DetailToolbar mobile={mobile} onSettings={()=>setChartSheet('settings')} busy={loading} updated={updated} failed={!!failed} tab={tab} hours={hours} onTab={setTab} onHours={value=>setRanges(all=>({...all,[tab]:value}))} onRefresh={refresh} resourceMetric={resourceMetric} onResourceMetric={setResourceMetric} smooth={smooth} onSmooth={setSmooth}/>
+       <DetailToolbar mobile={mobile} busy={loading} updated={updated} failed={!!failed} tab={tab} hours={hours} onTab={setTab} onHours={value=>setRanges(all=>({...all,[tab]:value}))} onRefresh={refresh} resourceMetric={resourceMetric} onResourceMetric={setResourceMetric} smooth={smooth} onSmooth={setSmooth}/>
       {eventStart>0&&<p className="event-context">{tr('告警时段：{0} — {1}',new Date(eventStart).toLocaleString(locale()),new Date(eventEnd).toLocaleString(locale()))}{age>168||hours<age?<span>{tr('当前历史范围无法覆盖完整告警时段。')}</span>:data&&!(data.metrics??[]).some(p=>p.ts*1000>=eventStart&&p.ts*1000<=eventEnd)?<span>{tr('此告警时段没有返回历史样本。')}</span>:null}</p>}
       {failed && <div className="history-notice" role="alert"><span>{data && (data.metrics?.length || data.ping?.length)?tr("更新失败，保留上次历史记录。"):tr("读取历史数据失败：")}{failed}{updated!==null && data && (data.metrics?.length || data.ping?.length)?<small className="history-retained-time">{tr("上次成功更新：{0}",new Date(updated).toLocaleString(locale()))}</small>:null}</span><button disabled={loading} onClick={refresh}>{tr("重试")}</button></div>}
       <div className="detail-history-body" data-history={tab}>
       {!data ? (<HistoryState loading={!failed} failed={!!failed} message={failed?tr("暂无可用历史数据"):tr("正在读取历史数据")}/>) : failed && !data.metrics?.length && !data.ping?.length ? (<HistoryState failed message={tr("暂无可用历史数据")}/>) : tab === "latency" ? (pingSeries.length === 0 ? (<HistoryState message={tr("这段时间没有延迟数据")} action={tr("调整时间范围")} onAction={chooseRange}/>) : (
          <div className="latency-view">
             {!mobile&&<div className="latency-route-controls">{routeControl}</div>}
-            {(expandedRoutes||!mobile&&shownProbes.length>1)&&<div ref={legend} className="route-chips" role="group" aria-label={tr("线路图例")} data-expanded={expandedRoutes}>
+            {(!mobile&&expandedRoutes||mobile&&pingSeries.length>1)&&<div ref={legend} className="route-chips" role="group" aria-label={tr("线路图例")} data-expanded={expandedRoutes}>
               <div className="route-chip-list">
                 {pingSeries.map(s=>{const latest=s.points.at(-1),shown=visibleIds.includes(s.id);return <button key={s.id} aria-label={s.name} aria-pressed={shown} title={`${s.name} · ${latest?tr("采样：{0}",new Date(latest.ts*1000).toLocaleString(locale())):tr("暂无探测记录")}`} onMouseEnter={()=>setHighlightProbe(s.id)} onMouseLeave={()=>setHighlightProbe(null)} onFocus={e=>{if(e.currentTarget.matches(':focus-visible'))setHighlightProbe(s.id)}} onBlur={()=>setHighlightProbe(null)} onClick={()=>{setSelectedProbes(shown?visibleIds.filter(id=>id!==s.id):[...visibleIds,s.id])}}><i className="route-chip-check" aria-hidden="true">{shown?'✓':''}</i><svg width="20" height="8" aria-hidden="true"><line x1="0" y1="4" x2="20" y2="4" stroke={style(s.id).stroke} strokeWidth="2"/></svg><span>{s.name}</span><b>{!latest?'—':latest.latency===null?tr("超时"):`${Math.round(latest.latency)} ms`}</b></button>})}
               </div>
@@ -414,13 +414,13 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
               {!compact&&pingRows.length>0&&<div className="latency-range-heading"><span>{tr("时间范围")} <b>{clockFor(hours)(rangeStart)} — {clockFor(hours)(rangeEnd)}</b></span><span>{zoomed&&<button onClick={()=>{setZoom(null);tooltipDismiss()}}>{tr("恢复范围")}</button>}</span></div>}
             </div>
             {compact&&pingRows.length>0&&<div className="latency-range-caption"><span>{clockFor(hours)(rangeStart)} – {clockFor(hours)(rangeEnd)}</span>{!mobile&&zoomed&&<button onClick={()=>{setZoom(null);tooltipDismiss()}}>{tr("恢复范围")}</button>}</div>}
-            {mobile&&pingRows.length>1&&shownProbes.length>0&&<><div className="ma-chart-zoom-actions">{zoomed&&<button onClick={()=>{setZoom(null);tooltipDismiss()}}>{tr('恢复全范围')}</button>}</div>{<div id="ma-chart-zoom" className="ma-chart-zoom"><p>{tr('仅调整当前图表视野；摘要统计仍使用完整查询范围。')}</p><div className="ma-chart-zoom-presets">{[15,30].map(minutes=><button key={minutes} type="button" disabled={quickStart(minutes)>=pingRows.length-1} onClick={()=>{setZoom([quickStart(minutes),pingRows.length-1]);tooltipDismiss()}}>{tr('最近 {0} 分钟',minutes)}</button>)}</div><label>{tr('开始时间')}<output>{new Date(rangeStart).toLocaleString(locale())}</output><input aria-label={tr('开始时间')} type="range" min={0} max={pingRows.length-2} value={zoom?.[0]??0} aria-valuetext={new Date(rangeStart).toLocaleString(locale())} onChange={e=>{const start=Number(e.target.value);setZoom([start,Math.max(start+1,zoom?.[1]??pingRows.length-1)]);tooltipDismiss()}}/></label><label>{tr('结束时间')}<output>{new Date(rangeEnd).toLocaleString(locale())}</output><input aria-label={tr('结束时间')} type="range" min={1} max={pingRows.length-1} value={zoom?.[1]??pingRows.length-1} aria-valuetext={new Date(rangeEnd).toLocaleString(locale())} onChange={e=>{const end=Number(e.target.value);setZoom([Math.min(end-1,zoom?.[0]??0),end]);tooltipDismiss()}}/></label></div>}</>}
+            {mobile&&pingRows.length>1&&shownProbes.length>0&&<><div className="ma-chart-zoom-actions">{zoomed&&<button onClick={()=>{setZoom(null);tooltipDismiss()}}>{tr('恢复全范围')}</button>}</div><details className="ma-chart-viewport" key={`${node.id}:${hours}`}><summary>{tr('调整视野')}</summary><div id="ma-chart-zoom" className="ma-chart-zoom"><p>{tr('仅调整当前图表视野；摘要统计仍使用完整查询范围。')}</p><div className="ma-chart-zoom-presets">{[15,30].map(minutes=><button key={minutes} type="button" disabled={quickStart(minutes)>=pingRows.length-1} onClick={()=>{setZoom([quickStart(minutes),pingRows.length-1]);tooltipDismiss()}}>{tr('最近 {0} 分钟',minutes)}</button>)}</div><label>{tr('开始时间')}<output>{new Date(rangeStart).toLocaleString(locale())}</output><input aria-label={tr('开始时间')} type="range" min={0} max={pingRows.length-2} value={zoom?.[0]??0} aria-valuetext={new Date(rangeStart).toLocaleString(locale())} onChange={e=>{const start=Number(e.target.value);setZoom([start,Math.max(start+1,zoom?.[1]??pingRows.length-1)]);tooltipDismiss()}}/></label><label>{tr('结束时间')}<output>{new Date(rangeEnd).toLocaleString(locale())}</output><input aria-label={tr('结束时间')} type="range" min={1} max={pingRows.length-1} value={zoom?.[1]??pingRows.length-1} aria-valuetext={new Date(rangeEnd).toLocaleString(locale())} onChange={e=>{const end=Number(e.target.value);setZoom([Math.min(end-1,zoom?.[0]??0),end]);tooltipDismiss()}}/></label></div></details></>}
             {shownProbes.length>0&&pingRows.length>0&&<LossTrack showRoute={mobile} selected={activeRoute?.id} key={`${node.id}:${hours}:${activeRoute?.id}`} series={shownProbes} preferred={defaultProbe} start={pingRows[Math.min(zoom?.[0]??0,pingRows.length-1)].ts} end={pingRows[Math.min(zoom?.[1]??pingRows.length-1,pingRows.length-1)].ts}/>}
           </div>)) : (data.metrics ?? []).length === 0 ? (<HistoryState message={tr("这段时间没有历史数据")} action={tr("调整时间范围")} onAction={chooseRange}/>) : (<ResourceHistory compact={compact} mobile={mobile} rows={metricRows} node={node} hours={hours} metric={resourceMetric}/>)}
       </div></section>}
 
       {(!mobile||mobileSection==='info')&&<DetailFacts node={node} compact={mobile?false:compact} mobile={mobile} mode={detailInfoMode} onMode={onDetailInfoMode}/>}
       </div>
-      {mobile&&chartSheet&&<ChartSettingsSheet kind={chartSheet} onClose={()=>setChartSheet(null)} smooth={smooth} onSmooth={setSmooth}/>}
+      {mobile&&chartSheet&&<ChartStatisticsSheet onClose={()=>setChartSheet(null)}/>}
     </div>);
 }

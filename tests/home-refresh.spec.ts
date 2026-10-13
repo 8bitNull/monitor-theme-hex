@@ -1,14 +1,14 @@
 import {test,expect} from './desktopTest'
 import {nodes} from '../scripts/fixtures.mjs'
 
-test('mobile cards retain resource, expiry and freshness feedback',async({page})=>{
+test('mobile cards retain resources and freshness without warning notices',async({page})=>{
  const expiry=new Date(Date.now()+3*86400000).toISOString().slice(0,10)
  let stale=false
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],last_seen:Math.floor(Date.now()/1000)-(stale?120:0),expires_at:expiry,metrics:{...nodes()[0].metrics,cpu:92}}]}}))
  for(const width of [390,320]){
   await page.setViewportSize({width,height:844});await page.goto('/')
   const card=page.locator('.ma-node').first()
-  await expect(card).toContainText('CPU 92');await expect(card).toContainText('剩余 3 天')
+  await expect(card.locator('.ma-meter b').first()).toHaveText('92.0%');await expect(card).not.toContainText('剩余 3 天');await expect(card.locator('.ma-notice:not(.muted)')).toHaveCount(0)
   await expect(card.locator('.ma-meter')).toHaveCount(2)
   expect(await card.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true)
  }
@@ -16,7 +16,7 @@ test('mobile cards retain resource, expiry and freshness feedback',async({page})
  const card=page.locator('.ma-node').first()
  await expect(card).toHaveAttribute('data-state','stale')
  await expect(card).toContainText('数据已过期');await expect(card).not.toContainText('高负载')
- await expect(card).toContainText('剩余 3 天');await expect(card.locator('.ma-meter b')).toHaveText(['—','—'])
+ await expect(card).not.toContainText('剩余 3 天');await expect(card.locator('.ma-meter b')).toHaveText(['—','—'])
  await page.setViewportSize({width:900,height:844})
  await expect(page.locator('.node-card').first().locator('.resources .resource')).toHaveCount(4)
 })
@@ -75,7 +75,7 @@ test('summary filters provide selected state and matching nodes on desktop',asyn
  }
 })
 
-for(const language of ['zh','en'])test(`mobile overview metrics and filters remain readable in ${language}`,async({page})=>{
+for(const language of ['zh','en'])test(`mobile overview metrics and attention entries remain readable in ${language}`,async({page})=>{
  await page.addInitScript(lang=>localStorage.setItem('monitor-next-language',lang),language)
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:nodes()}}))
  for(const width of [320,390]){
@@ -85,10 +85,10 @@ for(const language of ['zh','en'])test(`mobile overview metrics and filters rema
   await expect(page.locator('.ma-hero')).toContainText('5')
   await expect(page.locator('.ma-stat-grid')).toContainText('54.0 GB')
   await expect(page.locator('.ma-stat-grid')).toContainText('45.36 Mbps')
-  const offline=page.locator('.ma-attention-actions button').first()
+  const offline=page.locator('.ma-rows button').filter({hasText:'London'}).first()
   expect((await offline.boundingBox())!.height).toBeGreaterThanOrEqual(44)
-  await offline.click();await expect(page.locator('.ma-node')).toHaveCount(1)
-  await expect(page.locator('.ma-node')).toContainText('London')
+  await offline.click();await expect(page.locator('.ma-detail-overview')).toBeVisible()
+  await expect(page.locator('.ma-detail-header')).toContainText('London')
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
  }
 })
