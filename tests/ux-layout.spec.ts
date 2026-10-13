@@ -36,7 +36,7 @@ test('desktop density survives reload while card facts and warnings remain visib
  await expect(page.getByRole('combobox',{name:'卡片密度'})).toHaveAttribute('data-value','detailed')
  await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'compact')
  const card=page.locator('.node-card').first()
- for(const warning of ['高负载','即将到期','流量额度已用尽'])await expect(card).toContainText(warning)
+ for(const warning of ['高负载','天后到期','流量额度已用尽'])await expect(card).toContainText(warning)
  await expect(card.locator('.card-billing')).toBeVisible()
  await expect(card.locator('.node-secondary-toggle')).toHaveCount(0)
 })

@@ -164,3 +164,18 @@
 @media (min-width: 721px) and (max-height: 800px) {
   .next-theme .desktop-results-toolbar { gap: 4px; margin-bottom: 8px; }
 }
+
+/* Desktop card headers separate identity and status from the system/expiry row. */
+@media(min-width:721px){
+ .next-theme .node-card .node-heading{display:grid;grid-template-columns:23px minmax(0,1fr) auto;column-gap:8px;row-gap:4px}
+ .next-theme .node-card .node-symbol{grid-column:1;grid-row:1}
+ .next-theme .node-card .node-identity{display:contents}
+ .next-theme .node-card .node-name-row{grid-column:2;grid-row:1}
+ .next-theme .node-card .node-status-group{grid-column:3;grid-row:1;align-self:center}
+ .next-theme .node-card .node-os-row{grid-column:2/-1;grid-row:2;flex-wrap:wrap;gap:6px 12px;margin-top:0}
+ .next-theme .node-card .node-os-row p{flex:1 1 80px;min-width:0}
+ .next-theme .node-card .node-os-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .next-theme .node-card :is(.card-expiry-tag,.card-quota-tag){margin-left:auto;max-width:100%}
+ .next-theme .node-card .card-expiry-tag>span{min-height:21px;padding:2px 7px;border-color:transparent;border-radius:6px;font-size:11px;background:color-mix(in srgb,var(--warn) 9%,var(--card))}
+ .next-theme .node-card .card-expiry-tag>span.is-expired{background:color-mix(in srgb,var(--destructive) 8%,var(--card));color:var(--destructive)}
+}
