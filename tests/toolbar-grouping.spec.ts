@@ -2,9 +2,13 @@ import {test,expect} from './desktopTest'
 import {nodes} from '../scripts/fixtures.mjs'
 
 test('desktop controls share one row with selected conditions below',async({page})=>{
+ await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:nodes().map((n,i)=>({...n,group:i<3?'网站':'流量'}))}}))
  await page.setViewportSize({width:1024,height:1000});await page.goto('/')
  const toolbar=page.locator('.desktop-results-toolbar'),primary=toolbar.locator('.node-toolbar-primary'),filters=toolbar.locator('.node-browser')
  await expect(primary.getByRole('heading',{name:'节点',exact:true})).toBeVisible()
+ await expect(primary.locator('.desktop-filter-card').getByRole('combobox',{name:'节点分组',exact:true})).toBeVisible()
+ await expect(primary.locator('.desktop-filter-card').getByRole('combobox',{name:'地区',exact:true})).toBeVisible()
+ expect(await toolbar.evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)')
  await expect(primary.getByRole('combobox',{name:'地区',exact:true})).toBeVisible()
  await expect(primary.getByRole('button',{name:'卡片视图',exact:true})).toBeVisible()
  await expect(primary.getByRole('combobox',{name:'卡片密度',exact:true})).toBeVisible()

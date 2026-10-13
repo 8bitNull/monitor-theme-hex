@@ -140,12 +140,22 @@
   .map-frame { --map-height: 180px; }
 }
 
-/* Keep node controls together; show filter feedback below only when needed. */
+/* Group desktop controls into separate cards; filter feedback stays below. */
 @media (min-width: 721px) {
-  .next-theme .desktop-results-toolbar { display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-panel); background: var(--card); }
+  .next-theme .desktop-results-toolbar { display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
   .desktop-results-toolbar > .node-toolbar-primary { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 14px; }
-  .desktop-results-toolbar .results-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 10px; min-width: 0; }
-  .desktop-results-toolbar .results-actions { flex-wrap: wrap; max-width: 100%; }
+  .desktop-results-toolbar .desktop-toolbar-left { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 20px; min-width: 0; max-width: 100%; }
+  .desktop-results-toolbar .results-heading { display: flex; align-items: center; gap: 10px; min-width: 0; white-space: nowrap; }
+  .desktop-results-toolbar .results-actions { flex-wrap: wrap; max-width: 100%; gap: 10px; }
+  .next-theme .desktop-results-toolbar :is(.desktop-control-card,.view-toolbar) { display: flex; align-items: center; min-height: 48px; max-width: 100%; padding: 5px 10px; gap: 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); box-shadow: 0 1px 2px #172b4d03; }
+  .next-theme .desktop-results-toolbar .desktop-filter-card { gap: 12px; }
+  .desktop-results-toolbar .desktop-control-divider { flex: none; width: 1px; height: 20px; background: var(--border); }
+  .next-theme .desktop-results-toolbar .desktop-control-card [data-slot=select] { min-height: 34px; height: 34px; padding: 4px 7px; border: 0; background: transparent; box-shadow: none; }
+  .next-theme .desktop-results-toolbar .node-group-picker { width: 128px; }
+  .next-theme .desktop-results-toolbar .view-toolbar { padding: 4px; }
+  .next-theme .desktop-results-toolbar .view-switch { margin: 0; padding: 0; gap: 3px; background: transparent; }
+  .next-theme .desktop-results-toolbar .view-switch button { min-height: 38px; padding: 7px 13px; border-radius: 8px; }
+  .next-theme .desktop-results-toolbar .table-tools-host:empty { display: none; }
   .desktop-results-toolbar .table-tools-host { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
   .next-theme .desktop-results-toolbar > .node-browser { min-width: 0; padding: 0; border: 0; background: transparent; }
   #node-results > .sort-note { margin: 0 0 10px; }
