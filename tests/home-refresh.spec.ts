@@ -21,7 +21,7 @@ test('mobile cards retain resource, expiry and freshness feedback',async({page})
  await expect(page.locator('.node-card').first().locator('.resources .resource')).toHaveCount(4)
 })
 
-test('desktop expiry tag sits beside the OS label',async({page})=>{
+test('desktop expiry tag is concise and sits on the right of the OS row',async({page})=>{
  const expiry=new Date(Date.now()+3*86400000).toISOString().slice(0,10)
  await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:[{...nodes()[0],name:'Netcup RS1000 - 黑五',os:'Debian 12',expires_at:expiry}]}}))
  for(const width of [1440,900,721]){
@@ -30,11 +30,13 @@ test('desktop expiry tag sits beside the OS label',async({page})=>{
   const card=page.locator('.node-card').first()
   const os=card.locator('.node-os-row p'),tag=card.locator('.card-expiry-tag')
   await expect(os).toContainText('Debian 12')
-  await expect(tag).toContainText('剩余 3 天')
+  await expect(tag).toHaveText('3 天后到期')
   await expect(card.locator('.node-name-row .card-issue')).toHaveCount(0)
   const osBox=await os.boundingBox(),tagBox=await tag.boundingBox()
   expect(osBox).not.toBeNull();expect(tagBox).not.toBeNull()
   expect(tagBox!.x).toBeGreaterThan(osBox!.x+osBox!.width)
+  const osRowBox=(await card.locator('.node-os-row').boundingBox())!
+  expect(Math.abs(tagBox!.x+tagBox!.width-osRowBox.x-osRowBox.width)).toBeLessThanOrEqual(1)
   expect(Math.abs(tagBox!.y+tagBox!.height/2-osBox!.y-osBox!.height/2)).toBeLessThan(2)
   expect(await card.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
   await card.screenshot({path:`tests/artifacts/desktop-expiry-${width}.png`})

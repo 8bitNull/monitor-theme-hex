@@ -13,7 +13,7 @@ for(const width of [320,390,430])test(`mobile detail stays usable at ${width}`,a
   await page.getByRole('button',{name,exact:true}).click()
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
  }
- await expect(page.getByRole('heading',{name:'流量与账单'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'用量与账期'})).toBeVisible()
  await expect(page.locator('#ma-billing-details')).toBeVisible()
 })
 

@@ -36,7 +36,7 @@ test('desktop density survives reload while card facts and warnings remain visib
  await expect(page.getByRole('combobox',{name:'卡片密度'})).toHaveAttribute('data-value','detailed')
  await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'compact')
  const card=page.locator('.node-card').first()
- for(const warning of ['高负载','即将到期','流量额度已用尽'])await expect(card).toContainText(warning)
+ for(const warning of ['高负载','天后到期','流量额度已用尽'])await expect(card).toContainText(warning)
  await expect(card.locator('.card-billing')).toBeVisible()
  await expect(card.locator('.node-secondary-toggle')).toHaveCount(0)
 })
@@ -64,7 +64,7 @@ test('grouped mobile list shows its first card near the top and detail billing i
  console.log(`Grouped first card y=${firstCardY}`)
  expect(firstCardY).toBeLessThanOrEqual(300)
  await card.locator('>button').click()
- await expect(page.getByRole('heading',{name:'流量与账单'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'用量与账期'})).toBeVisible()
  await expect(page.locator('#ma-billing-details')).toBeVisible()
  await expect(page.locator('.ma-detail-overview')).toContainText('费用')
 })
@@ -88,7 +88,7 @@ for (const width of [320,390]) test(`mobile facts keep long values readable at $
  await page.goto('/node/1')
  await page.getByRole('navigation',{name:'详情分区'}).getByRole('button',{name:'资料'}).click()
  const facts=page.locator('.detail-information')
- for(const [label,alignment] of [['Agent','right'],['系统','right'],['CPU','right'],['IPv6','right']] as const){
+ for(const [label,alignment] of [['Agent','right'],['系统','left'],['CPU','left'],['IPv6','left']] as const){
   const row=facts.locator('.detail-facts > div').filter({has:page.locator('dt').filter({hasText:new RegExp(`^${label}$`)})})
   await expect(row.locator('dd')).toBeVisible()
   await expect(row.locator('dd')).toHaveCSS('text-align',alignment)

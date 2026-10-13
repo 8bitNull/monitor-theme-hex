@@ -305,7 +305,16 @@ export default function App({ siteDefaults = defaults }: {
             {mapVisible && <MapPanel viewSwitch={viewSwitch} nodeSnapshot={mapKey} region={region} onRegion={setRegion}/>}
             </div>
 
-            <div id="node-results" tabIndex={-1}><div className={compactViewport ? "mobile-results-toolbar" : "desktop-results-toolbar"}><div className="node-toolbar-primary"><div className="results-heading">{!compactViewport&&<h2>{tr("节点")}</h2>}{groupPicker}{!compactViewport&&<span>{tr("匹配 {0} 个节点",filtered.length)}</span>}</div><div className="results-actions">{!compactViewport&&<DesktopRegionFilter nodes={sorted} region={region} onChange={setRegion}/>} {!compactViewport&&browse.view==='cards'&&<label className="desktop-card-density">{tr('卡片密度')}<Select aria-label={tr('卡片密度')} value={desktop.cardDensity} onChange={event=>setDesktop(current=>({...current,cardDensity:event.target.value as 'compact'|'detailed'}))}><option value="compact">{tr('紧凑')}</option><option value="detailed">{tr('详细')}</option></Select></label>}{!compactViewport&&browse.view==='table'&&<div className="table-tools-host"/>}{viewSwitch}</div></div><section hidden={!showSystemFilters && !showActiveFilters} className="node-browser streamlined-browser" aria-label={tr("节点浏览")}>
+            <div id="node-results" tabIndex={-1}><div className={compactViewport ? "mobile-results-toolbar" : "desktop-results-toolbar"}><div className="node-toolbar-primary">
+              {compactViewport?<div className="results-heading">{groupPicker}</div>:<div className="desktop-toolbar-left">
+                <div className="results-heading"><h2>{tr("节点")}</h2><span>{tr("匹配 {0} 个节点",filtered.length)}</span></div>
+                <div className="desktop-filter-card desktop-control-card">{groupPicker}{groupPicker&&<i className="desktop-control-divider" aria-hidden="true"/>}<DesktopRegionFilter nodes={sorted} region={region} onChange={setRegion}/></div>
+              </div>}
+              <div className="results-actions">
+                {!compactViewport&&browse.view==='cards'&&<label className="desktop-card-density desktop-control-card">{tr('卡片密度')}<Select aria-label={tr('卡片密度')} value={desktop.cardDensity} onChange={event=>setDesktop(current=>({...current,cardDensity:event.target.value as 'compact'|'detailed'}))}><option value="compact">{tr('紧凑')}</option><option value="detailed">{tr('详细')}</option></Select></label>}
+                {!compactViewport&&browse.view==='table'&&<div className="table-tools-host desktop-control-card"/>}{viewSwitch}
+              </div>
+            </div><section hidden={!showSystemFilters && !showActiveFilters} className="node-browser streamlined-browser" aria-label={tr("节点浏览")}>
             <div className="filters" hidden={!showSystemFilters}><div className="filter-categories"><div className="system-pills" role="group" aria-label={tr("系统快速筛选")}>{['all',...systems].map(key=><button key={key} aria-pressed={system===key} onClick={()=>setSystem(key)}>{key==='all'?tr("所有系统"):key==='other'?tr("其他 / 未知系统"):key}</button>)}</div>
 </div>
 </div>

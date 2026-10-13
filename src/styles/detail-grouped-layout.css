@@ -1,0 +1,119 @@
+/* Grouped detail composition: shared primitives, distinct desktop/phone layouts. */
+.next-theme .detail-grouped .detail-section-title{font-size:14px;font-weight:600;line-height:1.5;margin:0 0 12px;color:var(--foreground)}
+.next-theme .detail-grouped .detail-header-remarks{display:flex;align-items:flex-start;flex-wrap:wrap;gap:8px;margin:12px 0 0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;text-align:left;min-width:0}
+.detail-grouped .detail-remarks-label{padding-top:4px;font-size:12px;color:var(--muted-foreground)}
+.detail-grouped .detail-remarks-content{--remarks-collapsed-height:60px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;flex:1;min-width:0;line-height:30px;max-height:var(--remarks-collapsed-height);overflow:hidden}
+.detail-grouped .detail-remarks-content[data-expanded=true]{display:flex;flex-wrap:wrap;gap:6px;-webkit-line-clamp:unset;max-height:none}
+.next-theme .detail-grouped .detail-remarks-content[data-expanded=true] .detail-remark-tag{display:block;line-height:20px;margin-right:0}
+.next-theme .detail-grouped .detail-remarks-content .detail-remark-tag{display:inline;border:0;max-width:100%;white-space:normal;overflow-wrap:anywhere;font-size:12px;line-height:30px;margin-right:6px;padding:3px 8px;box-decoration-break:clone;-webkit-box-decoration-break:clone;border-radius:6px;background:var(--remark-fill);color:var(--remark-ink)}
+.detail-grouped .detail-remarks-toggle{flex-shrink:0;min-height:32px;padding:4px 8px;font-size:12px;color:var(--tone);border-radius:var(--radius-control)}
+.detail-grouped :is(.detail-remarks-toggle,.copy-fact):focus-visible{outline:2px solid var(--tone);outline-offset:2px}
+.next-theme .detail-grouped .overview-account{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;gap:16px;margin:0;padding:0;border:0;background:transparent;box-shadow:none}
+.detail-grouped .account-card{min-width:0;padding:18px 20px;border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--card)}
+.detail-grouped .account-traffic{grid-column:span 2}
+.next-theme .detail-grouped .account-card h3{display:block;color:var(--foreground);font-size:14px;font-weight:600;line-height:1.5;margin:0 0 16px}
+.next-theme .detail-grouped .overview-usage{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;min-width:0}
+.detail-grouped .overview-usage>span,.detail-grouped .account-values>div>span{font-size:12px;color:var(--muted-foreground)}
+.detail-grouped .overview-usage>b,.detail-grouped .account-values b{font-size:20px;font-weight:600;line-height:1.5;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;min-width:0;color:var(--foreground)}
+.detail-grouped .overview-usage small,.detail-grouped .account-values small{font-size:12px;font-weight:400;color:var(--muted-foreground)}
+.next-theme .detail-grouped .overview-usage progress{display:block;grid-column:1/-1;width:100%;height:5px;margin:0;appearance:none;border:0;border-radius:3px;overflow:hidden;background:var(--muted);color:var(--tone)}
+.detail-grouped .overview-usage progress::-webkit-progress-bar{background:var(--muted)}
+.detail-grouped .overview-usage progress::-webkit-progress-value{background:var(--tone)}
+.detail-grouped .overview-usage progress::-moz-progress-bar{background:var(--tone)}
+.next-theme .detail-grouped .account-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%;text-align:left}
+.detail-grouped .account-values>div{display:flex;flex-direction:column;gap:10px;min-width:0;align-items:flex-start}
+.next-theme .detail-grouped .overview-price{display:block;margin:0;max-width:100%;text-align:left;white-space:normal;overflow-wrap:anywhere;color:var(--foreground)}
+.detail-grouped .account-date b{font-size:17px}
+.detail-grouped .account-note{font-size:12px;line-height:1.5;color:var(--muted-foreground);margin:10px 0 0;overflow-wrap:anywhere}
+.detail-grouped .overview-expiry.expiring b,.detail-grouped .account-expiry-status{color:var(--warn)}
+.detail-grouped .detail-status-band{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.detail-grouped .detail-status-band>div{min-width:0}
+.detail-grouped .detail-status-band span,.detail-grouped .detail-status-band small{font-size:12px;color:var(--muted-foreground);font-weight:400}
+.detail-grouped .detail-status-band b{display:block;font-size:15px;line-height:1.5;font-weight:500;margin-top:7px;overflow-wrap:anywhere}
+.detail-grouped .detail-load-values{display:flex;flex-wrap:wrap;gap:8px 24px}
+.detail-grouped .detail-load-values small{margin-left:4px}
+.next-theme .detail-grouped .detail-information{padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;min-width:0}
+.next-theme .detail-grouped .detail-information .detail-fact-groups{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;align-items:stretch}
+.next-theme .detail-grouped .detail-information .detail-fact-groups>section{min-width:0;margin:0;padding:18px;border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--card)}
+.detail-grouped .fact-section-heading h3{font-size:14px}
+.next-theme .detail-grouped .detail-information .detail-facts{gap:14px}
+.next-theme .detail-grouped .detail-information .detail-facts>div{grid-template-columns:80px minmax(0,1fr);gap:8px;min-width:0;min-height:0;align-items:start}
+.next-theme .detail-grouped .detail-information .address-facts>div,.next-theme .detail-grouped .detail-information .traffic-facts>div{grid-template-columns:minmax(0,1fr);gap:8px}
+.next-theme .detail-grouped .detail-information .hardware-facts>div:first-child{grid-template-columns:minmax(0,1fr);gap:6px}
+.next-theme .detail-grouped .detail-information :is(.address-facts,.traffic-facts) dd,.next-theme .detail-grouped .detail-information .hardware-facts>div:first-child dd{justify-content:flex-start;text-align:left}
+.next-theme .detail-grouped .detail-information :is(.address-facts,.traffic-facts) .fact-value,.next-theme .detail-grouped .detail-information .hardware-facts>div:first-child .fact-value{text-align:left;justify-self:start;overflow-wrap:anywhere}
+.next-theme .detail-grouped .detail-information :is(.address-facts,.traffic-facts)>div+div{padding-top:12px;border-top:1px solid var(--border)}
+.detail-grouped .transfer-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%}
+.detail-grouped .transfer-values>div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.detail-grouped .transfer-values span{font-size:12px;color:var(--muted-foreground)}
+.detail-grouped .transfer-values b{font-size:15px;font-weight:500;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+@media(min-width:721px){
+ .next-theme .detail-grouped .detail-workspace{gap:20px;margin-top:16px}
+ .next-theme .detail-grouped .detail-section-title{margin-bottom:10px}
+ .next-theme .detail-grouped .account-card{padding:16px 18px}
+ .next-theme .detail-grouped .account-card h3{margin-bottom:12px}
+ .next-theme .detail-grouped .detail-identity{padding-bottom:0}
+ .next-theme .detail-grouped .detail-overview-grid{display:block;padding:0}
+ .next-theme .detail-grouped .detail-overview-grid>.detail-account{padding:0;border:0}
+ .next-theme .detail-grouped .detail-metric-card{min-height:180px;padding:16px 18px}
+ .next-theme .detail-grouped .detail-metric-network>small{margin-top:10px;font-size:12px;color:var(--muted-foreground)}
+ .detail-grouped .detail-status-band.with-load{grid-template-columns:1.5fr 1fr 1fr;gap:20px;padding:12px 0 20px}
+ .detail-grouped .detail-status-band.with-load>div{display:block;padding-inline:18px}
+ .detail-grouped .detail-status-band.with-load>div+div{border-left:1px solid var(--border)}
+ .next-theme .detail-grouped .detail-history{padding:20px}
+}
+@media(min-width:721px) and (max-width:1100px){
+ .next-theme .detail-grouped .overview-account{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .detail-grouped .account-traffic{grid-column:1/-1}
+ .detail-grouped .account-date b{white-space:nowrap}
+}
+@media(min-width:900px) and (max-width:1279px){.next-theme .detail-grouped .detail-information .detail-fact-groups{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:721px) and (max-width:899px){
+ .next-theme .detail-grouped .overview-account{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .next-theme .detail-grouped .detail-information .detail-fact-groups{grid-template-columns:minmax(0,1fr)}
+ .detail-grouped .detail-status-band.with-load{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .detail-grouped .detail-status-band.with-load>.detail-status-load{grid-column:1/-1}
+ .detail-grouped .detail-status-band.with-load>div:nth-child(2){border-left:0}
+}
+@media(max-width:720px){
+ .next-theme .detail-grouped .ma-detail-overview>.ma-panel:not(.ma-resource-panel):not(.ma-billing-panel),.next-theme .detail-grouped .detail-history{border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--card);box-shadow:none}
+ .next-theme .detail-grouped .detail-header-remarks{margin:4px 0 12px;gap:6px}
+ .detail-grouped .detail-remarks-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+ .detail-grouped .detail-remarks-content{--remarks-collapsed-height:60px}
+ .detail-grouped .detail-remarks-toggle{min-height:44px}
+ .next-theme .detail-grouped .ma-detail-overview .ma-resource-panel{padding:0;border:0;background:transparent;box-shadow:none}
+ .next-theme .detail-grouped .ma-resource-panel .ma-big-grid{gap:10px}
+ .next-theme .detail-grouped .ma-resource-panel .ma-big-metric{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-panel);padding:14px;min-width:0}
+ .next-theme .detail-grouped .ma-detail-overview .ma-billing-panel{padding:0;border:0;background:transparent;box-shadow:none;margin-top:16px}
+ .next-theme .detail-grouped .overview-account{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .detail-grouped .account-card{padding:14px}
+ .next-theme .detail-grouped .account-note{margin-top:8px}
+ .next-theme .detail-grouped .account-card h3{font-size:13px;margin-bottom:10px}
+ .next-theme .detail-grouped .account-cost .account-values{display:flex;flex-direction:column;gap:8px}
+ .detail-grouped .account-cycle>span{display:none}
+ .detail-grouped .account-cycle b{font-size:12px;font-weight:400;color:var(--muted-foreground)}
+ .detail-grouped .account-cost .overview-price,.detail-grouped .account-days b{font-size:23px}
+ .detail-grouped .account-cycle{order:1}
+ .detail-grouped .account-cost .account-values>div{gap:0}
+ .detail-grouped .account-cost .account-values>div:first-child>span{display:none}
+ .detail-grouped .account-date,.detail-grouped .account-days>span{display:none!important}
+ .next-theme .detail-grouped .account-expiry .account-values{grid-template-columns:minmax(0,1fr)}
+ .detail-grouped .ma-panel .detail-status-band{padding-top:12px;margin-top:12px;border-top:1px solid var(--border)}
+ .detail-grouped .ma-panel .detail-status-band b{font-size:12px;font-weight:500;margin-top:6px}
+ .next-theme .detail-grouped .detail-information .detail-fact-groups{grid-template-columns:minmax(0,1fr);gap:10px}
+ .next-theme .detail-grouped .detail-information .detail-fact-groups>section{padding:14px}
+ .next-theme .detail-grouped .detail-information .detail-facts{display:block}
+ .next-theme .detail-grouped .detail-information .detail-facts>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:6px 12px;padding:8px 0;border-bottom:1px solid var(--border)}
+ .next-theme .detail-grouped .detail-information .detail-facts>div:last-child{border-bottom:0}
+ .next-theme .detail-grouped .detail-information .detail-facts>div+div{border-top:0}
+ .next-theme .detail-grouped .detail-information .detail-facts .mobile-fact-stacked{grid-template-columns:minmax(0,1fr);gap:6px}
+ .next-theme .detail-grouped .detail-information .detail-facts .mobile-fact-stacked dd,.next-theme .detail-grouped .detail-information .detail-facts .mobile-fact-stacked .fact-value{justify-content:flex-start;text-align:left;overflow-wrap:anywhere}
+ .next-theme .detail-grouped .detail-information .hardware-facts>div:first-child:not(.mobile-fact-stacked){grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
+ .next-theme .detail-grouped .detail-information .detail-facts dd{min-width:0;line-height:1.5}
+ .next-theme .detail-grouped .detail-information .address-facts dd{display:flex;min-width:0;gap:6px}
+ .next-theme .detail-grouped .detail-information .address-facts .fact-value{min-width:0}
+ .next-theme .detail-grouped .detail-information .detail-facts>div:not(.mobile-fact-stacked) dd{justify-content:flex-end;text-align:right}
+ .next-theme .detail-grouped .detail-information .detail-facts>div:not(.mobile-fact-stacked) .fact-value{text-align:right;justify-self:end}
+ .detail-grouped .copy-fact{min-width:44px;min-height:44px}
+}
+@media(max-width:350px){.detail-grouped .overview-usage>b{font-size:18px}.detail-grouped .account-card{padding:12px}}

@@ -33,8 +33,8 @@ for(const width of [768,800,899,900,1200,1350,1360,1440])test(`network readings 
    else expect(value!.y).toBeGreaterThanOrEqual(label!.y+label!.height-1)
   }
   const networkCard=page.locator('.detail-metric-network')
-  await expect(networkCard.locator('.detail-metric-note').first()).toContainText(/TCP.*UDP/)
-  await expect(networkCard.locator('.detail-metric-note').nth(1)).toContainText(language==='zh'?'在线时长':'Uptime')
+  await expect(page.locator('.detail-status-band')).toContainText(/TCP.*UDP/)
+  await expect(page.locator('.detail-status-band')).toContainText(language==='zh'?'在线时长':'Uptime')
   for(const direction of ['upload','download']){
    const reading=networkCard.locator(`.${direction}`),value=(await reading.locator('strong').boundingBox())!,trend=(await reading.locator('.speed-trend').boundingBox())!
    expect(trend.y).toBeGreaterThanOrEqual(value.y+value.height)
@@ -43,7 +43,7 @@ for(const width of [768,800,899,900,1200,1350,1360,1440])test(`network readings 
   await expandRoutes(page);await expect(page.locator('.route-chips button>span').first()).toHaveCSS('text-overflow','ellipsis');await page.keyboard.press('Escape')
   const billing=page.locator('.overview-account')
   await expect(page.locator('#detail-fact-groups')).toBeVisible()
-  const status=(await billing.locator('.overview-account-footer').boundingBox())!,facts=(await billing.locator('.overview-billing').boundingBox())!;if(width>=900)expect(status.x).toBeGreaterThanOrEqual(facts.x+facts.width);else expect(status.y).toBeGreaterThanOrEqual(facts.y+facts.height-1)
+  const cost=(await billing.locator('.account-cost').boundingBox())!,usage=(await billing.locator('.account-traffic').boundingBox())!;if(width>1100)expect(cost.x).toBeGreaterThanOrEqual(usage.x+usage.width);else expect(cost.y).toBeGreaterThanOrEqual(usage.y+usage.height-1)
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
   if(language==='zh'&&appearance==='light')await page.locator('.detail-history').screenshot({path:`tests/artifacts/v013/latency-${width}.png`})
  }

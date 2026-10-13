@@ -164,3 +164,17 @@
 .node-card .node-connections>div+div::before {content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:1px;height:14px;background:var(--border);opacity:.7}
 .node-card .node-connections b {min-width:0;overflow-wrap:anywhere;color:var(--foreground)}
 .node-card .node-connections span {flex-shrink:0}
+
+/* Desktop quota and days remaining center within the left and right card halves. */
+@media(min-width:721px){
+ .node-card .card-billing:has(>.billing-notes)>:is(.traffic-summary,.card-expiry,.card-uptime){grid-row:1/3}
+ .node-card .card-billing>.billing-notes{grid-row:3;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;justify-items:center;min-width:0}
+ .node-card .card-billing>.billing-notes::before{content:none}
+ .node-card .billing-notes>small{max-width:100%;font-size:11px;line-height:1.5;color:var(--muted-foreground);overflow-wrap:anywhere}
+ .node-card .billing-notes .billing-allowance{grid-column:1;text-align:center}
+ .node-card .billing-notes .billing-remaining{grid-column:2;display:flex;align-items:center;justify-content:center;gap:4px;text-align:center}
+ .node-card .card-billing:not(:has(.card-uptime))>.billing-notes:has(>small:only-child){grid-template-columns:minmax(0,1fr)}
+ .node-card .billing-notes:not(:has(.billing-allowance)) .billing-remaining{grid-column:1}
+ .node-card .billing-remaining[data-expiry-state=soon]{color:var(--warn)}
+ .node-card .billing-remaining[data-expiry-state=expired]{color:var(--destructive)}
+}

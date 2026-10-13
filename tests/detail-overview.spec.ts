@@ -12,17 +12,17 @@ for(const width of [768,800,1024,1440])test(`overview groups and full-width hist
   await expect(page.locator('.detail-resource-charts')).toBeVisible()
   await expect(page.locator('.desktop-detail-metrics>.detail-metric-card')).toHaveCount(4)
   await expect(page.locator('.overview-expiry')).toContainText('2026.10.07')
-  await expect(page.locator('.detail-identity .detail-meta-tags')).toHaveCount(0)
+  await expect(page.locator('.detail-identity .detail-header-remarks')).toHaveCount(1)
   const geometry=await page.evaluate(()=>{
    const box=(s:string)=>document.querySelector(s)!.getBoundingClientRect()
-   const live=box('.detail-live'),history=box('.detail-history'),remarks=box('.overview-remarks'),groups=box('.detail-overview-grid'),footer=box('.overview-account-footer'),price=box('.overview-price')
-   return {order:history.top>=live.bottom&&remarks.top>=groups.bottom-1,fullWidth:Math.abs(history.width-live.width)<2,priceContained:price.left>=footer.left&&price.right<=footer.right,overflow:document.documentElement.scrollWidth>innerWidth||[...document.querySelectorAll('.detail-metric-card,.detail-speed>div,.overview-billing>div')].some(el=>el.scrollWidth>el.clientWidth+1)}
+   const live=box('.detail-live'),history=box('.detail-history'),remarks=box('.overview-remarks'),groups=box('.detail-overview-grid'),footer=box('.account-cost'),price=box('.overview-price')
+   return {order:history.top>=live.bottom&&remarks.bottom<=groups.top+1,fullWidth:Math.abs(history.width-live.width)<2,priceContained:price.left>=footer.left&&price.right<=footer.right,overflow:document.documentElement.scrollWidth>innerWidth||[...document.querySelectorAll('.detail-metric-card,.detail-speed>div,.overview-billing>div')].some(el=>el.scrollWidth>el.clientWidth+1)}
   })
   expect(geometry).toEqual({order:true,fullWidth:true,priceContained:true,overflow:false})
-  await expect(page.locator('.detail-remarks-toggle')).toHaveCount(0)
+  await expect(page.locator('.detail-header-remarks')).toBeVisible()
   await expect(page.locator('.overview-remarks')).toContainText('更多备注用于检查展开后的完整内容')
   await expect(page.locator('#detail-fact-groups')).toBeVisible()
-  await expect(page.locator('.detail-fact-groups>section')).toHaveCount(2)
+  await expect(page.locator('.detail-fact-groups>section')).toHaveCount(4)
   await expect(page.locator('.copy-fact')).toHaveCount(2)
   if(language==='zh'&&[800,1440].includes(width))await page.locator('.node-detail').screenshot({path:`tests/artifacts/detail-overview/${width}-${appearance}.png`,style:'header {visibility:hidden} '})
  }
