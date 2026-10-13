@@ -67,8 +67,8 @@ test('empty history offers recovery and a failed first request never remains loa
  await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:{metrics:[],ping:[],probes:{}}}));await page.locator('.detail-history').getByRole('button',{name:'重试',exact:true}).click();await page.getByRole('button',{name:'调整时间范围',exact:true}).click();await expect(page.getByRole('button',{name:'1 小时',exact:true})).toBeFocused()
 })
 test('resource toolbar controls remain explicit on mobile',async({page})=>{
- await page.setViewportSize({width:320,height:844});await setup(page);await page.goto('/node/1?section=resources');await expect(page.locator('.ma-detail-tabs').getByText('资源',{exact:true})).toBeVisible();await expect(page.locator('.detail-resource-metric-desktop')).toContainText('CPU')
- for(const l of [page.locator('.detail-ranges'),page.getByRole('button',{name:'刷新历史',exact:true}),page.locator('.detail-resource-metric-desktop')]){const box=await l.boundingBox();expect(box!.x+box!.width).toBeLessThanOrEqual(320)}
+ await page.setViewportSize({width:320,height:844});await setup(page);await page.goto('/node/1?section=resources');await expect(page.locator('.ma-detail-tabs').getByText('资源',{exact:true})).toBeVisible();await expect(page.locator('.ma-resource-card h2')).toHaveText(['CPU','内存','硬盘']);await expect(page.locator('.detail-resource-metric')).toHaveCount(0)
+ for(const l of [page.locator('.detail-ranges'),page.getByRole('button',{name:'刷新历史',exact:true}),page.locator('.ma-resource-card').first()]){const box=await l.boundingBox();expect(box!.x+box!.width).toBeLessThanOrEqual(320)}
  await expect(page.locator('.settings-drawer')).toHaveCount(0)
 })
 

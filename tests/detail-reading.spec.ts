@@ -6,7 +6,7 @@ import {setSiteDefault} from './settings'
 async function setup(page:any,count=3,overrides:Record<string,unknown>={}){
  await page.route('**/api/nodes',(r:any)=>r.fulfill({json:{nodes:[{...nodes()[0],agent_version:'1.2.3',ipv4:'192.0.2.1',remark:'国际线路;Backup',expires_at:'2027-01-01',...overrides}]}}))
  await page.route('**/api/nodes/*/metrics?*',(r:any)=>{const d=metrics();return r.fulfill({json:{...d,probes:Object.fromEntries(Array.from({length:count},(_,i)=>[i+1,`Route ${i+1}`])),ping:d.ping.flatMap(p=>Array.from({length:count},(_,i)=>({...p,task_id:i+1,latency:p.latency+i*10})))}})})
- await page.goto('/node/1?section=resources');await expect(page.locator('.detail-resource-charts')).toBeVisible()
+ await page.goto('/node/1?section=resources');await expect(page.locator('.detail-resource-charts').first()).toBeVisible()
 }
 test('compact desktop latency controls provide one selector and comparison above the chart',async({page})=>{
  await page.setViewportSize({width:800,height:844})
@@ -127,7 +127,9 @@ test('long identity notes expand and copy feedback does not move facts',async({p
 })
 for(const width of [320,390])test(`mobile resource chart tap shows bounded tooltip with units at ${width}`,async({page})=>{
  await page.setViewportSize({width,height:844});await setup(page)
- const frame=page.locator('.resource-chart-panel .detail-chart-frame');await frame.scrollIntoViewIfNeeded();await frame.click({position:{x:180,y:120}})
- const tip=frame.locator('.recharts-tooltip-wrapper');await expect(tip).toBeVisible();await expect(tip).toContainText('%')
+ for(const [metric,unit] of [['cpu','%'],['mem_used','GB'],['disk_used','GB']]){
+ const frame=page.locator(`[data-resource-card="${metric}"] .resource-chart-panel .detail-chart-frame`);await frame.scrollIntoViewIfNeeded();await frame.click({position:{x:180,y:80}})
+ const tip=frame.locator('.recharts-tooltip-wrapper');await expect(tip).toBeVisible();await expect(tip).toContainText(unit)
  const b=(await tip.boundingBox())!;expect(b.x).toBeGreaterThanOrEqual(0);expect(b.x+b.width).toBeLessThanOrEqual(width)
+ }
 })

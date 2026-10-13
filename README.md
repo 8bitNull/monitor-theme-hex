@@ -46,7 +46,9 @@ v1.0.1 收敛手机首页警示与重复状态信息，优化网络图表、地�
 <img src="screenshots/readme/home-mobile.png" width="300" alt="手机节点页" /> <img src="screenshots/readme/detail-mobile.png" width="300" alt="手机详情资料" />
 
 <details>
-<summary>手机概览与设置</summary>
+<summary>手机资源、概览与设置</summary>
+
+<img src="screenshots/readme/resources-mobile.png" width="300" alt="手机资源独立卡片" />
 
 <img src="screenshots/readme/overview-mobile.png" width="300" alt="手机概览页" /> <img src="screenshots/readme/settings-mobile.png" width="300" alt="手机设置" />
 
