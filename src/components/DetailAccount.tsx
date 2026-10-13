@@ -21,7 +21,7 @@ export function CostCard({node}:{node:Node}){
  const price=node.price>0?money(node.price,node.currency):node.price===0?tr('免费 / 未填写'):tr('价格未知')
  const cycle=tr(Object.hasOwn(CYCLES,node.billing_cycle)?CYCLES[node.billing_cycle]:node.billing_cycle)
  return <section className="account-card account-cost" aria-label={tr('费用与周期')}>
-  <h3>{tr('费用与周期')}</h3><div className="account-values">
+  <h3>{tr('费用')}</h3><div className="account-values">
    <div><span>{tr('费用')}</span><b className="overview-price">{price}</b></div>
    <div className="account-cycle"><span>{tr('付费周期')}</span><b>{cycle||'—'}</b></div>
   </div>
@@ -31,7 +31,7 @@ export function ExpiryCard({node,mobile=false}:{node:Node;mobile?:boolean}){
  const days=daysUntil(node.expires_at),date=days!==null&&node.expires_at?node.expires_at.replaceAll('-','.'):'—'
  const status=days===null?tr('未设到期'):days<0?tr('已过期 {0} 天',-days):days===0?tr('今日到期'):tr('{0} 天后到期',days)
  return <section className="account-card account-expiry" aria-label={tr('到期与剩余天数')}>
-  <h3>{tr('到期与剩余天数')}</h3>
+  <h3>{tr('到期')}</h3>
   <div className={`overview-expiry account-values ${days!==null&&days<=7?'expiring':''}`}>
    <div className="account-date"><span>{tr('到期日期')}</span><b>{date}</b></div>
    <div className="account-days"><span>{days!==null&&days<0?tr('已到期'):tr('剩余天数')}</span><b>{days===null?'—':Math.abs(days)} {days!==null&&<small>{tr('天')}</small>}</b></div>

@@ -420,7 +420,6 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
       </div></section>}
 
       {(!mobile||mobileSection==='info')&&<DetailFacts node={node} compact={mobile?false:compact} mobile={mobile} mode={detailInfoMode} onMode={onDetailInfoMode}/>}
-      {mobile&&mobileSection==='info'&&<section className="ma-panel ma-info-extra"><div className="ma-row"><span>{tr('名称')}</span><small>{node.name}</small></div><div className="ma-row"><span>{tr('节点分组')}</span><small>{node.group||tr('未分组')}</small></div></section>}
       </div>
       {mobile&&chartSheet&&<ChartSettingsSheet kind={chartSheet} onClose={()=>setChartSheet(null)} smooth={smooth} onSmooth={setSmooth}/>}
     </div>);

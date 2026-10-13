@@ -51,3 +51,17 @@ for(const width of [768,800,1440])test(`complete note tags are directly readable
  for(const tag of await notes.locator('.detail-remark-tag').all())expect(await tag.evaluate(el=>el.scrollWidth<=el.clientWidth+1&&el.scrollHeight<=el.clientHeight+1)).toBe(true)
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
 })
+
+for(const cardInfo of [{traffic:false,expiry:true,uptime:false},{traffic:true,expiry:true,uptime:true},{traffic:false,expiry:true,uptime:true}])test(`billing notes align with enabled fields ${JSON.stringify(cardInfo)}`,async({page})=>{
+ await page.route('**/api/themes/hex/config',r=>r.fulfill({json:{card_info_traffic:cardInfo.traffic,card_info_expiry:cardInfo.expiry,card_info_uptime:cardInfo.uptime}}))
+ await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],expires_at:'2027-01-01',traffic_limit:500e9}]}}))
+ await page.goto('/')
+ const card=page.locator('.node-card');await expect(card).toHaveCount(1)
+ await expect(card.locator('.traffic-summary')).toHaveCount(Number(cardInfo.traffic));await expect(card.locator('.card-uptime')).toHaveCount(Number(cardInfo.uptime))
+ const delta=await card.evaluate((el,info)=>{
+  const billing=el.querySelector('.card-billing')!.getBoundingClientRect(),note=el.querySelector('.billing-remaining')!.getBoundingClientRect()
+  const fraction=info.traffic?.75:info.uptime?.25:.5
+  return Math.abs(note.x+note.width/2-(billing.x+billing.width*fraction))
+ },cardInfo)
+ expect(delta).toBeLessThanOrEqual(1)
+})

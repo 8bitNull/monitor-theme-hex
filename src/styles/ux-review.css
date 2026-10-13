@@ -173,6 +173,8 @@
  .node-card .billing-notes>small{max-width:100%;font-size:11px;line-height:1.5;color:var(--muted-foreground);overflow-wrap:anywhere}
  .node-card .billing-notes .billing-allowance{grid-column:1;text-align:center}
  .node-card .billing-notes .billing-remaining{grid-column:2;display:flex;align-items:center;justify-content:center;gap:4px;text-align:center}
+ .node-card .card-billing:not(:has(.card-uptime))>.billing-notes:has(>small:only-child){grid-template-columns:minmax(0,1fr)}
+ .node-card .billing-notes:not(:has(.billing-allowance)) .billing-remaining{grid-column:1}
  .node-card .billing-remaining[data-expiry-state=soon]{color:var(--warn)}
  .node-card .billing-remaining[data-expiry-state=expired]{color:var(--destructive)}
 }

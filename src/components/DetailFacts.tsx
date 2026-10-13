@@ -39,7 +39,7 @@ function HardwareFacts({node,mobile}:{node:Node;mobile:boolean}){
 function SystemFacts({node,mobile}:{node:Node;mobile:boolean}){
  return <FactSection label={tr('系统环境')} Icon={Monitor}><dl className="detail-facts">
   {!mobile&&<Fact label="Agent" value={node.agent_version}/>}
-  {mobile?<><Fact label={tr('系统')} value={[osName(node.os),node.kernel].filter(Boolean).join(' · ')}/><Fact label={tr('架构 / 虚拟化')} value={[node.arch,node.virt!=='none'?node.virt:''].filter(Boolean).join(' · ')}/><Fact label="Agent" value={node.agent_version}/></>:<><Fact label={tr('操作系统')} value={osName(node.os)}/><Fact label={tr('内核')} value={node.kernel}/><Fact label={tr('架构')} value={node.arch}/><Fact label={tr('虚拟化')} value={node.virt}/></>}
+  {mobile?<><Fact label={tr('系统')} value={[osName(node.os),node.kernel].filter(Boolean).join(' · ')}/><Fact label={tr('架构 / 虚拟化')} value={[node.arch,node.virt!=='none'?node.virt:''].filter(Boolean).join(' · ')}/><Fact label="Agent" value={node.agent_version}/><Fact label={tr('节点分组')} value={node.group||tr('未分组')}/></>:<><Fact label={tr('操作系统')} value={osName(node.os)}/><Fact label={tr('内核')} value={node.kernel}/><Fact label={tr('架构')} value={node.arch}/><Fact label={tr('虚拟化')} value={node.virt}/></>}
  </dl></FactSection>
 }
 function AddressFacts({node}:{node:Node}){

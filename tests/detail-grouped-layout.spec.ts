@@ -8,9 +8,11 @@ async function fixture(page:import('@playwright/test').Page){
 }
 for(const width of [1440,900,721])test(`desktop grouped detail aligns without overflow at ${width}`,async({page})=>{
  await page.setViewportSize({width,height:1000});await fixture(page);await page.goto('/node/1')
- await expect(page.getByRole('heading',{name:'费用与周期',exact:true})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'费用',exact:true})).toBeVisible()
  const rects=await page.locator('.account-card').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,right:r.right}}))
- if(width>=900){expect(rects[0].y).toBe(rects[1].y);expect(Math.abs(rects[1].w-rects[2].w)).toBeLessThanOrEqual(1)}
+ if(width===1440){expect(rects[0].y).toBe(rects[1].y)}
+ if(width<=1100){expect(rects[1].y).toBeGreaterThan(rects[0].y);expect(rects[1].y).toBe(rects[2].y)}
+ expect(Math.abs(rects[1].w-rects[2].w)).toBeLessThanOrEqual(1)
  if(width===1440){const metrics=await page.locator('.detail-metric-card').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().x));expect(Math.abs(rects[1].x-metrics[2])).toBeLessThanOrEqual(1);expect(Math.abs(rects[2].x-metrics[3])).toBeLessThanOrEqual(1)}
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
 })
@@ -26,6 +28,8 @@ for(const width of [320,390,430])test(`phone grouped billing and full address co
  const usage=(await page.locator('.account-traffic').boundingBox())!,cost=(await page.locator('.account-cost').boundingBox())!,expiry=(await page.locator('.account-expiry').boundingBox())!
  expect(cost.y).toBeGreaterThan(usage.y);expect(cost.y).toBe(expiry.y)
  await page.getByRole('navigation',{name:'详情分区'}).getByRole('button',{name:'资料',exact:true}).click()
+ await expect(page.getByRole('region',{name:'系统环境'})).toContainText('节点分组')
+ await expect(page.locator('.ma-info-extra')).toHaveCount(0)
  const copy=page.getByRole('button',{name:'复制：IPv6',exact:true});const row=copy.locator('xpath=ancestor::dd/..');await expect(row.locator('.fact-value')).toHaveText(address)
  expect((await row.locator('dd').boundingBox())!.y).toBeGreaterThan((await row.locator('dt').boundingBox())!.y)
  expect((await copy.boundingBox())!.width).toBeGreaterThanOrEqual(44)
