@@ -25,6 +25,13 @@ test('billing rows align, preserve quota states and fit narrow cards',async({pag
   for(const card of await cards.all()){
    const layout=await card.evaluate(el=>{const a=el.querySelector('.traffic-summary b')!.getBoundingClientRect(),b=el.querySelector('.card-expiry b')!.getBoundingClientRect();return {delta:Math.abs(a.y-b.y),overflow:el.scrollWidth>el.clientWidth+1}})
    expect(layout.delta).toBeLessThanOrEqual(1);expect(layout.overflow).toBeFalsy()
+   const halves=await card.evaluate(el=>{
+    const billing=el.querySelector('.card-billing')!.getBoundingClientRect()
+    const quota=el.querySelector('.billing-allowance')!.getBoundingClientRect()
+    const remaining=el.querySelector('.billing-remaining,.card-expiry small')!.getBoundingClientRect()
+    return {left:Math.abs(quota.x+quota.width/2-(billing.x+billing.width/4)),right:Math.abs(remaining.x+remaining.width/2-(billing.x+billing.width*3/4)),row:Math.abs(quota.y-remaining.y)}
+   })
+   expect(halves.left).toBeLessThanOrEqual(1);expect(halves.right).toBeLessThanOrEqual(1);expect(halves.row).toBeLessThanOrEqual(1)
   }
   if(language==='zh')await cards.first().screenshot({path:`tests/artifacts/billing-aligned/${width}.png`})
  }
