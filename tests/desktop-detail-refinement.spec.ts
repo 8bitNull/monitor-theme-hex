@@ -9,7 +9,7 @@ test('daily traffic reads upload before download',async({page})=>{
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[node]}}))
  await page.goto('/node/1')
  const row=page.locator('.detail-facts>div').filter({has:page.locator('dt',{hasText:'今日流量'})})
- await expect(row.locator('dd')).toHaveText(`↑ ${bytes(node.day_tx)} · ↓ ${bytes(node.day_rx)}`)
+ await expect(row.locator('.transfer-values b')).toHaveText([bytes(node.day_tx),bytes(node.day_rx)])
 })
 
 test('history preview exposes an action on keyboard focus',async({page})=>{

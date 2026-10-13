@@ -8,12 +8,13 @@ for(const width of [320,390,430])test(`mobile remarks keep long text in wrapping
  await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:metrics()}))
  await page.goto('/node/1')
  await page.getByRole('navigation',{name:'详情分区'}).getByRole('button',{name:'资料',exact:true}).click()
- const tags=page.locator('.ma-remark-tag')
+ await page.getByRole('button',{name:'展开备注',exact:true}).click()
+ const tags=page.locator('.detail-header-remarks .detail-remark-tag')
  await expect(tags).toHaveText(remarks)
  await expect(page.locator('.ma-remark-text')).toHaveCount(0)
  const parent=(await page.locator('.ma-remarks-content').boundingBox())!
  for(const tag of await tags.all()){
-  await expect(tag).toHaveCSS('border-top-width','1px')
+  await expect(tag).toHaveCSS('white-space','normal')
   const rect=(await tag.boundingBox())!
   expect(rect.x).toBeGreaterThanOrEqual(parent.x-1)
   expect(rect.x+rect.width).toBeLessThanOrEqual(parent.x+parent.width+1)

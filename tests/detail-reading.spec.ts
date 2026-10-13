@@ -77,12 +77,12 @@ test('device information stays visible across reload and viewport changes',async
   await expect(page.locator('.detail-facts-toggle')).toHaveCount(0)
   await expect(page.locator('#detail-fact-groups')).toBeVisible()
  }
- await expect(page.getByRole('region',{name:'硬件与系统',exact:true})).toContainText('1.2.3')
+ await expect(page.getByRole('region',{name:'系统环境',exact:true})).toContainText('1.2.3')
 })
 test('320px facts keep short labels beside values and wrap long facts without overflow',async({page})=>{
  await page.setViewportSize({width:768,height:844});await setup(page,3,{cpu_name:'AMD EPYC 7B13 '.repeat(5)})
  await expect(page.locator('#detail-fact-groups')).toBeVisible()
- for(const label of ['Agent','系统','交换空间','流量重置']){
+ for(const label of ['Agent','操作系统','交换空间','架构']){
   const row=page.locator('.detail-facts>div').filter({has:page.locator(`dt:text-is("${label}")`)}),dt=await row.locator('dt').boundingBox(),dd=await row.locator('dd').boundingBox()
   expect(Math.abs(dt!.y-dd!.y)).toBeLessThanOrEqual(1)
  }
@@ -118,8 +118,8 @@ test('long identity notes expand and copy feedback does not move facts',async({p
  await context.grantPermissions(['clipboard-read','clipboard-write']);await setup(page)
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],name:'超长名称'.repeat(20),ipv4:'192.0.2.1',remark:Array.from({length:8},(_,i)=>`备注${i} ${'长文本'.repeat(30)}`).join(';')}]}}));await page.reload()
  await page.setViewportSize({width:768,height:568});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
- await expect(page.getByRole('button',{name:'展开备注',exact:true})).toHaveCount(0);await expect(page.locator('.overview-remarks .detail-remark-tag')).toHaveCount(8)
- await expect(page.getByRole('button',{name:'收起备注',exact:true})).toHaveCount(0);await expect(page.locator('#detail-fact-groups')).toBeVisible()
+ await page.getByRole('button',{name:'展开备注',exact:true}).click();await expect(page.locator('.overview-remarks .detail-remark-tag')).toHaveCount(8)
+ await expect(page.getByRole('button',{name:'收起备注',exact:true})).toBeVisible();await expect(page.locator('#detail-fact-groups')).toBeVisible()
  await expect(page.getByRole('button',{name:'复制：CPU',exact:true})).toHaveCount(0);const button=page.getByRole('button',{name:'复制：IPv4',exact:true}),row=button.locator('xpath=ancestor::dd');const before=(await row.boundingBox())!.height
  await button.click();await expect(page.getByRole('status')).toHaveText('已复制');expect((await row.boundingBox())!.height).toBe(before)
  await page.evaluate(()=>Object.defineProperty(navigator.clipboard,'writeText',{value:()=>Promise.reject(new Error('denied')),configurable:true}));await button.click()

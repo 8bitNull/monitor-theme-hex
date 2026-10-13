@@ -55,14 +55,15 @@ test('detailed desktop cards retain core information within the height budget',a
  await expect(card.locator('.node-connections')).toBeVisible()
  await expect(card.locator('.card-auxiliary-toggle')).toHaveCount(0)
 })
-test('compact desktop search keeps query, and detail has a single facts disclosure',async({page})=>{
+test('compact desktop search keeps query, and detail shows grouped facts',async({page})=>{
  await page.setViewportSize({width:800,height:844});await setup(page);await page.goto('/')
  await page.getByRole('searchbox',{name:'搜索节点',exact:true}).fill('Tokyo')
  await expect(page.locator('.node-card')).toHaveCount(1)
  await expect(page.locator('.active-filters')).toContainText('Tokyo')
  await page.locator('.node-open').click();await expect(page.locator('#detail-fact-groups')).toBeVisible()
  await expect(page.locator('#detail-fact-groups details')).toHaveCount(0)
- await expect(page.getByRole('region',{name:'网络与流量'}).locator('dl')).toBeVisible()
+ await expect(page.getByRole('region',{name:'网络地址'})).toBeVisible()
+ await expect(page.getByRole('region',{name:'硬件配置'}).locator('dl')).toBeVisible()
  await page.getByRole('button',{name:'返回总览',exact:true}).click();await expect(page.locator('.active-filters')).toContainText('Tokyo')
  const rows=await page.locator('.summary-grid > div').evaluateAll(tiles=>tiles.map(tile=>Math.round(tile.getBoundingClientRect().top)))
  expect(rows).toHaveLength(4);expect(rows[0]).toBe(rows[1]);expect(rows[2]).toBe(rows[3]);expect(rows[2]).toBeGreaterThan(rows[0])

@@ -69,7 +69,7 @@ test('detail prioritizes charts, renders complete facts and compact controls at 
  await expect(page).not.toHaveURL(/#latency/)
  await page.reload()
  await expect(page.locator('.detail-resource-charts')).toBeVisible()
- await expect(page.getByRole('region',{name:'网络与流量'})).toContainText('每月 1 日')
+ await expect(page.getByRole('region',{name:'流量用量'})).toContainText('每月 1 日')
  await page.getByRole('button',{name:'网络延迟',exact:true}).click()
  await expect(page).toHaveURL(/#latency$/)
 })

@@ -21,14 +21,15 @@ test('long phone facts stay readable and copy reports failure',async({page})=>{
  await expect(page.getByRole('status')).toContainText('复制失败，请手动选择文本')
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
  const hardware=page.locator('.detail-fact-groups>section').first().locator('dt')
- expect(await hardware.allTextContents()).toEqual(['CPU','内存 / 硬盘','系统','架构 / 虚拟化','交换空间','Agent'])
+ expect(await hardware.allTextContents()).toEqual(['CPU','内存 / 硬盘','交换空间'])
  await page.screenshot({path:'artifacts/mobile-completion/facts-320.png',fullPage:true})
  for(const width of [320,390,430]){
   await page.setViewportSize({width,height:844})
   for(const label of ['CPU','系统','IPv4','IPv6','内存 / 硬盘']){
    const row=page.locator('.detail-facts>div').filter({has:page.locator('dt',{hasText:new RegExp(`^${label}$`)})})
-   await expect(row.locator('dd')).toHaveCSS('text-align','right')
-   await expect(row.locator('.fact-value')).toHaveCSS('text-align','right')
+   const alignment=await row.evaluate(el=>el.classList.contains('mobile-fact-stacked'))?'left':'right'
+   await expect(row.locator('dd')).toHaveCSS('text-align',alignment)
+   await expect(row.locator('.fact-value')).toHaveCSS('text-align',alignment)
    expect(await row.evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true)
   }
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
@@ -40,6 +41,6 @@ test('long phone facts stay readable and copy reports failure',async({page})=>{
  await page.setViewportSize({width:1440,height:1000})
  await page.emulateMedia({colorScheme:'light'})
  await expect(page.locator('.detail-information')).toBeVisible()
- expect(await hardware.allTextContents()).toEqual(['Agent','系统','CPU','内存 / 硬盘','架构 / 虚拟化','交换空间'])
+ expect(await hardware.allTextContents()).toEqual(['CPU','内存','硬盘','交换空间'])
  await page.screenshot({path:'artifacts/mobile-completion/facts-desktop.png',fullPage:true})
 })
