@@ -100,6 +100,8 @@ test('browser back after reloading detail restores its source page',async({page}
  await page.goto('/?page=overview')
  await page.locator('.ma-row').filter({hasText:'London'}).first().click()
  await page.reload()
+ // The document load event can precede React mounting its history listener.
+ await expect(page.getByRole('button',{name:'返回总览',exact:true})).toBeVisible()
  await page.goBack()
  await expect(page).toHaveURL(/\?page=overview$/)
  await expect(page.getByRole('navigation',{name:'主导航'}).getByRole('button',{name:'概览'})).toHaveAttribute('aria-current','page')

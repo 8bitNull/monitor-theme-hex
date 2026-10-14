@@ -51,7 +51,13 @@ test('detailed desktop cards retain core information within the height budget',a
  const card=page.locator('.node-card');await expect(card).toHaveAttribute('data-density','full')
  await expect(card.locator('.traffic-summary')).toBeVisible();await expect(card.locator('.node-price')).toBeVisible()
  await expect(card.locator('.node-connections')).toBeVisible()
- expect((await card.boundingBox())!.height).toBeLessThanOrEqual(560)
+ const locate=card.getByRole('button',{name:/^地图定位：/})
+ await expect(locate).toBeVisible()
+ const height=(await card.boundingBox())!.height,locateHeight=(await locate.boundingBox())!.height
+ expect(locateHeight).toBeGreaterThanOrEqual(32);expect(locateHeight).toBeLessThanOrEqual(36)
+ // Keep the original detailed information budget alongside the accepted map action.
+ expect(height-locateHeight).toBeLessThanOrEqual(560)
+ expect(height).toBeLessThanOrEqual(596)
  await expect(card.locator('.node-connections')).toBeVisible()
  await expect(card.locator('.card-auxiliary-toggle')).toHaveCount(0)
 })

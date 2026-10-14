@@ -1,0 +1,81 @@
+import {test,expect} from '@playwright/test'
+import {nodes} from '../scripts/fixtures.mjs'
+import {chooseOption} from './select'
+test.use({viewport:{width:390,height:844},hasTouch:true})
+
+test('full-screen map keeps touch tools and a resizable node sheet above navigation',async({page})=>{
+ await page.goto('/?page=map')
+ await expect(page.locator('.mm-canvas > svg')).toBeVisible()
+ const map=(await page.locator('.mm-canvas').boundingBox())!,sheet=(await page.locator('.mm-sheet').boundingBox())!
+ expect(map.width).toBe(390);expect(map.height).toBe(844)
+ expect(sheet.y).toBeLessThan(map.y+map.height)
+ await expect(page.locator('.mm-sheet')).toHaveAttribute('data-state','half')
+ const handle=page.getByRole('slider',{name:'节点面板高度'})
+ await handle.focus();await page.keyboard.press('End')
+ await expect(page.locator('.mm-sheet')).toHaveAttribute('data-state','expanded')
+ await page.keyboard.press('Home')
+ await expect(page.locator('.mm-sheet')).toHaveAttribute('data-state','collapsed')
+ await expect(page.getByRole('combobox',{name:'地图地区',exact:true})).toBeVisible()
+ await expect(page.locator('.mm-sheet-content')).toBeHidden()
+ await expect(page.locator('.mm-nav')).toBeVisible()
+ await page.getByRole('button',{name:'重置地图视图',exact:true}).click()
+ await expect(page.locator('.mm-sheet')).toHaveAttribute('data-state','half')
+ expect(await page.evaluate(()=>scrollY)).toBe(0)
+})
+
+test('map region links real rates, probe records and online status without inventing paths',async({page})=>{
+ await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],country:'HK'}, {...nodes()[1],country:'HK'}]}}))
+ await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:{ping:[{task_id:1,ts:Date.now()/1000,latency:350,loss:0}],probes:{1:'Measured route'},loss:{1:42}}}))
+ await page.goto('/?page=map')
+ await page.locator('.mm-marker[data-region=HK]').tap()
+ await expect(page.locator('.mm-traffic-summary')).toContainText('上传')
+ await expect(page.locator('.mm-node-probe').first()).toContainText('Measured route')
+ await expect(page.locator('.mm-node-reading').first()).toContainText('350')
+ await expect(page.locator('.mm-node-probe').first()).toContainText('42.0%')
+ await expect(page.locator('.mm-marker[data-region=HK]')).toHaveAttribute('data-tone','online')
+ await expect(page.locator('.mm-marker[data-region=HK]')).toHaveAttribute('data-probe-quality','high')
+ await expect(page.locator('.mm-probe-alert')).toHaveCount(1)
+ await expect(page.locator('.map-static-connection')).toHaveCount(0)
+})
+
+test('list scroll and sheet dragging never pan or select the map',async({page,context})=>{
+ await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:Array.from({length:18},(_,i)=>({...nodes()[0],id:i+1}))}}))
+ await page.goto('/?page=map');await expect(page.locator('.mm-node')).toHaveCount(18)
+ const before=await page.locator('.mm-land').getAttribute('transform')
+ await page.locator('.mm-node').last().scrollIntoViewIfNeeded()
+ await expect(page.locator('.mm-land')).toHaveAttribute('transform',before!)
+ expect(await page.evaluate(()=>scrollY)).toBe(0)
+ const box=(await page.getByRole('slider',{name:'节点面板高度'}).boundingBox())!
+ const x=box.x+box.width/2,y=box.y+box.height/2,client=await context.newCDPSession(page)
+ await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:1}]})
+ await client.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+210,id:1}]})
+ await client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]})
+ await expect(page.locator('.mm-sheet')).toHaveAttribute('data-state','collapsed')
+ await expect(page.getByRole('combobox',{name:'地图地区',exact:true})).toHaveAttribute('data-value','all')
+})
+
+test('real WebGL, themes and static fallback share the same usable region selection',async({page})=>{
+ await page.emulateMedia({reducedMotion:'no-preference'});await page.goto('/?page=map')
+ await expect(page.locator('.mm-canvas')).toHaveAttribute('data-webgl','true')
+ expect(await page.locator('.hex-map-canvas').evaluate((el:HTMLCanvasElement)=>el.width/el.clientWidth)).toBeLessThanOrEqual(1.51)
+ await page.getByRole('button',{name:'切换地图主题'}).click()
+ await chooseOption(page.getByRole('combobox',{name:'地图地区',exact:true}),'JP')
+ await expect(page.locator('.mm-marker[data-region=JP]')).toHaveAttribute('aria-pressed','true')
+ await page.emulateMedia({reducedMotion:'reduce'})
+ await expect(page.locator('.hex-map-canvas')).toHaveCount(0)
+ await expect(page.locator('.mm-marker[data-region=JP]')).toBeVisible()
+})
+
+for(const viewport of [{width:320,height:568},{width:667,height:375}])test(`expanded sheet leaves map tools tappable at ${viewport.width}x${viewport.height}`,async({page})=>{
+ await page.setViewportSize(viewport);await page.goto('/?page=map')
+ const handle=page.getByRole('slider',{name:'节点面板高度'})
+ await handle.focus();await page.keyboard.press('End')
+ await expect(page.locator('.mm-sheet-status').getByRole('group',{name:'地图状态',exact:true})).toBeVisible()
+ const global=page.getByRole('button',{name:'查看全球',exact:true})
+ expect(await global.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2))})).toBe(true)
+ await global.tap()
+ await expect(page.locator('.mm-sheet')).toHaveAttribute('data-state','collapsed')
+ const firstWorld=await page.locator('.mm-land').getAttribute('transform')
+ await global.tap()
+ await expect(page.locator('.mm-land')).toHaveAttribute('transform',firstWorld!)
+})

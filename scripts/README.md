@@ -14,5 +14,8 @@
 | `benchmark-map.mjs`、`benchmark-map-delivery.mjs` | 地图与资源传输基准 |
 | `check-map-delivery.mjs` | 检查站点静态资源响应头 |
 | `fixtures.mjs`、`refinement-fixtures.mjs` | 演示与验证的样例数据 |
+| `build-hex-map.mjs` | 生成 Three.js 蜂窝陆地实例与平面地图 SVG 降级数据（build 已包含） |
+| `node scripts/build-map-demo.mjs` | 构建六城市独立动态演示到 `artifacts/hex-world-map/demo/` |
+| `node scripts/build-map-demo.mjs --standalone` | 生成可直接打开的单文件 HTML 地图演示 |
 
 新的临时验证产物写入 `artifacts/` 或 `tests/artifacts/`。需要长期维护的脚本放在这里，一次性脚本放入本地 `scratch/`。打包文件范围由 `package.mjs` 明确列出，维护资料和验证工具不会随安装包发布。

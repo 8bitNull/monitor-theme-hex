@@ -1,6 +1,6 @@
 export type MapCamera={x:number;y:number;k:number}
 export type MobileMapState={region:string;camera:MapCamera|null}
-const storageKey='hex-mobile-map-v1'
+const storageKey='hex-mobile-map-v2'
 export const clampZoom=(k:number)=>Math.max(.25,Math.min(8,k))
 export function validMapState(value:unknown):MobileMapState{
  const v=value as Partial<MobileMapState>|null
@@ -10,11 +10,17 @@ export function validMapState(value:unknown):MobileMapState{
  return {region,camera}
 }
 export function readMapState():MobileMapState{
- try{return validMapState(JSON.parse(sessionStorage.getItem(storageKey)||'null'))}catch{return {region:'all',camera:null}}
+ try{
+  const current=sessionStorage.getItem(storageKey)
+  if(current)return validMapState(JSON.parse(current))
+  // The old SVG used a different projection. Retain only its region selection.
+  const previous=validMapState(JSON.parse(sessionStorage.getItem('hex-mobile-map-v1')||'null'))
+  return {region:previous.region,camera:null}
+ }catch{return {region:'all',camera:null}}
 }
 export function writeMapState(state:MobileMapState){try{sessionStorage.setItem(storageKey,JSON.stringify(state))}catch{/* Optional persistence. */}}
 export function fitMobileMap(points:number[][],width:number,height:number):MapCamera{
- if(!points.length)return {x:500,y:240,k:.9}
+ if(!points.length)return {x:500,y:180,k:.9}
  const xs=points.map(p=>p[0]),ys=points.map(p=>p[1])
  const left=Math.min(...xs),right=Math.max(...xs),top=Math.min(...ys),bottom=Math.max(...ys)
  return {x:(left+right)/2,y:(top+bottom)/2,k:clampZoom(Math.min((width-64)/Math.max(1,right-left),(height-96)/Math.max(1,bottom-top))/(width/1000))}
@@ -30,7 +36,7 @@ export function zoomMobileMap(c:MapCamera,factor:number,dx:number,dy:number,widt
 
 // Fit the full projected world inside the drawing area above the touch controls.
 export function worldMobileMap(width:number,height:number):MapCamera{
- return {x:500,y:240,k:clampZoom(Math.min(.94,(height-64)/480/(width/1000)))}
+ return {x:500,y:180,k:clampZoom(Math.min(.94,(height-32)/360/(Math.max(1,width)/1000)))}
 }
 
 // Prefer a dense group of regions rather than shrinking distant continents into one view.
@@ -48,15 +54,28 @@ export function immersiveMobileMap(points:number[][],width:number,height:number)
 }
 
 type LabelAnchor={code:string;x:number;y:number;width:number}
-export function placeMobileMapLabels(points:LabelAnchor[],width:number,top:number,bottom:number):LabelAnchor[]{
+export function placeMobileMapLabels(points:LabelAnchor[],width:number,top:number,bottom:number,obstacles:{x:number;y:number;width:number;height:number}[]=[]):LabelAnchor[]{
  const placed:LabelAnchor[]=[]
  for(const p of points){
   for(const [x,y] of [[p.x+15,p.y-31],[p.x-p.width-15,p.y-31],[p.x+15,p.y+10],[p.x-p.width-15,p.y+10],[Math.max(12,Math.min(width-12-p.width,p.x-p.width/2)),p.y+24],[Math.max(12,Math.min(width-12-p.width,p.x-p.width/2)),p.y-52]]){
    if(x<12||x+p.width>width-12||y<top||y+28>bottom)continue
+   if(obstacles.some(b=>x<b.x+b.width+4&&x+p.width+4>b.x&&y<b.y+b.height+4&&y+32>b.y))continue
    if(placed.some(b=>x<b.x+b.width+6&&x+p.width+6>b.x&&y<b.y+34&&y+34>b.y))continue
    if(points.some(b=>b.code!==p.code&&x<b.x+22&&x+p.width>b.x-22&&y<b.y+22&&y+28>b.y-22))continue
    placed.push({...p,x,y});break
   }
  }
  return placed
+}
+
+export type MobileMapSheetState='collapsed'|'half'|'expanded'
+export function mobileMapSheetHeights(height:number,top:number,bottom:number):Record<MobileMapSheetState,number>{
+ // Keep the 44px floating tool band and its spacing above every sheet position.
+ const available=Math.max(1,height-top-bottom-60)
+ const collapsed=Math.min(88,available)
+ const half=Math.min(320,available,Math.max(170,(height-bottom)*.38))
+ return {collapsed,half,expanded:Math.max(half,Math.min(available,height*.75))}
+}
+export function snapMobileMapSheet(height:number,heights:Record<MobileMapSheetState,number>):MobileMapSheetState{
+ return (['collapsed','half','expanded'] as const).reduce((best,state)=>Math.abs(heights[state]-height)<Math.abs(heights[best]-height)?state:best,'collapsed')
 }

@@ -33,3 +33,18 @@ for(let i=0;i<labels.length;i++)for(let j=i+1;j<labels.length;j++){
 }
 assert.ok(labels.length>0)
 console.log('Immersive framing and geographic label bounds/collisions passed')
+
+assert.equal(framing.worldMobileMap(390,350).y,180,'world view must use the flat atlas center')
+const sheet=await import('./mobileMap.ts')
+const stops=sheet.mobileMapSheetHeights(844,76,82)
+assert.ok(stops.collapsed<stops.half&&stops.half<stops.expanded)
+for(const [h,t,b] of [[375,64,76],[320,80,100],[844,76,82]]){
+ const values=sheet.mobileMapSheetHeights(h,t,b)
+ for(const value of Object.values(values))assert.ok(value>0&&value<=h-t-b,'sheet keeps the header and navigation available')
+}
+assert.equal(sheet.snapMobileMapSheet(stops.collapsed+8,stops),'collapsed')
+assert.equal(sheet.snapMobileMapSheet(stops.expanded-8,stops),'expanded')
+const avoided=framing.placeMobileMapLabels([{code:'JP',x:250,y:140,width:90}],390,76,350,[{x:260,y:90,width:110,height:70}])
+assert.ok(avoided.length>0,'tool avoidance should retain a usable label')
+for(const l of avoided)assert.ok(l.x+l.width<=260||l.x>=370||l.y+28<=90||l.y>=160,'labels must clear floating tools')
+console.log('Flat mobile viewport, sheet snap points and tool avoidance passed')

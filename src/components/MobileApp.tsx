@@ -1,6 +1,6 @@
 import {expiring,quotaWarning} from '@/lib/billingReminders'
 import {useCallback,useEffect,useLayoutEffect,useRef,useState,useSyncExternalStore,type Dispatch,type SetStateAction} from 'react'
-import {ArrowLeft,ArrowDown,ArrowUp,BarChart3,ChevronRight,LayoutGrid,Search,Server,Settings2,SlidersHorizontal,X} from 'lucide-react'
+import {ArrowDown,ArrowUp,BarChart3,ChevronRight,LayoutGrid,Search,Server,Settings2,SlidersHorizontal,X} from 'lucide-react'
 import type {Node} from '@/lib/api'
 import type {Preferences} from '@/lib/appearance'
 import type {MobilePreferences} from '@/lib/mobilePreferences'
@@ -55,7 +55,7 @@ export function MobileApp({active,page,onNavigate,nodes,prefs,onPrefs,mobile,onM
 }){
  const [mapState,setMapState]=useState(readMapState)
  const mapRegion=useCallback((region:string)=>setMapState(s=>({...s,region})),[])
- const mapCamera=useCallback((camera:MapCamera)=>setMapState(s=>({...s,camera})),[])
+ const mapCamera=useCallback((camera:MapCamera|null)=>setMapState(s=>({...s,camera})),[])
  useEffect(()=>writeMapState(mapState),[mapState])
  const [query,setQuery]=useState(()=>readMobileBrowse().query),[filter,setFilter]=useState<Filter>(()=>readMobileBrowse().filter),[draft,setDraft]=useState<Filter>(empty)
  const [sheet,setSheet]=useState<'filters'|'routes'|'records'|'updates'|null>(null),[routeQuery,setRouteQuery]=useState(''),[undo,setUndo]=useState<MobilePreferences|null>(null)
@@ -102,8 +102,7 @@ export function MobileApp({active,page,onNavigate,nodes,prefs,onPrefs,mobile,onM
   {page!=='map'&&<><header className="ma-header"><div><h1><span className="ma-logo">H</span><span className="ma-site-name" title={siteName}>{siteName}</span></h1></div>{page==='nodes'&&liveStatus}</header>
   {page!=='nodes'&&<div className="ma-page-heading"><h2 className="ma-page-title">{page==='overview'?tr('概览'):tr('设置')}</h2>{page==='overview'&&liveStatus}</div>}
   </>}
-  {page==='map'&&<div className="mm-page-header"><button aria-label={tr('返回概览')} onClick={()=>navigate('overview')}><ArrowLeft size={21}/></button><h1>{tr('地图')}</h1></div>}
-  {page==='map'?(active&&<MobileMapPage nodes={nodes} enabled={prefs.modules.map} state={mapState} updated={lastUpdated?`${new Date(lastUpdated).toLocaleTimeString(locale(),{hour:'2-digit',minute:'2-digit'})} · ${connectionText}`:connectionText} onRegion={mapRegion} onCamera={mapCamera} onOpen={onOpen}/>):!nodes?<div className="ma-loading" role="status">{tr('正在加载节点')}{[0,1,2].map(i=><div key={i}/>)}</div>:page==='nodes'?<>
+  {page==='map'?(active&&<MobileMapPage nodes={nodes} enabled={prefs.modules.map} prefs={prefs} state={mapState} updated={lastUpdated?`${new Date(lastUpdated).toLocaleTimeString(locale(),{hour:'2-digit',minute:'2-digit'})} · ${connectionText}`:connectionText} onRegion={mapRegion} onCamera={mapCamera} onOpen={onOpen} onNavigate={navigate} onTheme={()=>onPrefs(p=>({...p,appearance:document.documentElement.classList.contains('dark')?'light':'dark'}))}/>):!nodes?<div className="ma-loading" role="status">{tr('正在加载节点')}{[0,1,2].map(i=><div key={i}/>)}</div>:page==='nodes'?<>
    <div className="ma-summary"><button onClick={()=>filterStatus('online')}>{tr('在线')} <b>{online.length}/{sorted.length}</b></button>{online.length<sorted.length&&<button onClick={()=>filterStatus('offline')}>{tr('离线')} <b>{sorted.length-online.length}</b></button>}{high.length>0&&<button onClick={()=>filterStatus('high')}>{tr('高负载')} <b>{high.length}</b></button>}</div>
    <div className="ma-search"><label><Search size={18}/><input type="search" aria-label={tr('搜索节点')} placeholder={tr('搜索名称、地区、操作系统…')} value={query} onChange={e=>setQuery(e.target.value)}/>{query&&<button aria-label={tr('清除搜索')} onClick={()=>setQuery('')}><X size={16}/></button>}</label><button className="ma-icon" aria-label={tr('筛选节点')} aria-pressed={activeFilters.length>0} onClick={()=>{setDraft(filter);setSheet('filters')}}><SlidersHorizontal size={19}/></button></div>
    {groups.length>0&&<div className="ma-business-tabs" role="group" aria-label={tr('节点分组')}>{[['all',tr('全部')],...groups.map(g=>['='+g,g]),...(sorted.some(n=>!n.group)?[['=',tr('未分组')]]:[])].map(([key,label])=><button key={key} aria-pressed={filter.group===key} onClick={()=>setFilter(f=>({...f,group:key}))}>{label}<small>{key==='all'?sorted.length:sorted.filter(n=>(n.group??'')===key.slice(1)).length}</small></button>)}</div>}

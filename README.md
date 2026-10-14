@@ -21,6 +21,7 @@ v1.0.2 将手机资源页拆为 CPU、内存和硬盘独立卡片，共用时间
 ## 主要功能
 
 - **节点浏览**：搜索、状态与地区筛选、分组和排序；桌面支持卡片与表格视图。
+- **平面世界地图**：Three.js 蜂窝陆地、节点 / 流量 / 探测图层、地区详情和异常定位；支持画布平移缩放，手机使用全屏地图与可拖动节点面板。
 - **资源与网络**：CPU、内存、硬盘、实时网速，以及资源历史、线路延迟和丢包记录。
 - **手机端**：节点、概览和设置入口，详情使用总览、资源、网络、资料四个分区。
 - **配置与偏好**：后台统一配置站点外观，访客可在浏览器保存明暗、语言和显示偏好。
@@ -33,6 +34,15 @@ v1.0.2 将手机资源页拆为 CPU、内存和硬盘独立卡片，共用时间
 截图使用本地演示数据。
 
 ![桌面首页](screenshots/readme/home-desktop.png)
+
+<details>
+<summary>平面地图：浅色探测图层与手机地区面板</summary>
+
+![桌面浅色地图与地区详情](screenshots/readme/map-desktop-light.png)
+
+<img src="screenshots/readme/map-mobile-dark.png" width="300" alt="手机深色探测地图" /> <img src="screenshots/readme/map-mobile-light.png" width="300" alt="手机浅色探测地图" />
+
+</details>
 
 <details>
 <summary>桌面表格与服务器详情</summary>
@@ -77,3 +87,5 @@ npm run dev
 ## 来源与许可
 
 HEX 采用 MIT 许可。基础接口与部分组件源自 monitor-theme-default，部分视觉和地图资源参考 Komari Next。来源与第三方声明见 [NOTICE](NOTICE.md)、[LICENSE](LICENSE) 和 [LICENSE.komari-next](LICENSE.komari-next)。
+
+Three.js 的许可见 [LICENSE.three](LICENSE.three)。可复用地图组件、数据单位、交互与性能边界见 [Three.js 地图接入说明](maintenance/THREE-WORLD-MAP.md)。
