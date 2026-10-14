@@ -9,13 +9,13 @@ test('overview opens map and detail returns to selected region and camera',async
  await chooseOption(page.getByRole('combobox',{name:'地图地区',exact:true}),'JP')
  await page.getByRole('group',{name:'世界节点分布地图',exact:true}).focus();await page.keyboard.press('+')
  const camera=await page.locator('.mm-land').getAttribute('transform')
- await page.locator('.mm-node').first().click()
+ await page.locator('.mm-node-detail').first().click()
  await expect(page).toHaveURL(/node\//)
  await page.getByRole('button',{name:'返回总览',exact:true}).click()
  await expect(page).toHaveURL(/page=map/)
  await expect(page.getByRole('combobox',{name:'地图地区',exact:true})).toHaveAttribute('data-value','JP')
  await expect(page.locator('.mm-land')).toHaveAttribute('transform',camera!)
- await page.locator('.mm-node').first().click()
+ await page.locator('.mm-node-detail').first().click()
  await expect(page).toHaveURL(/node\//)
  await page.goBack()
  await expect(page.locator('.mm-land')).toHaveAttribute('transform',camera!)
@@ -33,7 +33,7 @@ test('map is lazy, belongs to overview, and respects disabled module',async({pag
  await page.getByRole('button',{name:'查看地图',exact:true}).click()
  await expect(page.locator('.mm-canvas > svg')).toBeVisible()
  expect(requests.length).toBeGreaterThan(0)
- await expect(page.locator('.ma-nav')).toBeHidden()
+ await expect(page.locator('.ma-nav')).toBeVisible()
  await page.goBack();await expect(page).toHaveURL(/page=overview/)
  await page.goForward();await expect(page.locator('.mm-canvas > svg')).toBeVisible()
  await page.route('**/api/themes/hex/config',r=>r.fulfill({json:{module_map:false}}))
@@ -112,10 +112,6 @@ test('touch pan and pinch do not select a region; world button restores world',a
  await expect(page.getByRole('combobox',{name:'地图地区',exact:true})).toHaveAttribute('data-value','all')
  await page.getByRole('button',{name:'查看全球',exact:true}).click()
  await expect(land).toHaveAttribute('transform',initial!)
- await page.setViewportSize({width:390,height:600})
- await page.locator('.mm-node').last().scrollIntoViewIfNeeded()
- await expect(page.locator('.mm-sheet-content')).toBeVisible()
- expect(await page.evaluate(()=>scrollY)).toBeGreaterThan(0)
 })
 
 test('pending node data does not falsely show empty map',async({page})=>{
@@ -163,7 +159,7 @@ test('map selection preserves node search and overview scroll; short landscape f
  await expect(page.locator('.ma-node')).toHaveCount(1)
  await page.setViewportSize({width:667,height:375});await page.goto('/?page=map')
  await expect(page.locator('.mm-canvas > svg')).toBeVisible()
- expect((await page.locator('.mm-canvas').boundingBox())!.height).toBeLessThanOrEqual(375*.55)
+ expect((await page.locator('.mm-canvas').boundingBox())!.height).toBe(375)
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
 })
 
@@ -178,10 +174,10 @@ test('slow drawing keeps the list usable and does not reset selected region',asy
  finish();await expect(page.locator('.mm-canvas > svg')).toBeVisible()
  await expect(select).toHaveAttribute('data-value','JP')
  await page.getByRole('group',{name:'世界节点分布地图',exact:true}).focus();await page.keyboard.press('+')
- const camera=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('hex-mobile-map-v1')!).camera)
+ const camera=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('hex-mobile-map-v2')!).camera)
  await page.setViewportSize({width:1440,height:900});await expect(page.locator('.region-atlas')).toBeVisible()
  await page.setViewportSize({width:390,height:844});await expect(select).toHaveAttribute('data-value','JP')
- await expect.poll(()=>page.evaluate(()=>JSON.parse(sessionStorage.getItem('hex-mobile-map-v1')!).camera)).toEqual(camera)
+ await expect.poll(()=>page.evaluate(()=>JSON.parse(sessionStorage.getItem('hex-mobile-map-v2')!).camera)).toEqual(camera)
 })
 
 
@@ -209,14 +205,15 @@ test('saved map camera stays stable when node data changes',async({page})=>{
  await expect(page.locator('.mm-results-heading')).toContainText('1 / 1 在线')
 })
 
-test('map and node list are permanent and use normal page scrolling',async({page})=>{
+test('full-screen map and sheet keep overview navigation available',async({page})=>{
  await page.goto('/?page=map')
  await expect(page.locator('.mm-canvas > svg')).toBeVisible()
- await expect(page.locator('.ma-nav')).toBeHidden()
+ await expect(page.locator('.ma-nav')).toBeVisible()
  await expect(page.locator('.mm-node').first()).toBeVisible()
- await expect(page.locator('.mm-sheet-toggle,.mm-sheet-handle')).toHaveCount(0)
+ await expect(page.locator('.mm-sheet-handle')).toBeVisible()
+ await expect(page.locator('.mm-nav')).toBeVisible()
  const map=(await page.locator('.mm-canvas').boundingBox())!,list=(await page.locator('.mm-sheet').boundingBox())!
- expect(list.y).toBeGreaterThanOrEqual(map.y+map.height)
+ expect(list.y).toBeLessThan(map.y+map.height)
  await page.getByRole('button',{name:'查看全球',exact:true}).click()
  await page.locator('.mm-marker[data-region=US]').tap()
  await expect(page.locator('.mm-node')).toHaveCount(1)
@@ -224,7 +221,7 @@ test('map and node list are permanent and use normal page scrolling',async({page
  await expect(page.locator('.ma-nav')).toBeVisible()
 })
 
-test('scrolling the persistent list keeps the map camera still',async({page})=>{
+test('scrolling the sheet keeps the map camera still',async({page})=>{
  await page.goto('/?page=map')
  await expect(page.locator('.mm-marker').first()).toBeVisible()
  await page.setViewportSize({width:390,height:600})
@@ -232,18 +229,18 @@ test('scrolling the persistent list keeps the map camera still',async({page})=>{
  const camera=await page.locator('.mm-land').getAttribute('transform')
  await page.locator('.mm-node').last().scrollIntoViewIfNeeded()
  await expect(page.locator('.mm-land')).toHaveAttribute('transform',camera!)
- expect(await page.evaluate(()=>scrollY)).toBeGreaterThan(0)
+ expect(await page.evaluate(()=>scrollY)).toBe(0)
 })
 
 test('close default keeps a recoverable world view beside the permanent list',async({page})=>{
  await page.goto('/?page=map')
  await expect(page.locator('.mm-marker').first()).toBeVisible()
- const camera=()=>page.evaluate(()=>JSON.parse(sessionStorage.getItem('hex-mobile-map-v1')!).camera)
+ const camera=()=>page.evaluate(()=>JSON.parse(sessionStorage.getItem('hex-mobile-map-v2')!).camera)
  await expect.poll(async()=>Number((await camera())?.k??0)).toBeGreaterThan(2)
  await expect(page.locator('.mm-region-label').first()).toBeVisible()
  const panel=(await page.locator('.mm-sheet').boundingBox())!
- expect(panel.x).toBeGreaterThanOrEqual(15)
- expect(panel.width).toBeLessThan(390)
+ expect(panel.x).toBe(0)
+ expect(panel.width).toBe(390)
  await expect(page.locator('.mm-sheet-content')).toBeVisible()
  await page.getByRole('button',{name:'查看全球',exact:true}).click()
  await expect.poll(async()=>Number((await camera()).k)).toBeLessThanOrEqual(.94)
@@ -260,13 +257,13 @@ test('region selection settles with motion and world view interrupts it',async({
  await page.emulateMedia({reducedMotion:'no-preference'})
  await page.goto('/?page=map');await expect(page.locator('.mm-region-label').first()).toBeVisible()
  await chooseOption(page.getByRole('combobox',{name:'地图地区',exact:true}),'US')
- await expect.poll(()=>page.evaluate(()=>JSON.parse(sessionStorage.getItem('hex-mobile-map-v1')!).camera.x)).toBe(259)
+ await expect.poll(()=>page.evaluate(()=>JSON.parse(sessionStorage.getItem('hex-mobile-map-v2')!).camera.x)).toBeCloseTo(243.02,4)
  const marker=(await page.locator('.mm-marker[data-region=US]').boundingBox())!
  const sheet=(await page.locator('.mm-sheet').boundingBox())!
  expect(marker.y+marker.height).toBeLessThan(sheet.y)
  await chooseOption(page.getByRole('combobox',{name:'地图地区',exact:true}),'JP')
  await page.getByRole('button',{name:'查看全球',exact:true}).click()
- await expect.poll(()=>page.evaluate(()=>JSON.parse(sessionStorage.getItem('hex-mobile-map-v1')!).camera.x)).toBe(500)
+ await expect.poll(()=>page.evaluate(()=>JSON.parse(sessionStorage.getItem('hex-mobile-map-v2')!).camera.x)).toBe(500)
  await page.waitForTimeout(350)
- expect(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('hex-mobile-map-v1')!).camera.x)).toBe(500)
+ expect(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('hex-mobile-map-v2')!).camera.x)).toBe(500)
 })

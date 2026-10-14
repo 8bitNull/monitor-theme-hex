@@ -179,8 +179,8 @@
 .explorer-map .section-heading h2 {font-size:14px;font-weight:600}
 .explorer-map .section-heading>span {font-size:11px;color:var(--muted-foreground)}
 .explorer-stage {position:absolute;inset:0;height:100%;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--tone) 5%,var(--card)),var(--card));border-radius:inherit;overflow:hidden}
-.explorer-map .explorer-stage>svg {display:block;width:100%;height:100%;max-height:none;margin:0;cursor:grab;touch-action:pan-y}
-.explorer-map .explorer-stage>svg:active {cursor:grabbing}
+.explorer-map .explorer-stage>.map-parallax-scene>svg {display:block;width:100%;height:100%;max-height:none;margin:0;cursor:grab;touch-action:pan-y}
+.explorer-map .explorer-stage>.map-parallax-scene>svg:active {cursor:grabbing}
 .explorer-map .map-land path {fill:var(--muted);stroke:var(--card);stroke-width:.65;vector-effect:non-scaling-stroke}
 .map-cluster {cursor:pointer;--cluster-color:var(--ok);outline:none}
 .map-cluster[data-tone=mixed] {--cluster-color:var(--warn)}
@@ -203,12 +203,12 @@
 .map-node-preview span {display:flex;align-items:center;gap:6px;overflow-wrap:anywhere}
 .explorer-map:fullscreen {width:100vw;height:100dvh;display:flex;flex-direction:column;background:var(--card);padding:0}
 .explorer-map:fullscreen .explorer-stage {height:100%}
-.explorer-map:fullscreen .explorer-stage>svg {touch-action:none}
+.explorer-map:fullscreen .explorer-stage>.map-parallax-scene>svg {touch-action:none}
 .map-placeholder {height:460px;background:var(--muted);border-radius:var(--radius-panel)}
 @media(max-width:720px){.explorer-map {height:320px;padding:0}.explorer-stage {height:100%}.explorer-map .section-heading h2 {font-size:12px}.map-tools {gap:0;top:10px;right:10px;flex-direction:column}.map-tools button {width:30px;height:30px}.map-placeholder {height:310px}}
 
 .cluster-leader {stroke:var(--muted-foreground);stroke-width:1;stroke-dasharray:3 3;vector-effect:non-scaling-stroke;opacity:.45;pointer-events:none}
-.explorer-map .explorer-stage>svg {position:absolute;inset:0;height:100%}
+.explorer-map .explorer-stage>.map-parallax-scene>svg {position:absolute;inset:0;height:100%}
 
 /* Country silhouettes replace displaced bubbles; region tiles carry the counts. */
 .region-atlas .map-land .populated-region {fill:color-mix(in srgb,var(--tone) 38%,var(--card));cursor:pointer;outline:none;stroke:var(--card);stroke-width:1}

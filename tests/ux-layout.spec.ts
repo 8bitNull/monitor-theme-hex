@@ -8,7 +8,7 @@ async function fixture(page:Page,{grouped=false,warnings=false,longName=false}:{
   group:grouped?'Production':node.group,
   name:longName&&index===0?'Tokyo · VeryLongProductionGatewayNameWithIPv6AndRegionalFailover '+node.name:node.name,
   ipv6:longName&&index===0?'2001:0db8:85a3:0000:0000:8a2e:0370:7334':node.ipv6,
-  ...(warnings&&index===0?{metrics:{...node.metrics!,cpu:94},traffic_limit:1,expires_at:new Date(Date.now()+86400000).toISOString().slice(0,10)}:{}),
+  ...(warnings&&index===0?{metrics:{...node.metrics!,cpu:94},traffic_limit:1,expires_at:new Date(Date.now()+86400000).toISOString().slice(0,10),remark:'2.5Gbps;国际线路;Anti-DDoS'}:{}),
  }))
  await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:items}}))
  await page.route('**/api/nodes/*/metrics?*',route=>route.fulfill({json:metrics()}))
@@ -27,18 +27,28 @@ test('short desktop keeps map visible and retains region filtering',async({page}
  await expect(page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true})).toHaveAttribute('data-value','JP')
 })
 
-test('desktop density survives reload while card facts and warnings remain visible',async({page})=>{
+test('desktop density survives reload and compact hides supplementary facts while retaining warnings',async({page})=>{
  await page.setViewportSize({width:1440,height:900});await fixture(page,{warnings:true});await page.goto('/')
  await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'detailed')
  await expect(page.locator('.node-card').first().locator('.card-billing')).toBeVisible()
  await page.reload()
  await expect(page.locator('.map-frame .region-atlas')).toBeVisible()
  await expect(page.getByRole('combobox',{name:'卡片密度'})).toHaveAttribute('data-value','detailed')
+ const detailedHeight=(await page.locator('.node-card').first().boundingBox())!.height
  await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'compact')
  const card=page.locator('.node-card').first()
  for(const warning of ['高负载','天后到期','流量额度已用尽'])await expect(card).toContainText(warning)
- await expect(card.locator('.card-billing')).toBeVisible()
+ await expect(card.locator('.node-supplementary')).toHaveCount(0)
+ await expect(card.locator('.resources')).toBeVisible()
+ await expect(card.locator('.card-network')).toBeVisible()
+ await expect(card.locator('.route-matrix')).toBeVisible()
+ expect((await card.boundingBox())!.height).toBeLessThan(detailedHeight-60)
  await expect(card.locator('.node-secondary-toggle')).toHaveCount(0)
+ await page.reload()
+ await expect(page.getByRole('combobox',{name:'卡片密度'})).toHaveAttribute('data-value','compact')
+ await expect(card.locator('.node-supplementary')).toHaveCount(0)
+ await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'detailed')
+ for(const selector of ['.node-connections','.card-billing','.node-remarks','.node-price'])await expect(card.locator(selector)).toBeVisible()
 })
 
 test('desktop reset columns keeps search and sort and persists the default layout',async({page})=>{
@@ -126,6 +136,7 @@ test('desktop and mobile layouts fit light, dark and English long-name viewports
 
 test('desktop supplementary information stays visible below routes without moving core readings',async({page})=>{
  await fixture(page);await page.goto('/')
+ await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'detailed')
  const card=page.locator('.node-card').first()
  await expect(card.locator('.latency-reading')).toBeVisible()
  const routeOffset=()=>card.locator('.route-matrix').evaluate(el=>el.getBoundingClientRect().top-el.closest('.node-card')!.getBoundingClientRect().top)

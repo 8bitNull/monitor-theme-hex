@@ -1,0 +1,20 @@
+/* SVG retains geography and accessible controls; Three.js paints live traffic above it. */
+.map-traffic-canvas {position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.map-tooltip-traffic {display:grid;gap:4px;margin-top:7px;padding-top:7px;border-top:1px solid var(--border);font-size:11px}
+.map-tooltip-traffic span {display:flex;align-items:center;gap:16px;color:var(--muted-foreground)}
+.map-tooltip-traffic b {margin-left:auto;font-variant-numeric:tabular-nums;font-weight:500;color:var(--foreground)}
+.map-tooltip-traffic [data-flow=upload] {color:var(--tone)}
+.map-tooltip-traffic [data-flow=download] {color:var(--ok)}
+@media (min-width:721px) {
+ .next-theme .persistent-map .region-atlas[data-map-style=flow] .explorer-stage {background:var(--card)}
+ .next-theme .persistent-map .region-atlas[data-map-style=flow] .map-land path {fill:color-mix(in srgb,var(--muted-foreground) 9%,var(--card));stroke:color-mix(in srgb,var(--muted-foreground) 16%,var(--card));stroke-width:.6;vector-effect:non-scaling-stroke;transition:fill .4s ease}
+ .next-theme .persistent-map .region-atlas[data-map-style=flow] .map-land [data-selected=true] {fill:color-mix(in srgb,var(--tone) 26%,var(--card));stroke:var(--tone)}
+ .next-theme .persistent-map .region-atlas[data-map-style=flow] .map-cluster .flow-marker-halo {fill:none;stroke:var(--marker-color);stroke-width:1;opacity:.16;pointer-events:none}
+ .next-theme .persistent-map .region-atlas[data-map-style=flow] .map-cluster .region-ring {fill:var(--card);fill-opacity:1;stroke:var(--marker-color);stroke-width:1.3;filter:none}
+ .next-theme .persistent-map .region-atlas[data-map-style=flow] .map-cluster .region-count {fill:var(--foreground);font-size:10px;font-weight:600}
+ .next-theme .persistent-map .region-atlas[data-map-style=flow] .map-cluster:is(:hover,:focus-visible,[aria-pressed=true]) .flow-marker-halo {opacity:.7;stroke-dasharray:16 5}
+ .next-theme .persistent-map .region-atlas[data-map-style=flow] #home-map-canvas {background:var(--card)}
+}
+@media (prefers-reduced-motion:reduce) {
+ .region-atlas[data-map-style=flow] .map-land path {transition:none!important}
+}

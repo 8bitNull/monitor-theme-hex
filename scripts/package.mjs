@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto'
 import { resolve } from 'node:path'
 const root = resolve(import.meta.dirname, '..')
 // Keep the release archive explicit: review notes and source-only documents never ship.
-const files = ['theme.json', 'dist', 'LICENSE', 'LICENSE.komari-next', 'NOTICE.md']
+const files = ['theme.json', 'dist', 'LICENSE', 'LICENSE.komari-next', 'LICENSE.three', 'NOTICE.md']
 if (existsSync(resolve(root, 'preview.png'))) files.push('preview.png')
 // The current hub installer reads theme.json directly from the archive root.
 execFileSync('tar', ['-czf', 'theme.tar.gz', ...files], { cwd: root, stdio: 'inherit' })

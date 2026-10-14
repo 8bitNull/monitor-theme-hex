@@ -6,6 +6,7 @@
 - [开发说明](DEVELOPMENT.md)：本地服务、测试、打包与多浏览器回归。
 - [验收记录](ACCEPTANCE.md)：各轮检查结果和验证边界。
 - [地图性能与部署说明](MAP-PERFORMANCE.md)：性能基准、复测方法和部署建议。
+- [Three.js 平面世界地图](THREE-WORLD-MAP.md)：组件接入、图层、交互与渲染资源管理。
 - [历史体验优化记录](UX-IMPLEMENTATION.md)：v0.1.24 的实施记录。
 - [历史发布说明](releases/)：原来散落在根目录的发布正文，按完整版本号命名。
 - [历史归档](../archive/README.md)：设计稿、验证截图与性能基准。

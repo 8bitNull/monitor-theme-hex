@@ -1,0 +1,186 @@
+import {test,expect,type Page} from '@playwright/test'
+import {chooseOption} from './select'
+import {nodes} from '../scripts/fixtures.mjs'
+const countries=['HK','MO','JP','US','DE','FR','CA','ZZ']
+async function fixture(page:Page){
+ const base=nodes()[0]
+ await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:countries.map((country,i)=>({...base,id:i+1,name:`Interaction ${country}`,country,online:i!==4,sort:i,metrics:{...base.metrics,cpu:i===3?95:20}}))}}))
+ await page.route('**/api/nodes/*/metrics?*',r=>{
+  const id=Number(new URL(r.request().url()).pathname.split('/')[3]),latency=id===1?350:id===2?null:40
+  return r.fulfill({json:{ping:[{task_id:1,ts:Date.now()/1000-(id===6?150:0),latency,loss:id===7?4:0}],probes:{1:'Interaction route'},loss:{1:42}}})
+ })
+}
+const chip=(page:Page,code:string)=>page.getByRole('group',{name:'地区速选',exact:true}).getByRole('button',{name:new RegExp(`${code==='HK'?'香港':code==='MO'?'澳门':code==='JP'?'日本':code==='DE'?'德国':code==='US'?'美国':code} ·`)})
+const legend=(page:Page,name:string)=>page.getByRole('group',{name:'地图状态',exact:true}).getByRole('button',{name,exact:true})
+test.describe('mobile interactions',()=>{
+ test.use({viewport:{width:390,height:844},hasTouch:true})
+ test.beforeEach(async({page})=>{await fixture(page);await page.goto('/?page=map')})
+ test('touch dense HK/MO chooses either member and dismisses on Escape',async({page})=>{
+  await expect(page.locator('.map-region-group').first()).toBeVisible()
+  const group=page.locator('.map-region-group[data-members="HK,MO"]')
+  const point=await group.evaluate(el=>{const p=(el as SVGGraphicsElement).getScreenCTM()!;return {x:p.e,y:p.f}})
+  await page.touchscreen.tap(point.x,point.y)
+  const chooser=page.getByRole('dialog',{name:'选择地区',exact:true})
+  await expect(chooser).toBeVisible()
+  const hk=chooser.getByRole('button',{name:/香港/});expect((await hk.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+  await hk.click();await expect(page.locator('.mm-node')).toHaveCount(1);await expect(page.locator('.mm-node')).toContainText('Interaction HK')
+  await group.tap();await chooser.getByRole('button',{name:/澳门/}).click();await expect(page.locator('.mm-node')).toContainText('Interaction MO')
+  await group.focus();await page.keyboard.press('Enter');await expect(chooser).toBeVisible();await page.keyboard.press('Escape');await expect(chooser).toHaveCount(0)
+  await group.tap();await expect(chooser).toBeVisible()
+  const usable=(await chooser.boundingBox())!,tools=(await page.locator('.mm-tools').boundingBox())!,legendBox=(await page.locator('.mm-map-legend:visible').boundingBox())!
+  expect(usable.y).toBeGreaterThanOrEqual(tools.y+tools.height)
+  expect(usable.y+usable.height).toBeLessThanOrEqual(legendBox.y)
+  await page.getByRole('group',{name:'世界节点分布地图',exact:true}).focus();await page.keyboard.press('ArrowRight');await expect(chooser).toHaveCount(0)
+  await group.tap();await expect(chooser).toBeVisible()
+  await page.touchscreen.tap(12,150);await expect(chooser).toHaveCount(0)
+  await group.tap();await expect(chooser).toBeVisible()
+  await page.getByRole('slider',{name:'节点面板高度'}).focus();await page.keyboard.press('End');await expect(chooser).toHaveCount(0)
+ })
+ test('quick select, labels and same-region locate refocus with sibling detail',async({page})=>{
+  await chip(page,'JP').click();await expect(page.locator('.mm-node')).toHaveCount(1)
+  const detail=(await page.getByRole('button',{name:'查看 Interaction JP',exact:true}).boundingBox())!,locate=(await page.getByRole('button',{name:'地图定位：Interaction JP',exact:true}).boundingBox())!
+  expect(detail.x+detail.width).toBeLessThanOrEqual(locate.x)
+  const selected=await page.locator('.mm-land').getAttribute('transform')
+  const svg=page.getByRole('group',{name:'世界节点分布地图',exact:true});await svg.focus();await page.keyboard.press('ArrowRight')
+  expect(await page.locator('.mm-land').getAttribute('transform')).not.toBe(selected)
+  await page.getByRole('button',{name:'地图定位：Interaction JP',exact:true}).click();await expect(page.locator('.mm-land')).toHaveAttribute('transform',selected!)
+  await page.locator('.mm-region-label[data-region=JP]').focus();await page.keyboard.press('Enter');await expect(page.getByRole('combobox',{name:'地图地区',exact:true})).toHaveAttribute('data-value','all')
+  await expect(page.locator('.mm-nav button')).toHaveCount(3)
+  await page.getByRole('button',{name:'查看 Interaction JP',exact:true}).click();await expect(page).toHaveURL(/node\/3/)
+ })
+ test('current probe filters ignore history, offline and stale with quality colors',async({page})=>{
+  await expect(page.locator('.mm-node[data-node-id="1"]')).toHaveAttribute('data-quality','high')
+  await expect(page.locator('.mm-node[data-node-id="2"]')).toHaveAttribute('data-quality','timeout')
+  await expect(page.locator('.mm-node[data-node-id="6"]')).toHaveAttribute('data-quality','unknown')
+  const highColor=await page.locator('.mm-node[data-node-id="1"] .mm-node-reading>b').evaluate(el=>getComputedStyle(el).color)
+  const healthyColor=await page.locator('.mm-node[data-node-id="3"] .mm-node-reading>b').evaluate(el=>getComputedStyle(el).color)
+  expect(highColor).not.toBe(healthyColor)
+  await legend(page,'探测异常').click();await expect(legend(page,'探测异常')).toHaveAttribute('aria-pressed','true')
+  await expect(page.locator('.mm-node')).toHaveCount(3)
+  await chip(page,'JP').click();await expect(page.locator('.mm-node')).toHaveCount(0)
+  await page.getByRole('button',{name:'清除地图状态筛选',exact:true}).click();await expect(page.locator('.mm-node')).toHaveCount(1)
+  await legend(page,'离线').click();await expect(page.locator('.mm-node')).toHaveCount(0)
+  await page.getByRole('button',{name:'清除地区筛选',exact:true}).click();await expect(page.locator('.mm-node')).toHaveCount(1)
+  await legend(page,'离线').click();await expect(page.locator('.mm-node')).toHaveCount(8)
+  await expect(page.getByRole('button',{name:'地图定位：Interaction ZZ',exact:true})).toHaveCount(0)
+ })
+})
+test.describe('desktop interactions',()=>{
+ test.beforeEach(async({page})=>{await fixture(page);await page.goto('/')})
+ test('quick select and card/table locate focus while filters share current quality',async({page})=>{
+  await chip(page,'JP').click();await expect(page.locator('.node-card')).toHaveCount(1)
+  const map=page.getByRole('group',{name:'世界节点分布地图',exact:true}),before=await page.locator('.map-land').getAttribute('transform')
+  await map.focus();await page.keyboard.press('ArrowRight');await expect(page.locator('.map-land')).not.toHaveAttribute('transform',before!)
+  await page.getByRole('button',{name:'地图定位：Interaction JP',exact:true}).click();await expect(page.locator('.map-land')).toHaveAttribute('transform',before!)
+  await page.getByRole('button',{name:'清除地区筛选',exact:true}).click()
+  for(const [name,count] of [['在线',7],['离线',1],['需关注',2],['探测异常',3]] as const){
+   await legend(page,name).click();await expect(page.locator('.node-card')).toHaveCount(count)
+   await page.getByRole('button',{name:'表格视图',exact:true}).click();await expect(page.locator('.node-table tbody tr')).toHaveCount(count)
+   await page.getByRole('button',{name:'卡片视图',exact:true}).click();await legend(page,name).click()
+  }
+  await page.getByRole('button',{name:'表格视图',exact:true}).click()
+  await page.getByRole('button',{name:'地图定位：Interaction US',exact:true}).click();await expect(page.locator('.node-table tbody tr')).toHaveCount(1)
+  await legend(page,'离线').click();await expect(page.locator('.empty-state')).toContainText('没有符合条件的节点')
+  await page.locator('.empty-state').getByRole('button',{name:'清除筛选',exact:true}).click();await expect(page.locator('.node-table tbody tr')).toHaveCount(8)
+ })
+})
+
+test('desktop probe filter follows cached route choice and expires while map is offscreen',async({page})=>{
+ await page.clock.install()
+ const fixed=Date.now()/1000
+ const base=nodes()[0]
+ await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...base,id:101,name:'Expiring HK',country:'HK'}]}}))
+ await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:{ping:[{task_id:1,ts:fixed,latency:350,loss:0},{task_id:2,ts:fixed,latency:40,loss:0}],probes:{1:'High route',2:'Healthy route'},loss:{1:42,2:42}}}))
+ await page.goto('/')
+ await expect(page.locator('.map-cluster[data-region=HK]')).toHaveAttribute('data-probe-quality','high')
+ await legend(page,'探测异常').click();await expect(page.locator('.node-card')).toHaveCount(1)
+ await chooseOption(page.getByRole('combobox',{name:'节点探测线路',exact:true}),'2')
+ await expect(page.locator('.node-card')).toHaveCount(0)
+ await expect(page.locator('.map-cluster[data-region=HK]')).toHaveAttribute('data-probe-quality','healthy')
+ await legend(page,'探测异常').click();await expect(page.locator('.node-card')).toHaveCount(1)
+ await chooseOption(page.getByRole('combobox',{name:'节点探测线路',exact:true}),'1')
+ await legend(page,'探测异常').click();await expect(page.locator('.node-card')).toHaveCount(1)
+ await page.locator('.node-card').scrollIntoViewIfNeeded()
+ await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight))
+ await page.clock.fastForward(130000)
+ await expect(page.locator('.node-card')).toHaveCount(0)
+ await expect(page.locator('.map-cluster[data-region=HK]')).toHaveAttribute('data-probe-quality','unknown')
+})
+
+test('mobile disabled map starts no map metric polling or locate action',async({page})=>{
+ await page.setViewportSize({width:390,height:844})
+ await fixture(page)
+ await page.route('**/api/themes/hex/config',r=>r.fulfill({json:{module_map:false}}))
+ const metrics:string[]=[];page.on('request',r=>{if(r.url().includes('/metrics?'))metrics.push(r.url())})
+ await page.goto('/?page=map')
+ await expect(page.getByText('地图已关闭，可返回概览查看地区分布')).toBeVisible()
+ await expect(page.getByRole('button',{name:/地图定位/})).toHaveCount(0)
+ expect(metrics).toEqual([])
+})
+
+for(const mobile of [false,true])test(`${mobile?'mobile':'desktop'} map watcher stops when detail opens`,async({page})=>{
+ await page.clock.install()
+ if(mobile)await page.setViewportSize({width:390,height:844})
+ await fixture(page);await page.goto(mobile?'/?page=map':'/')
+ await expect(page.locator(mobile?'.mm-node[data-node-id="1"]':'.map-region-group[data-members="HK,MO"]')).toBeVisible()
+ if(mobile)await expect(page.locator('.mm-node[data-node-id="1"]')).toHaveAttribute('data-quality','high')
+ else await chip(page,'JP').click()
+ await page.locator(mobile?'.mm-nodes':'.node-grid').getByRole('button',{name:'查看 Interaction JP',exact:true}).click();await expect(page).toHaveURL(/node\/3/)
+ const other:string[]=[];page.on('request',r=>{if(/\/nodes\/1\/metrics\?/.test(r.url()))other.push(r.url())})
+ await page.clock.fastForward(65000)
+ expect(other).toEqual([])
+})
+
+test('desktop map quality owns nodes arriving after the loading map is replaced',async({page})=>{
+ await page.clock.install()
+ await page.setViewportSize({width:1440,height:600})
+ let release!:()=>void;const pending=new Promise<void>(resolve=>release=resolve)
+ const base=nodes()[0],requested=new Map<number,number>()
+ await page.route('**/api/nodes',async r=>{await pending;await r.fulfill({json:{nodes:Array.from({length:30},(_,i)=>({...base,id:101+i,name:`Late ${i}`,country:'HK'}))}})})
+ await page.route('**/api/nodes/*/metrics?*',r=>{const id=Number(new URL(r.request().url()).pathname.split('/')[3]);requested.set(id,(requested.get(id)??0)+1);return r.fulfill({json:{ping:[{task_id:1,ts:Date.now()/1000,latency:350,loss:0}],probes:{1:'Late route'},loss:{1:0}}})})
+ await page.goto('/');await expect(page.locator('.map-frame')).toBeAttached()
+ release();await expect(page.locator('.node-card')).toHaveCount(30)
+ await expect.poll(()=>requested.has(130)).toBe(true)
+ await expect(page.locator('.map-cluster[data-region=HK]')).toHaveAttribute('data-probe-quality','high')
+ await page.clock.fastForward(65000)
+ await expect.poll(()=>requested.get(130)??0).toBeGreaterThan(1)
+})
+
+for(const mobile of [true,false])test.describe(`${mobile?'mobile':'desktop'} chooser review regressions`,()=>{
+ test.use({viewport:mobile?{width:390,height:844}:{width:1440,height:1000},hasTouch:mobile})
+ test('live group disappearance permanently dismisses chooser while member counts preserve it',async({page})=>{
+  const base=nodes()[0],initial=[{...base,id:101,name:'Live HK',country:'HK'},{...base,id:102,name:'Live MO',country:'MO'}]
+  let current=initial,publish!:(list:typeof initial)=>void
+  await fixture(page)
+  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:current}}))
+  await page.routeWebSocket('**/api/ws',socket=>{publish=list=>{current=list;socket.send(JSON.stringify({nodes:list}))}})
+  await page.goto(mobile?'/?page=map':'/')
+  const group=page.locator('.map-region-group[data-members="HK,MO"]'),chooser=page.getByRole('dialog',{name:'选择地区',exact:true}),land=page.locator(mobile?'.mm-land':'.map-land')
+  await (mobile?group.tap():group.click());await expect(chooser).toBeVisible()
+  const camera=await land.getAttribute('transform'),mo=chooser.getByRole('button',{name:/澳门/})
+  await mo.focus()
+  publish([...initial.map(n=>({...n,metrics:{...n.metrics!,cpu:25}})),{...base,id:103,name:'Live HK 2',country:'HK'}])
+  await expect(chooser.getByRole('button',{name:/香港/})).toContainText('2 个节点')
+  await expect(mo).toBeFocused();await expect(land).toHaveAttribute('transform',camera!)
+  publish(initial.filter(n=>n.country!=='MO'))
+  await expect(group).toHaveCount(0);await expect(chooser).toHaveCount(0)
+  publish(initial)
+  await expect(group).toBeVisible();await expect(land).toHaveAttribute('transform',camera!)
+  await expect(group).toHaveAttribute('aria-expanded','false');await expect(chooser).toHaveCount(0)
+ })
+ test('repeated group activation toggles chooser and outside, Escape and drag still dismiss',async({page})=>{
+  await fixture(page);await page.goto(mobile?'/?page=map':'/')
+  const group=page.locator('.map-region-group[data-members="HK,MO"]'),chooser=page.getByRole('dialog',{name:'选择地区',exact:true})
+  await (mobile?group.tap():group.click());await expect(chooser).toBeVisible()
+  await (mobile?group.tap():group.click());await expect(chooser).toHaveCount(0);await expect(group).toHaveAttribute('aria-expanded','false')
+  await (mobile?group.tap():group.click());await expect(chooser).toBeVisible()
+  await page.keyboard.press('Escape');await expect(chooser).toHaveCount(0)
+  await (mobile?group.tap():group.click());await expect(chooser).toBeVisible()
+  const map=(await page.getByRole('group',{name:'世界节点分布地图',exact:true}).boundingBox())!
+  await page.mouse.click(map.x+12,map.y+map.height/2);await expect(chooser).toHaveCount(0)
+  await (mobile?group.tap():group.click());await expect(chooser).toBeVisible()
+  const point=await group.evaluate(el=>{const m=(el as SVGGraphicsElement).getScreenCTM()!;return {x:m.e,y:m.f}})
+  await page.mouse.move(point.x,point.y);await page.mouse.down();await page.mouse.move(point.x+45,point.y,{steps:4});await page.mouse.up()
+  await expect(chooser).toHaveCount(0)
+ })
+})

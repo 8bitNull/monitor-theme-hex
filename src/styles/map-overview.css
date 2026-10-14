@@ -1,8 +1,8 @@
-/* A quiet overview; navigation controls are reserved for the expanded map. */
+/* Compact overview framing and shared fullscreen layout. */
 @media (min-width:721px) {
  .map-frame .region-atlas {display:block;isolation:isolate}
  .map-frame .region-atlas .explorer-stage {position:absolute;inset:0;height:100%;border-radius:inherit;background:var(--card)}
- .map-frame .region-atlas:not(.is-fullscreen) .explorer-stage>svg {cursor:default;touch-action:pan-y}
+ .map-frame .region-atlas:not(.is-fullscreen) .explorer-stage>.map-parallax-scene>svg {cursor:default;touch-action:pan-y}
  .map-frame .region-atlas .map-grid,.map-frame .region-atlas .map-land {pointer-events:none}
  .map-frame .region-atlas .map-graticule {fill:none;stroke:color-mix(in srgb,var(--muted-foreground) 7%,transparent);stroke-width:.65;vector-effect:non-scaling-stroke}
  .map-frame .region-atlas .map-land path {fill:color-mix(in srgb,var(--muted-foreground) 9%,var(--card));stroke:color-mix(in srgb,var(--muted-foreground) 16%,var(--card));stroke-width:.65}

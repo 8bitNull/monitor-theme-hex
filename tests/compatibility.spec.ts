@@ -57,7 +57,14 @@ test('768px hard navigation from browse loads detail without page errors',async(
 for(const [width,height] of [[320,568],[667,375]])test(`immersive map remains operable at ${width}x${height}`,async({page},testInfo)=>{
  await page.setViewportSize({width,height});await fixture(page);await page.goto('/?page=map')
  await expect(page.locator('.mm-land')).toBeVisible();await fits(page)
- await expect(page.locator('.mm-sheet-toggle')).toHaveCount(0);await expect(page.locator('.mm-sheet-content')).toBeVisible()
+ await expect(page.locator('.mm-sheet-toggle')).toHaveCount(0)
+ await expect(page.locator('.mm-sheet')).toHaveAttribute('data-state',height<500?'collapsed':'half')
+ if(height<500){
+  await expect(page.locator('.mm-sheet-content')).toBeHidden()
+  await page.getByRole('slider',{name:'节点面板高度'}).focus();await page.keyboard.press('ArrowUp')
+  await expect(page.locator('.mm-sheet')).toHaveAttribute('data-state','half')
+ }
+ await expect(page.locator('.mm-sheet-content')).toBeVisible()
  await page.locator('.mm-node').first().click();await expect(page.locator('.ma-detail-header')).toBeVisible();await page.getByRole('button',{name:'返回总览',exact:true}).click()
  await expect(page.locator('.mm-land')).toBeVisible();await expect(page.locator('.mm-sheet-content')).toBeVisible()
  const map=page.getByRole('group',{name:'世界节点分布地图',exact:true});await map.focus();const initial=await page.locator('.mm-land').getAttribute('transform');await map.press('+');await expect(page.locator('.mm-land')).not.toHaveAttribute('transform',initial!)
@@ -70,7 +77,11 @@ test.describe('touch map controls',()=>{
  test('region taps and sheet actions work without keyboard input',async({page},testInfo)=>{
   await page.setViewportSize({width:390,height:844});await fixture(page);await page.goto('/?page=map')
   await expect(page.locator('.mm-land')).toBeVisible();await page.getByRole('button',{name:'查看全球',exact:true}).tap()
-  await page.locator('.mm-marker[data-region=JP]').tap()
+  await page.locator('.mm-canvas .map-region-group[data-members*=JP]').tap()
+  const chooser=page.getByRole('dialog',{name:'选择地区',exact:true})
+  await expect(chooser).toBeVisible()
+  await chooser.getByRole('button',{name:/日本.*1 个节点/}).tap()
+  await expect(chooser).toHaveCount(0)
   await expect(page.getByRole('combobox',{name:'地图地区',exact:true})).toHaveAttribute('data-value','JP')
   await expect(page.locator('.mm-node')).toHaveCount(1);await page.locator('.mm-node').tap()
   await expect(page.locator('.ma-detail-header')).toBeVisible();await page.getByRole('button',{name:'返回总览',exact:true}).tap()
