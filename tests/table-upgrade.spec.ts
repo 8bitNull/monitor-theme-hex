@@ -78,9 +78,12 @@ test('table layouts in both languages and themes at responsive boundaries',async
   await page.screenshot({path:`tests/artifacts/v015/table-${language}-${appearance}-${width}.png`})
  }
 })
-test('visible rows load lazily and explicit quality sorting reads the complete fleet',async({page})=>{
+test('visible table rows load lazily without a map and explicit quality sorting reads the complete fleet',async({page})=>{
+ // The visible map intentionally subscribes to the whole fleet's current probe quality.
+ // Disable it here to measure only table-row loading and explicit quality sorting.
+ await page.route('**/api/themes/hex/config',r=>r.fulfill({json:{module_map:false}}))
  let requests=0;page.on('request',request=>{if(request.url().includes('/metrics?'))requests++})
- await setup(page,30);await table(page);expect(requests).toBeLessThan(30)
+ await setup(page,30);await table(page);await expect(page.locator('.map-frame')).toHaveCount(0);expect(requests).toBeLessThan(30)
  await page.locator('th[data-column=loss] button').click();await page.locator('th[data-column=loss] button').click()
  await expect(page.locator('tbody tr')).toHaveCount(20);await expect(page.locator('.sort-note')).toContainText('30/30')
  expect(requests).toBe(30)

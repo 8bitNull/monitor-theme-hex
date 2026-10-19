@@ -2,6 +2,8 @@
 
 所有脚本默认从仓库根目录运行。历史证据集中在 `archive/`，相关脚本会读写其中的设计稿和截图。`capture-*`、`audit-*`、`mockup-*`、`verify-*` 中包含历史验证工具，使用前检查脚本里的服务端口、浏览器与输出路径。
 
+`preview.png` 是受保护的 HEX 宣传封面，未获用户明确要求时不得重做或覆盖。`capture-hex.mjs` 和 `create-preview.mjs` 会写入该文件，运行前必须确认用户已明确要求更新封面。常规界面展示图写入 `screenshots/readme/`，验证截图写入 `artifacts/` 或 `tests/artifacts/`；完整规则见 [AGENTS.md](../AGENTS.md)。
+
 | 命令或文件 | 用途 |
 |---|---|
 | `npm run build` | 生成应用图标与地图数据，执行 TypeScript 检查并构建前端 |

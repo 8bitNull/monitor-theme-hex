@@ -2,7 +2,8 @@ import {test,expect} from '@playwright/test'
 import {nodes} from '../scripts/fixtures.mjs'
 import {chooseOption} from './select'
 
-test('persistent overview ignores legacy collapse preferences while compact cards omit supplementary facts',async({page})=>{
+test('persistent overview ignores legacy collapse preferences while compact cards keep public remarks',async({page})=>{
+ await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:nodes().map((node,index)=>({...node,remark:index===0?'公开备注':''}))}}))
  await page.addInitScript(()=>{
   localStorage.setItem('hex-desktop-v1',JSON.stringify({cardDensity:'compact',mapExpanded:false}))
   localStorage.setItem('monitor-next',JSON.stringify({summaryCollapsed:true,detailInfoMode:'collapsed'}))
@@ -14,7 +15,8 @@ test('persistent overview ignores legacy collapse preferences while compact card
  const summary=(await page.locator('.overview-summary').boundingBox())!,map=(await page.locator('.map-frame').boundingBox())!
  expect(map.x).toBeGreaterThan(summary.x+summary.width-1)
  await expect(page.locator('.summary-toggle,.home-map-toggle,.node-secondary-toggle')).toHaveCount(0)
- await expect(page.locator('.node-card').first().locator('.node-supplementary')).toHaveCount(0)
+ await expect(page.locator('.node-card').first().getByLabel('备注',{exact:true})).toBeVisible()
+ await expect(page.locator('.node-card').first().locator('.node-connections,.card-billing,.node-price')).toHaveCount(0)
  for(const width of [721,900,1440]){
   await page.setViewportSize({width,height:1000})
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
@@ -42,6 +44,7 @@ test('map counts and the shared region selector filter the node list without dup
 })
 
 test('phone billing and device facts are visible without disclosure controls',async({page})=>{
+ await page.route('**/api/me',r=>r.fulfill({json:{authed:true,github:false,site_name:'HEX',public_page:true}}))
  await page.setViewportSize({width:390,height:844})
  await page.goto('/node/1?section=overview')
  await expect(page.locator('#ma-billing-details')).toBeVisible()

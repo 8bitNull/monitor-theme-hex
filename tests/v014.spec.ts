@@ -47,17 +47,13 @@ test.skip('legacy preferences stay full; recommended preset preserves unrelated 
  await expect(page.locator('.latency-bars svg')).toHaveAttribute('aria-label',/175/)
 })
 test('detailed desktop cards retain core information within the height budget',async({page})=>{
+ await page.route('**/api/me',r=>r.fulfill({json:{authed:true,github:false,site_name:'HEX',public_page:true}}))
  await setup(page);await page.goto('/');await page.locator('.route-matrix').scrollIntoViewIfNeeded();await expect(page.locator('.latency-bars')).toBeVisible()
  const card=page.locator('.node-card');await expect(card).toHaveAttribute('data-density','full')
  await expect(card.locator('.traffic-summary')).toBeVisible();await expect(card.locator('.node-price')).toBeVisible()
  await expect(card.locator('.node-connections')).toBeVisible()
- const locate=card.getByRole('button',{name:/^地图定位：/})
- await expect(locate).toBeVisible()
- const height=(await card.boundingBox())!.height,locateHeight=(await locate.boundingBox())!.height
- expect(locateHeight).toBeGreaterThanOrEqual(32);expect(locateHeight).toBeLessThanOrEqual(36)
- // Keep the original detailed information budget alongside the accepted map action.
- expect(height-locateHeight).toBeLessThanOrEqual(560)
- expect(height).toBeLessThanOrEqual(596)
+ await expect(card.getByRole('button',{name:/^地图定位：/})).toHaveCount(0)
+ expect((await card.boundingBox())!.height).toBeLessThanOrEqual(560)
  await expect(card.locator('.node-connections')).toBeVisible()
  await expect(card.locator('.card-auxiliary-toggle')).toHaveCount(0)
 })

@@ -17,7 +17,8 @@ export function TrafficUsageCard({node}:{node:Node}){
   <p className="account-note">{reset} · {mode}</p>
  </section>
 }
-export function CostCard({node}:{node:Node}){
+export function CostCard({node,authed}:{node:Node;authed:boolean}){
+ if(!authed)return null
  const price=node.price>0?money(node.price,node.currency):node.price===0?tr('免费 / 未填写'):tr('价格未知')
  const cycle=tr(Object.hasOwn(CYCLES,node.billing_cycle)?CYCLES[node.billing_cycle]:node.billing_cycle)
  return <section className="account-card account-cost" aria-label={tr('费用与周期')}>
@@ -39,11 +40,11 @@ export function ExpiryCard({node,mobile=false}:{node:Node;mobile?:boolean}){
   {mobile?<p className="account-note">{days===null?status:days<=0?`${date} · ${status}`:tr('{0} 到期',date)}</p>:days===null||days<=0?<p className={`account-note${days!==null?' account-expiry-status':''}`}>{status}</p>:null}
  </section>
 }
-export function DetailAccount({node,mobile=false}:{node:Node;mobile?:boolean}){
+export function DetailAccount({node,authed,mobile=false}:{node:Node;authed:boolean;mobile?:boolean}){
  return <section className={`detail-account${mobile?' ma-billing-panel':''}`} aria-label={tr('用量与账期')}>
   <h2 className="detail-section-title">{tr('用量与账期')}</h2>
-  <div className="overview-account" id={mobile?'ma-billing-details':undefined}>
-   <TrafficUsageCard node={node}/><CostCard node={node}/><ExpiryCard node={node} mobile={mobile}/>
+  <div className="overview-account" data-price-visible={authed} id={mobile?'ma-billing-details':undefined}>
+   <TrafficUsageCard node={node}/><CostCard node={node} authed={authed}/><ExpiryCard node={node} mobile={mobile}/>
   </div>
  </section>
 }

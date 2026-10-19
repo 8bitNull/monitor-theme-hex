@@ -83,7 +83,7 @@ test('empty history is distinct from failure and keeps the route footer',async({
  await expect(card.locator('.ma-network-placeholder')).toBeVisible()
 })
 
-test('long route names wrap without clipping and offline cards omit latency controls',async({page})=>{
+test('long route names wrap without clipping and offline cards retain a zero-valued latency entry',async({page})=>{
  const offline=nodes()[5]
  await mobile(page,320,[nodes()[0],offline])
  const longName='Long route name with several locations and a continuous-token-'.repeat(3)
@@ -94,7 +94,12 @@ test('long route names wrap without clipping and offline cards omit latency cont
  expect(await first.locator('.ma-network-name').evaluate(el=>el.scrollHeight>18 && el.scrollWidth<=el.clientWidth)).toBe(true)
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
  await expect(page.locator('.ma-node').nth(1).locator('.ma-route-footer')).toHaveCount(0)
- await expect(page.locator('.ma-node').nth(1).locator('.ma-network-link')).toHaveCount(0)
+ const offlineCard=page.locator('.ma-node').nth(1)
+ await expect(offlineCard).toHaveAttribute('data-state','offline')
+ await expect(offlineCard.locator('.ma-network-name')).toHaveText(longName)
+ await expect(offlineCard.locator('.ma-network-value')).toHaveText('0ms')
+ await offlineCard.getByRole('button',{name:`查看线路：${longName}`,exact:true}).click()
+ await expect(page).toHaveURL(url=>url.pathname===`/node/${offline.id}`&&url.searchParams.get('routes')==='1'&&url.hash==='#latency')
 })
 
 test('English narrow cards keep a localized failure footer and retry control',async({page})=>{

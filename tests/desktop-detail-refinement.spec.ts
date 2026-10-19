@@ -98,3 +98,8 @@ for(const width of [721,900,1199])test(`named desktop metric controls at ${width
  expect(range.x+range.width).toBeLessThanOrEqual(status.x)
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
 })
+
+// Billing layout and formatting are exercised with an authenticated session.
+test.beforeEach(async({page})=>{
+ await page.route('**/api/me',r=>r.fulfill({json:{authed:true,github:false,site_name:'HEX',public_page:true}}))
+})

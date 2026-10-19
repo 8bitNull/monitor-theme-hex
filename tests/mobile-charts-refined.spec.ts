@@ -26,7 +26,7 @@ const curve=(page:Page)=>page.locator('.latency-view .recharts-line-curve').firs
 test('mobile route summaries use raw P95 and explicit whole-window loss',async({page})=>{
  await setup(page)
  await expect(routeRow(page,'Primary route').locator('td')).toHaveText(['11.0 ms','1000.0 ms','0.0%'])
- await expect(routeRow(page,'Legacy route').locator('td')).toHaveText(['40.0 ms','40.0 ms','未统计'])
+ await expect(routeRow(page,'Legacy route').locator('td')).toHaveText(['40.0 ms','40.0 ms','0.0%'])
  await expect(routeRow(page,'Backup route').locator('td')).toHaveText(['60.0 ms','60.0 ms','7.5%'])
  await page.getByRole('button',{name:'统计口径',exact:true}).click()
  await expect(page.getByRole('dialog')).toHaveClass(/ma-sheet-fixed/)

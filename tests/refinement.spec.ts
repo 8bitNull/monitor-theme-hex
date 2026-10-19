@@ -72,7 +72,7 @@ test('zero, unavailable, warning, long facts and failed latency retain honest st
  await page.goto('/')
  const cards=page.locator('.node-card');await expect(cards).toHaveCount(6)
  await expect(cards.nth(0).locator('.bar-number').first()).toHaveText('0.0%')
- await expect(cards.nth(1).locator('.offline-last-report')).toBeVisible();await expect(cards.nth(1).locator('.resources,.card-network,.card-uptime')).toHaveCount(0);await expect(cards.nth(1).locator('.card-billing,.route-matrix')).toHaveCount(2)
+ await expect(cards.nth(1).locator('.node-open')).toHaveAttribute('title',/最近上报时间/);await expect(cards.nth(1).locator('.resources,.card-network,.card-uptime')).toHaveCount(3);await expect(cards.nth(1).locator('.card-billing,.route-matrix')).toHaveCount(2)
  for(const i of [2,3])await expect(cards.nth(i).locator('.bar-number').first()).toHaveText('—')
  await expect(cards.nth(4).locator('.resource').first()).toHaveClass(/danger/)
  await expect(cards.nth(4).locator('.card-issue').filter({hasText:'已到期'})).toBeVisible()

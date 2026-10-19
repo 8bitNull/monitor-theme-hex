@@ -50,3 +50,8 @@ test('legacy network columns expand without restoring hidden metrics',async({pag
  await page.setViewportSize({width:390,height:844});await expect(page.locator('.ma-node')).toHaveCount(6);await expect(page.locator('table')).toHaveCount(0)
  await page.setViewportSize({width:800,height:844});await expect(page.locator('thead th')).toHaveCount(5);await expect(page.locator('thead [data-column=cpu]')).toHaveCount(0)
 })
+
+// Billing layout and formatting are exercised with an authenticated session.
+test.beforeEach(async({page})=>{
+ await page.route('**/api/me',r=>r.fulfill({json:{authed:true,github:false,site_name:'HEX',public_page:true}}))
+})

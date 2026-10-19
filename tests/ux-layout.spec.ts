@@ -27,7 +27,8 @@ test('short desktop keeps map visible and retains region filtering',async({page}
  await expect(page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true})).toHaveAttribute('data-value','JP')
 })
 
-test('desktop density survives reload and compact hides supplementary facts while retaining warnings',async({page})=>{
+test('desktop density survives reload and compact retains remarks while hiding account details',async({page})=>{
+ await page.route('**/api/me',r=>r.fulfill({json:{authed:true,github:false,site_name:'HEX',public_page:true}}))
  await page.setViewportSize({width:1440,height:900});await fixture(page,{warnings:true});await page.goto('/')
  await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'detailed')
  await expect(page.locator('.node-card').first().locator('.card-billing')).toBeVisible()
@@ -38,7 +39,8 @@ test('desktop density survives reload and compact hides supplementary facts whil
  await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'compact')
  const card=page.locator('.node-card').first()
  for(const warning of ['高负载','天后到期','流量额度已用尽'])await expect(card).toContainText(warning)
- await expect(card.locator('.node-supplementary')).toHaveCount(0)
+ await expect(card.getByLabel('备注',{exact:true})).toBeVisible()
+ await expect(card.locator('.node-connections,.card-billing')).toHaveCount(0)
  await expect(card.locator('.resources')).toBeVisible()
  await expect(card.locator('.card-network')).toBeVisible()
  await expect(card.locator('.route-matrix')).toBeVisible()
@@ -46,7 +48,8 @@ test('desktop density survives reload and compact hides supplementary facts whil
  await expect(card.locator('.node-secondary-toggle')).toHaveCount(0)
  await page.reload()
  await expect(page.getByRole('combobox',{name:'卡片密度'})).toHaveAttribute('data-value','compact')
- await expect(card.locator('.node-supplementary')).toHaveCount(0)
+ await expect(card.getByLabel('备注',{exact:true})).toBeVisible()
+ await expect(card.locator('.node-connections,.card-billing')).toHaveCount(0)
  await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'detailed')
  for(const selector of ['.node-connections','.card-billing','.node-remarks','.node-price'])await expect(card.locator(selector)).toBeVisible()
 })
@@ -67,6 +70,7 @@ test('desktop reset columns keeps search and sort and persists the default layou
 })
 
 test('grouped mobile list shows its first card near the top and detail billing is visible',async({page})=>{
+ await page.route('**/api/me',r=>r.fulfill({json:{authed:true,github:false,site_name:'HEX',public_page:true}}))
  await page.setViewportSize({width:390,height:844});await fixture(page,{grouped:true});await page.goto('/')
  const card=page.locator('.ma-node').first()
  await expect(card).toBeVisible()
@@ -135,6 +139,7 @@ test('desktop and mobile layouts fit light, dark and English long-name viewports
 })
 
 test('desktop supplementary information stays visible below routes without moving core readings',async({page})=>{
+ await page.route('**/api/me',r=>r.fulfill({json:{authed:true,github:false,site_name:'HEX',public_page:true}}))
  await fixture(page);await page.goto('/')
  await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'detailed')
  const card=page.locator('.node-card').first()
