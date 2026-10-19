@@ -49,16 +49,20 @@ test('Agent online and selected recent probe quality remain independent',async({
 })
 
 test('default compact cards fit the intended density without hiding core readings',async({page})=>{
+ await page.route('**/api/me',r=>r.fulfill({json:{authed:true,github:false,site_name:'HEX',public_page:true}}))
+ await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:nodes().map((node,index)=>({...node,remark:index===0?'公开备注':''}))}}))
  await page.setViewportSize({width:1600,height:1050});await page.goto('/')
  const card=page.locator('.node-card').first()
  await expect(card.locator('.latency-link')).toBeVisible()
- const locate=card.getByRole('button',{name:/^地图定位：/})
- await expect(locate).toBeVisible()
- const compactHeight=(await card.boundingBox())!.height,locateHeight=(await locate.boundingBox())!.height
- expect(locateHeight).toBeGreaterThanOrEqual(32);expect(locateHeight).toBeLessThanOrEqual(36)
- // The accepted map action adds its own row; preserve the original readings budget.
- expect(compactHeight-locateHeight).toBeLessThanOrEqual(320)
- expect(compactHeight).toBeLessThanOrEqual(356)
+ await expect(card.getByRole('button',{name:/^地图定位：/})).toHaveCount(0)
+ await expect(card.getByLabel('备注',{exact:true})).toBeVisible()
+ await expect(card.locator('.node-price')).toBeVisible()
+ await expect(card.locator('.node-connections,.card-billing')).toHaveCount(0)
+ const compactHeight=(await card.boundingBox())!.height
+ // Public notes and authorized prices add a variable-height footer to compact cards.
+ // Keep the original core-reading budget independent of that content.
+ const supplementaryHeight=(await card.locator('.node-supplementary').boundingBox())!.height
+ expect(compactHeight-supplementaryHeight).toBeLessThanOrEqual(320)
  for(const selector of ['.resource-label','.resource small','.speed-trend','.latency-bars'])await expect(card.locator(selector).first()).toBeVisible()
  await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'detailed')
  expect((await card.boundingBox())!.height).toBeGreaterThan(400)
@@ -72,7 +76,8 @@ test('map zoom eases, remains anchored and dragging interrupts without a jump',a
  await expect(page.locator('.map-canvas-controls output')).toHaveText('130%')
  await settledMap(page)
  // Advance a controlled browser clock: software WebGL initialization can block real RAFs in CI.
- await page.clock.install();await page.clock.pauseAt(new Date())
+ const clockTime=new Date()
+ await page.clock.install({time:clockTime});await page.clock.pauseAt(new Date(clockTime.getTime()+10000))
  await page.getByRole('button',{name:'放大地图',exact:true}).click()
  await page.clock.runFor(100)
  const middle=Number((await page.locator('.map-canvas-controls output').textContent())!.replace('%',''))

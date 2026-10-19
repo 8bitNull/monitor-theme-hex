@@ -93,14 +93,14 @@ for(const language of ['zh','en'])test(`mobile overview metrics and attention en
  }
 })
 
-test('desktop offline card keeps its facts without stretching to the row height',async({page})=>{
+test('desktop offline card retains all sections and the row height',async({page})=>{
  await page.setViewportSize({width:1440,height:1000});await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:nodes()}}));await page.goto('/')
  const offline=page.locator('.node-card.node-offline').first()
- await expect(offline.locator('.offline-last-report')).toBeVisible();await expect(offline.locator('.card-billing')).toBeVisible()
+ await expect(offline.locator('.resources')).toBeVisible();await expect(offline.locator('.card-billing')).toBeVisible()
  const heights=await offline.evaluate(el=>{
   const top=Math.round(el.getBoundingClientRect().top),grid=el.parentElement!
   return [...grid.children].filter(card=>Math.round(card.getBoundingClientRect().top)===top).map(card=>({offline:card===el,height:card.getBoundingClientRect().height}))
  })
  expect(heights.filter(item=>!item.offline).length).toBeGreaterThan(0)
- expect(heights.find(item=>item.offline)!.height).toBeLessThan(Math.max(...heights.filter(item=>!item.offline).map(item=>item.height))-30)
+ expect(heights.find(item=>item.offline)!.height).toBe(Math.max(...heights.filter(item=>!item.offline).map(item=>item.height)))
 })

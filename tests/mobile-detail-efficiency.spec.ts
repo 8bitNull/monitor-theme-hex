@@ -35,14 +35,14 @@ test('single route summary keeps raw statistics and compares via persistent rout
  await page.keyboard.press('Escape')
  await page.getByRole('group',{name:'线路图例'}).getByRole('button',{name:'Backup',exact:true}).click()
  await expect(page.locator('.ma-route-statistics tbody tr')).toHaveCount(2)
- await expect(page.locator('.ma-route-statistics tbody tr').filter({hasText:'Backup'})).toContainText('未统计')
+ await expect(page.locator('.ma-route-statistics tbody tr').filter({hasText:'Backup'})).toContainText('0.0%')
  await expect(page.locator('.ma-route-statistics tbody tr')).toHaveCount(2)
  await page.getByRole('group',{name:'线路图例'}).getByRole('button',{name:'Primary',exact:true}).click()
- await expect(summary.locator('dd')).toHaveText(['40.0 ms','40.0 ms','未统计'])
+ await expect(summary.locator('dd')).toHaveText(['40.0 ms','40.0 ms','0.0%'])
  await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({status:503}))
  await page.getByRole('button',{name:'刷新历史',exact:true}).click()
  await expect(page.locator('.history-notice')).toContainText('保留上次历史记录')
- await expect(summary.locator('dd')).toHaveText(['40.0 ms','40.0 ms','未统计'])
+ await expect(summary.locator('dd')).toHaveText(['40.0 ms','40.0 ms','0.0%'])
 })
 
 test('healthy overview condenses empty states and keeps the record entry',async({page})=>{

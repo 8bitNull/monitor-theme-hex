@@ -13,7 +13,7 @@ import '@/styles/detail-grouped-layout.css'
 import {MobileResourceCards} from './MobileResourceCards'
 import {ResourceHistory,type ResourceMetricKey} from './ResourceHistory'
 import {DetailToolbar,type HistoryTab} from './DetailToolbar'
-import { probeCatalog } from '@/lib/ping'
+import { probeCatalog, windowLoss } from '@/lib/ping'
 import { tr, locale } from '../lib/i18n.ts'
 import { useEffect, useMemo, useState, useRef } from "react";
 import { median } from "d3-array";
@@ -45,8 +45,8 @@ type PingPoint = {
 /** Probe names by id, sent alongside the samples they label. */
 type Probes = Record<string, string>;
 /**
- * Proportion of the whole window each probe lost, by id. Missing entries remain
- * unknown. Sent because it cannot be derived here: every bucket's `loss` is
+ * Proportion of the whole window each probe lost, by id. A present map implies
+ * zero for omitted routes; a missing map is unknown. Every bucket's `loss` is
  * already a percentage of that bucket, so the sample counts it was divided by are
  * unavailable. Averaging them would weight a bucket holding one sample equally
  * with one holding twelve, and the window's first and last buckets are partial
@@ -106,7 +106,8 @@ function ChartStatisticsSheet({onClose}:{onClose:()=>void}){
     </MobileSheet>;
 }
 
-export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMode, onDetailInfoMode, mobilePreferences=mobileDefaults, onBack }: {
+export function NodeDetail({ node, authed, probe = "auto", nodes, onSwitch, detailInfoMode, onDetailInfoMode, mobilePreferences=mobileDefaults, onBack }: {
+    authed:boolean;
     onBack?:()=>void;
     mobilePreferences?:MobilePreferences;
     detailInfoMode:Preferences['detailInfoMode'];
@@ -118,10 +119,10 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
 }) {
     const [compact,setCompact]=useState(()=>matchMedia('(max-width:899px)').matches);
     const [mobile,setMobile]=useState(()=>matchMedia('(max-width:720px)').matches);
-    useEffect(()=>{const media=matchMedia('(max-width:720px)');const update=()=>setMobile(media.matches);media.addEventListener('change',update);return()=>media.removeEventListener('change',update)},[]);
+    useEffect(()=>{const media=matchMedia('(max-width:720px)');const update=()=>setMobile(media.matches);media.addEventListener('change',update);update();return()=>media.removeEventListener('change',update)},[]);
     type MobileSection='overview'|'resources'|'latency'|'info';
     const [mobileSection,setMobileSection]=useState<MobileSection>(()=>{const p=new URLSearchParams(location.search),section=p.get('section');return location.hash==='#latency'?'latency':p.has('eventStart')?'resources':['overview','resources','info'].includes(section??'')?section as MobileSection:'overview'});
-    useEffect(()=>{const media=matchMedia('(max-width:899px)');const update=()=>setCompact(media.matches);media.addEventListener('change',update);return()=>media.removeEventListener('change',update)},[]);
+    useEffect(()=>{const media=matchMedia('(max-width:899px)');const update=()=>setCompact(media.matches);media.addEventListener('change',update);update();return()=>media.removeEventListener('change',update)},[]);
     const [tab, setTab] = useState<HistoryTab>(()=>location.hash === "#latency" ? "latency" : "resources");
     // Each tab keeps its own range: a 7-day trend and a 1-hour trace answer
     // different questions.
@@ -334,8 +335,7 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
     const changeSection=(section:MobileSection)=>{setMobileSection(section);if(section==='resources'||section==='latency')setTab(section);tooltipDismiss();};
     const mobileStats=shownProbes.map(route=>{
         const latest=route.points.at(-1),values=route.points.flatMap(p=>p.latency!==null&&Number.isFinite(p.latency)&&p.latency>=0?[p.latency]:[]).sort((a,b)=>a-b);
-        const loss=data?.loss&&Object.hasOwn(data.loss,String(route.id))?data.loss[route.id]:undefined;
-        return {...route,latest,p95:values.length?values[Math.ceil(values.length*.95)-1]:null,loss:typeof loss==='number'&&Number.isFinite(loss)&&loss>=0&&loss<=100?loss:null};
+        return {...route,latest,p95:values.length?values[Math.ceil(values.length*.95)-1]:null,loss:data?windowLoss(data,route.id):null};
     });
     const previewActive=tab==='resources';
     const previewMatches=data?.key===`${node.id}:${ranges.resources}:resources`;
@@ -350,7 +350,7 @@ export function NodeDetail({ node, probe = "auto", nodes, onSwitch, detailInfoMo
       {mobile&&<nav className="ma-detail-tabs" aria-label={tr('详情分区')}>{([{key:'overview',label:tr('总览')},{key:'resources',label:tr('资源')},{key:'latency',label:tr('网络')},{key:'info',label:tr('资料')}] as const).map(({key,label})=><button key={key} aria-pressed={mobileSection===key} onClick={()=>changeSection(key)}>{label}</button>)}</nav>}
       <div className="detail-workspace">
       {mobile&&mobileSection==='overview'&&<div className="ma-detail-status"><Status node={node}/><small>{node.last_seen>0?tr('上次上报：{0}',new Date(node.last_seen*1000).toLocaleTimeString(locale())):tr('等待首次上报')}</small></div>}
-      {!mobile?<DetailLiveOverview node={node} preview={{rows:previewActive&&previewMatches?metricRows:[],hours:ranges.resources,loading:previewActive&&(loading||!previewMatches),failed:previewActive&&previewMatches&&!!failed,active:previewActive,updated:previewMatches?updated:null}} onSelectResource={selectPreview}/>:mobileSection==='overview'?<MobileDetailOverview node={node} totals={mobilePreferences.totals} onNetwork={()=>changeSection('latency')} onResource={metric=>{setResourceMetric(metric);changeSection('resources');requestAnimationFrame(()=>{document.querySelector<HTMLElement>('.detail-history')?.focus({preventScroll:true});window.scrollTo(0,0)})}}/>:null}
+      {!mobile?<DetailLiveOverview node={node} authed={authed} preview={{rows:previewActive&&previewMatches?metricRows:[],hours:ranges.resources,loading:previewActive&&(loading||!previewMatches),failed:previewActive&&previewMatches&&!!failed,active:previewActive,updated:previewMatches?updated:null}} onSelectResource={selectPreview}/>:mobileSection==='overview'?<MobileDetailOverview node={node} authed={authed} totals={mobilePreferences.totals} onNetwork={()=>changeSection('latency')} onResource={metric=>{setResourceMetric(metric);changeSection('resources');requestAnimationFrame(()=>{document.querySelector<HTMLElement>('.detail-history')?.focus({preventScroll:true});window.scrollTo(0,0)})}}/>:null}
       {(!mobile||mobileSection==='resources'||mobileSection==='latency')&&<section className="detail-history" tabIndex={-1} aria-label={tr("历史图表")}>
        {!mobile&&<h2 className="detail-section-title">{tr('历史分析')}</h2>}
        {mobile&&<div className="ma-chart-heading"><h2>{tr(tab==='latency'?'网络质量':'资源历史')}</h2><small title={updated?new Date(updated).toLocaleString(locale()):undefined} data-failed={!!failed}>{mobileUpdate}</small></div>}

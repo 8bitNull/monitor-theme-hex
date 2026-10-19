@@ -280,11 +280,12 @@
 .map-frame .region-atlas:fullscreen {height:100dvh}
 @media(max-width:720px){.map-frame {--map-height:320px}}
 
-/* Offline cards retain identity, the last report, and durable account facts. */
-.node-card.node-offline .offline-summary {margin:0 var(--card-pad);padding:2px 0 12px;text-align:left}
-.node-card.node-offline .offline-last-report {display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0 12px;border-top:1px solid var(--home-line);font-size:12px;color:var(--muted-foreground);font-variant-numeric:tabular-nums}
-.node-card.node-offline .offline-last-report>span {display:inline-flex;align-items:center;gap:5px;flex-shrink:0}
-.node-card.node-offline .offline-last-report :is(time,b) {min-width:0;text-align:right;overflow-wrap:anywhere;font-weight:400;color:var(--foreground)}
-.node-card.node-offline .card-billing {border-top:1px solid var(--home-line);padding-top:10px}
-.node-card.node-offline .card-uptime {display:none}
-@media(max-width:360px){.node-card.node-offline .offline-last-report {align-items:flex-start;flex-direction:column;gap:4px}.node-card.node-offline .offline-last-report :is(time,b) {text-align:left}}
+/* Offline cards retain every section and dim the complete surface. */
+.node-card.node-offline,.ma-node[data-state=offline] {opacity:.62;filter:saturate(.25) brightness(.94)}
+.node-card.node-offline .card-cpu-issue,.ma-node[data-state=offline] .ma-status-notice {visibility:hidden}
+.node-card.node-offline .card-uptime b {position:relative}
+.node-card .offline-value-space,.ma-node .offline-value-space {visibility:hidden}
+.node-card .offline-value-zero,.ma-node .offline-value-zero {position:absolute;inset:0;display:grid;place-content:center}
+
+.ma-node .ma-extra>span {position:relative}
+.ma-node .offline-value-zero {display:block}

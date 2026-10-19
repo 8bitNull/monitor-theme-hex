@@ -3,6 +3,7 @@ import {test,expect} from './desktopTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
 test('compact card keeps billing below latency and three equal columns and remarks beside price',async({page})=>{
+ await page.route('**/api/me',r=>r.fulfill({json:{authed:true,github:false,site_name:'HEX',public_page:true}}))
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[1],expires_at:'2026-10-07',remark:'国际线路;Backup;这是一段较长的备注用于验证标签自动换行',metrics:{...nodes()[1].metrics,tcp:12345678,udp:87654321}}]}}))
  await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:metrics()}))
  for(const language of ['zh','en'])for(const width of [768,800,1440]){
@@ -48,6 +49,7 @@ test('hovering card remarks does not fill the whole row',async({page})=>{
 })
 
 test('home speed curves use new reports and offline cards retain durable facts and routes',async({page})=>{
+ await page.route('**/api/me',r=>r.fulfill({json:{authed:true,github:false,site_name:'HEX',public_page:true}}))
  await page.clock.install()
  let step=0,online=true
  const ts=Math.floor(Date.now()/1000)
@@ -61,8 +63,9 @@ test('home speed curves use new reports and offline cards retain durable facts a
  await expect(card.locator('.upload .speed-amount')).toHaveText('0.0')
  expect(await card.locator('.download .micro-trend path').getAttribute('d')).toContain('L')
  online=false;await page.clock.runFor(5100)
- await expect(card.locator('.offline-last-report time')).toHaveAttribute('datetime',/T/)
- await expect(card.locator('.resources,.card-network,.speed-pair,.node-connections,.card-uptime')).toHaveCount(0)
+ await expect(card.locator('.node-open')).toHaveAttribute('title',/最近上报时间/)
+ await expect(card.locator('.resources,.card-network,.speed-pair,.node-connections,.card-uptime')).toHaveCount(5)
+ await expect(card.locator('.speed-amount')).toHaveText(['0.0','0.0'])
  await expect(card.locator('.card-billing .traffic-summary')).toBeVisible()
  await expect(card.locator('.route-matrix')).toBeVisible()
  await expect(card.locator('.node-footer .node-price')).toBeVisible()

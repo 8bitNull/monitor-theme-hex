@@ -27,3 +27,8 @@ for(const width of [768,800,1024,1440])test(`overview groups and full-width hist
   if(language==='zh'&&[800,1440].includes(width))await page.locator('.node-detail').screenshot({path:`tests/artifacts/detail-overview/${width}-${appearance}.png`,style:'header {visibility:hidden} '})
  }
 })
+
+// Billing layout and formatting are exercised with an authenticated session.
+test.beforeEach(async({page})=>{
+ await page.route('**/api/me',r=>r.fulfill({json:{authed:true,github:false,site_name:'HEX',public_page:true}}))
+})

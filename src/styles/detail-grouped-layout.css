@@ -11,6 +11,7 @@
 .next-theme .detail-grouped .overview-account{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;gap:16px;margin:0;padding:0;border:0;background:transparent;box-shadow:none}
 .detail-grouped .account-card{min-width:0;padding:18px 20px;border:1px solid var(--border);border-radius:var(--radius-panel);background:var(--card)}
 .detail-grouped .account-traffic{grid-column:span 2}
+.detail-grouped .overview-account[data-price-visible=false] .account-expiry{grid-column:span 2}
 .next-theme .detail-grouped .account-card h3{display:block;color:var(--foreground);font-size:14px;font-weight:600;line-height:1.5;margin:0 0 16px}
 .next-theme .detail-grouped .overview-usage{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;min-width:0}
 .detail-grouped .overview-usage>span,.detail-grouped .account-values>div>span{font-size:12px;color:var(--muted-foreground)}

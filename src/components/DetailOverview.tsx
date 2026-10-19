@@ -22,14 +22,14 @@ export function DetailIdentity({node,nodes,onSwitch}:{node:Node;nodes:Node[];onS
       </div>
 )
 }
-export function DetailLiveOverview({node,preview,onSelectResource}:{node:Node;preview:ResourcePreview;onSelectResource:(metric:ResourceTrendMetric)=>void}){
+export function DetailLiveOverview({node,authed,preview,onSelectResource}:{node:Node;authed:boolean;preview:ResourcePreview;onSelectResource:(metric:ResourceTrendMetric)=>void}){
  const m=liveMetrics(node)
  const state=nodeState(node)
  return <section className="detail-live" data-layout="metric-cards" aria-label={tr('实时指标')}>
   <h2 className="detail-section-title">{tr('实时状态')}</h2>
   <div className="detail-overview-grid" data-live={!!m}>
    {m?<><DesktopDetailMetrics node={node} preview={preview} onSelectResource={onSelectResource}/><DetailConnectionStats node={node} withLoad/></>:<section className="overview-unavailable" role="status"><h3>{state==='offline'?tr('离线'):state==='stale'?tr('数据已过期'):tr('等待数据')}</h3><p>{tr('实时资源与网速暂不可用')}</p></section>}
-   <DetailAccount node={node}/>
+   <DetailAccount node={node} authed={authed}/>
   </div>
  </section>
 }

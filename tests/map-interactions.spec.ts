@@ -67,11 +67,14 @@ test.describe('mobile interactions',()=>{
 })
 test.describe('desktop interactions',()=>{
  test.beforeEach(async({page})=>{await fixture(page);await page.goto('/')})
- test('quick select and card/table locate focus while filters share current quality',async({page})=>{
+ test('quick select and table locate focus while cards omit locate actions',async({page})=>{
   await chip(page,'JP').click();await expect(page.locator('.node-card')).toHaveCount(1)
   const map=page.getByRole('group',{name:'世界节点分布地图',exact:true}),before=await page.locator('.map-land').getAttribute('transform')
   await map.focus();await page.keyboard.press('ArrowRight');await expect(page.locator('.map-land')).not.toHaveAttribute('transform',before!)
+  await expect(page.locator('.node-card').getByRole('button',{name:/地图定位/})).toHaveCount(0)
+  await page.getByRole('button',{name:'表格视图',exact:true}).click()
   await page.getByRole('button',{name:'地图定位：Interaction JP',exact:true}).click();await expect(page.locator('.map-land')).toHaveAttribute('transform',before!)
+  await page.getByRole('button',{name:'卡片视图',exact:true}).click()
   await page.getByRole('button',{name:'清除地区筛选',exact:true}).click()
   for(const [name,count] of [['在线',7],['离线',1],['需关注',2],['探测异常',3]] as const){
    await legend(page,name).click();await expect(page.locator('.node-card')).toHaveCount(count)

@@ -52,3 +52,8 @@ test('a single long header tag shows at most two text lines before expansion',as
  const visibleLines=await content.evaluate(el=>{const bounds=el.getBoundingClientRect(),range=document.createRange();range.selectNodeContents(el.querySelector('.detail-remark-tag')!);return new Set([...range.getClientRects()].filter(r=>r.top>=bounds.top&&r.bottom<=bounds.bottom).map(r=>Math.round(r.top))).size})
  expect(visibleLines).toBeLessThanOrEqual(2)
 })
+
+// Billing layout and formatting are exercised with an authenticated session.
+test.beforeEach(async({page})=>{
+ await page.route('**/api/me',r=>r.fulfill({json:{authed:true,github:false,site_name:'HEX',public_page:true}}))
+})

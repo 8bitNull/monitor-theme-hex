@@ -129,7 +129,7 @@ test('live activity distinguishes zero, slow, missing, stale and offline reading
  for(state of ['missing','stale']){
   await page.clock.runFor(5100);await expect(speed.locator('.speed-amount')).toHaveText(['—','—']);await expect(speed.locator('.micro-trend circle')).toHaveCount(0);await expect(speed).toHaveAttribute('data-state',state)
  }
- state='offline';await page.clock.runFor(5100);await expect(speed).toHaveCount(0);await expect(page.locator('.node-card .offline-last-report')).toBeVisible()
+ state='offline';await page.clock.runFor(5100);await expect(speed).toBeVisible();await expect(speed).toHaveAttribute('data-state','offline');await expect(speed.locator('.speed-amount')).toHaveText(['0.0','0.0']);await expect(page.locator('.node-card .node-open')).toHaveAttribute('title',/最近上报时间/)
 })
 
 test('latency bars preserve timestamp gaps, threshold colors and capped actual values',async({page})=>{
@@ -150,4 +150,9 @@ test('latency curve and loss track remain available across smoothing and zoom',a
  await expect(page.getByRole('button',{name:'恢复范围'})).toBeVisible();await expect(track).toBeVisible()
  await page.getByRole('button',{name:'恢复范围'}).click();await expect(curve).toHaveCount(1)
  await expect(page.locator('.latency-stat-details,.latency-summary,.latency-explanation-panel')).toHaveCount(0)
+})
+
+// Billing layout and formatting are exercised with an authenticated session.
+test.beforeEach(async({page})=>{
+ await page.route('**/api/me',r=>r.fulfill({json:{authed:true,github:false,site_name:'HEX',public_page:true}}))
 })

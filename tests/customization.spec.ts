@@ -9,6 +9,7 @@ import {toggleSettings} from './settings'
 const keys=['traffic','connections','uptime','expiry','remarks','price']
 const all=Object.fromEntries(keys.map(k=>[k,true]))
 async function setup(page:Page){
+ await page.route('**/api/me',r=>r.fulfill({json:{authed:true,github:false,site_name:'HEX',public_page:true}}))
  await page.addInitScript(()=>{if(!localStorage.getItem('monitor-next'))localStorage.setItem('monitor-next',JSON.stringify({schemaVersion:3,infoDensity:'full'}))})
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],remark:'国际线路;Backup;Production;More',expires_at:'2026-10-05',price:5}]}}))
  await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:metrics()}))

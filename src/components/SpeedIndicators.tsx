@@ -7,10 +7,10 @@ import {adaptiveRateParts,rate} from '@/lib/format'
 import {tr, locale} from '@/lib/i18n'
 
 /** A shared scale, never a claimed bandwidth utilization percentage. */
-export function SpeedIndicators({node, detail=false, compact=false}: {node:Node; detail?:boolean; compact?:boolean}) {
+export function SpeedIndicators({node, detail=false, compact=false, zeroOffline=false}: {node:Node; detail?:boolean; compact?:boolean; zeroOffline?:boolean}) {
   const m=liveMetrics(node)
-  const tx=m?.net_tx, rx=m?.net_rx
   const state=nodeState(node)
+  const tx=m?.net_tx??(zeroOffline&&state==='offline'?0:undefined), rx=m?.net_rx??(zeroOffline&&state==='offline'?0:undefined)
   const stale=state==='stale'
   const samples=nodeSpeedSamples(node.id)
   const trends=useMemo(()=>({tx:samples.map(p=>({ts:p.ts,value:p.tx})),rx:samples.map(p=>({ts:p.ts,value:p.rx}))}),[samples])

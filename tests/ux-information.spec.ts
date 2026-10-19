@@ -94,6 +94,5 @@ test('desktop offline card keeps relative and absolute report time',async({page}
  const offline={...nodes()[5],last_seen:Math.floor(Date.now()/1000)-600}
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[offline]}}))
  await page.goto('/')
- await expect(page.locator('.node-card .offline-last-report')).toContainText('分钟前')
- await expect(page.locator('.node-card .offline-last-report time')).toHaveAttribute('datetime',/T/)
+ await expect(page.locator('.node-card .node-open')).toHaveAttribute('title',/最近上报时间.*分钟前.*\d{4}/)
 })
