@@ -299,10 +299,14 @@
     background: transparent;
     gap: 8px;
   }
-  .next-theme .node-card[data-card-density=detailed] .node-supplementary { padding-block: 6px 8px; gap: 6px; }
+  .next-theme .node-card[data-card-density=detailed] .node-supplementary {
+    padding-block: 4px 6px;
+    gap: 4px;
+  }
   .next-theme .node-card .node-supplementary .node-connections {
     display: flex;
     align-items: center;
+    justify-content: flex-start;
     gap: 8px;
     font-size: 11px;
     padding-bottom: 2px;
