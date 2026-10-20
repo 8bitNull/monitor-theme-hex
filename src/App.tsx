@@ -6,6 +6,7 @@ import mapPoints from '@/data/map-flat-points.json'
 import {regionKey} from '@/lib/groups'
 import {mapTrafficSnapshot} from '@/lib/mapTraffic'
 import {BillingReminders} from './components/BillingReminders';
+import {HexMark} from './components/HexMark';
 import {MapPanel} from './components/MapPanel';
 import {MobileApp} from './components/MobileApp';
 import {useMobilePreferences} from './lib/mobilePreferences';
@@ -303,6 +304,7 @@ export default function App({ siteDefaults = defaults }: {
         <div className="mx-auto flex max-w-[1400px] items-center gap-3 px-4 py-3 sm:px-6">
           {/* The brand and explicit detail navigation share scroll restoration. */}
           <button className="brand" onClick={() => go(null)}>
+            <HexMark/>
             <span>{me.site_name || "HEX"}</span>
           </button>
           <div className="flex-1"/>

@@ -17,7 +17,7 @@ for(const width of [768,800,899,900,1200,1350,1360,1440])test(`network readings 
   await page.goto('/');const card=page.locator('.node-card');await expect(card.locator('.ping-probe')).toHaveCount(3)
   await expect(card.locator('.latency-bars')).toHaveCount(3);await expect(card.locator('.latency-timeout')).toHaveCount(3)
   for(const reading of await card.locator('.latency-reading').all()){
-   const offset=await reading.evaluate(el=>{const svg=el.querySelector('svg')!,box=svg.getBBox(),matrix=svg.getScreenCTM()!,value=el.querySelector('.latency-link')!.getBoundingClientRect();return Math.abs((box.y+box.height/2)*matrix.d+matrix.f-(value.top+value.height/2))})
+   const offset=await reading.evaluate(el=>{const svg=el.querySelector('svg')!,box=svg.getBBox(),matrix=svg.getScreenCTM()!,row=el.closest('.matrix-values')!,stacked=getComputedStyle(row).display==='grid',value=(stacked?row.querySelector('.loss-stat')!:el.querySelector('.latency-link')!).getBoundingClientRect();return Math.abs((box.y+box.height/2)*matrix.d+matrix.f-(value.top+value.height/2))})
    expect(offset).toBeLessThanOrEqual(1)
   }
   await expect(card.locator('.speed-direction')).toHaveText(language==='zh'?['上行','下行']:['Upload','Download'])
@@ -59,10 +59,15 @@ test('home route count shows the latency indicator for every selected route',asy
 }
 })
 test('single route latency indicator fills the available row',async({page})=>{
- await page.setViewportSize({width:850,height:900});await setup(page);await page.goto('/')
- const reading=page.locator('.node-card .ping-probe').first().locator('.latency-reading');const label=reading;const bars=reading.locator(':scope > .latency-bars')
- const labelBox=(await label.boundingBox())!,barsBox=(await bars.boundingBox())!;expect(barsBox.x-(labelBox.x+labelBox.width)).toBeLessThanOrEqual(12);expect(barsBox.width).toBeGreaterThan(80);const valueBox=(await reading.locator(".latency-link").boundingBox())!;expect(Math.abs(valueBox.x-barsBox.x-barsBox.width-6)).toBeLessThanOrEqual(1)
- await page.setViewportSize({width:1440,height:900});await page.reload();const desktopBars=page.locator('.node-card .ping-probe').first().locator('.latency-bars');expect((await desktopBars.boundingBox())!.width).toBeGreaterThan(180);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
+ const config=await setup(page);config.homeRoutes=1
+ for(const width of [850,1440]){
+  await page.setViewportSize({width,height:900});await page.goto('/')
+  const card=page.locator('.node-card'),bars=card.locator('.latency-bars')
+  await expect(card.locator('.ping-probe')).toHaveCount(1)
+  const cardBox=(await card.boundingBox())!,plotBox=(await bars.boundingBox())!
+  expect(plotBox.width).toBeGreaterThan(cardBox.width*.75)
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
+ }
 })
 test('home latency window defaults to one hour and can show six or twenty-four hours',async({page})=>{
  let latencyWindow='1'

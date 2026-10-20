@@ -1,0 +1,123 @@
+/* Geometry and contrast for home route readings, including pending data. */
+.next-theme .node-card { container: home-node-card / inline-size; }
+.next-theme .node-card .route-matrix .latency-bars g { opacity: 1; }
+.next-theme .node-card .route-matrix .latency-bars rect { rx: 1px; }
+.next-theme .node-card .route-matrix .latency-baseline { opacity: .4; }
+.next-theme .node-card .card-billing :is(.billing-label,.billing-label small,.billing-allowance,.billing-remaining),
+.next-theme .node-card .node-connections span { font-size: 12px; }
+.next-theme .node-card .card-billing :is(.billing-used,.card-expiry b,.card-uptime b),
+.next-theme .node-card .node-connections b { font-size: 13px; font-weight: 600; }
+.next-theme .node-card .card-billing > :not(:first-child)::before,
+.next-theme .node-card .node-connections > div + div::before { content: none; }
+.next-theme .node-card.compact-network-card .route-matrix .ping-loading-line,
+.next-theme .node-card.compact-network-card .route-matrix[data-loading=true] .route-select .select-value::after { background: var(--border); }
+@media (min-width: 721px) {
+  /* Match the 32px plot plus row gap so loading never moves following cards. */
+  .next-theme .node-card.compact-network-card .route-matrix[data-loading=true][data-requested-count="1"] .ping-loading { min-height: 34px; height: 34px; }
+}
+
+/* Each narrow card gives names/latency and plots/loss their own aligned row. */
+@container home-node-card (max-width: 380px) {
+  .next-theme .node-card .route-matrix:is([data-route-count="2"], [data-route-count="3"]) .matrix-values {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    grid-template-rows: 28px 32px;
+    gap: 0 8px;
+  }
+  .next-theme .node-card .route-matrix:is([data-route-count="2"], [data-route-count="3"]) :is(.latency-stat, .latency-reading) {
+    display: contents;
+  }
+  .next-theme .node-card .route-matrix:is([data-route-count="2"], [data-route-count="3"]) .latency-reading > span {
+    grid-column: 1;
+    grid-row: 1;
+    max-width: none;
+  }
+  .next-theme .node-card .route-matrix:is([data-route-count="2"], [data-route-count="3"]) .latency-link {
+    grid-column: 2;
+    grid-row: 1;
+    min-height: 28px;
+  }
+  .next-theme .node-card .route-matrix:is([data-route-count="2"], [data-route-count="3"]) .latency-bars {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .next-theme .node-card .route-matrix:is([data-route-count="2"], [data-route-count="3"]) .loss-stat {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+  }
+}
+
+@media (max-width: 720px) {
+  /* Phones keep the speed row open and highlight just the route entry. */
+  .next-theme .mobile-app .ma-node .ma-network-link,
+  .next-theme .mobile-app .ma-node .ma-network-placeholder {
+    margin: 0;
+    padding: 4px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0;
+    min-width: 0;
+    width: 100%;
+    min-height: 44px;
+  }
+  .next-theme .mobile-app .ma-node .ma-network-name {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--muted-foreground);
+    overflow-wrap: anywhere;
+    text-align: right;
+    max-width: 100%;
+  }
+  .next-theme .mobile-app .ma-node .ma-network-pending {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    line-height: 18px;
+  }
+  .next-theme .mobile-app .ma-node[data-compact=true] .ma-network-link,
+  .next-theme .mobile-app .ma-node[data-compact=true] .ma-network-placeholder {
+    padding: 4px 6px;
+  }
+  .next-theme .mobile-app .ma-node .ma-net {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.25fr);
+    align-items: center;
+    padding-bottom: 6px;
+  }
+  .next-theme .mobile-app .ma-node:has(.ma-net):not(:has(.ma-route-caption)) {
+    padding-bottom: 0;
+  }
+
+  .next-theme .mobile-app .ma-node .ma-extra b {
+    display: inline-block;
+    position: relative;
+    color: var(--foreground);
+    white-space: nowrap;
+  }
+}
+
+/* Very narrow phones keep both rates intact and give the route a full row. */
+@media (max-width: 350px) {
+  .next-theme .mobile-app .ma-node[data-compact] .ma-net {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 6px;
+  }
+  .next-theme .mobile-app .ma-node[data-compact] .ma-network-link,
+  .next-theme .mobile-app .ma-node[data-compact] .ma-network-placeholder {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .next-theme .mobile-app .ma-node[data-compact] .ma-network-name {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+  }
+  .next-theme .mobile-app .ma-node .ma-network-value { flex-shrink: 0; }
+}

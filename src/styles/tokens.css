@@ -1,25 +1,25 @@
 /* Neutral surfaces are shared across devices; input boundaries stay stronger than separators. */
 :root {
-  --radius:8px; --radius-control:8px; --radius-panel:12px;
+  --radius:8px; --radius-control:8px; --radius-panel:14px;
   --text-small:12px; --text-body:14px; --text-title:16px; --text-page:22px; --text-metric:28px;
   --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-6:24px; --space-8:32px;
   --control-height:36px; --motion-feedback:160ms;
-  --background:#f2f3f5; --foreground:#242933; --card:#fff; --card-foreground:var(--foreground);
+  --background:#f8fafc; --foreground:#0f172a; --card:#ffffff; --card-foreground:var(--foreground);
   --popover:var(--card); --popover-foreground:var(--foreground);
-  --muted:#f7f8fa; --muted-foreground:#626b78; --border:#e2e5ea; --input:#808c9a;
+  --muted:#f1f5f9; --muted-foreground:#5a687d; --border:#e2e8f0; --input:#8896a8;
   --secondary:var(--muted); --secondary-foreground:var(--foreground);
   --accent:var(--muted); --accent-foreground:var(--foreground);
-  --tone:#4268aa; --tone-soft:color-mix(in srgb,var(--tone) 8%,transparent);
+  --tone:#3563dc; --tone-soft:color-mix(in srgb,var(--tone) 9%,transparent);
   --primary:var(--tone); --primary-foreground:#fff; --ring:var(--tone);
   --ok:#287c63; --warn:#906515; --destructive:#b83e50;
-  --upload:#4268aa; --download:#287c63;
+  --upload:#3563dc; --download:#287c63;
   --chart-1:var(--tone); --chart-2:#287c63; --chart-3:#8664c5; --chart-4:#b87926; --chart-5:#b45289;
 }
 .dark {
-  --background:#121417; --foreground:#e6e8ec; --card:#1b1e23; --muted:#24282f;
-  --muted-foreground:#a3abb7; --border:#30363f; --input:#687484;
+  --background:#090d16; --foreground:#f1f5f9; --card:#111726; --muted:#182032;
+  --muted-foreground:#94a3b8; --border:#232d3f; --input:#64748b;
   --ok:#79bea6; --warn:#d7b575; --destructive:#e68e9a; --upload:#91afe0; --download:#79bea6;
-  --tone:#91afe0; --primary-foreground:#142032;
+  --tone:#91afe0; --primary-foreground:#090d16;
   --chart-2:#79bea6; --chart-3:#b7a0ed; --chart-4:#d7b575; --chart-5:#e99fcb;
 }
 [data-palette=ocean] {--tone:#167e90}

@@ -1,4 +1,5 @@
 import {LoadAlertTile} from './LoadAlertTile'
+import {MetricReading} from './MetricReading'
 import type {LoadAlert} from '@/lib/loadAlerts'
 import {liveMetrics} from '@/lib/freshness'
 import { regionKey, UNKNOWN_REGION } from '@/lib/groups'
@@ -96,12 +97,12 @@ export function Summary({ nodes, prefs, loadAlerts, onAlert, status, onStatus }:
       </Tile>}
 
       {prefs.modules.traffic && <Tile icon={ArrowDownUp} label={tr("今日流量")}>
-        <strong className="summary-total">{bytes(sum(n=>n.day_rx+n.day_tx))}</strong>
+        <strong className="summary-total"><MetricReading value={bytes(sum(n=>n.day_rx+n.day_tx))}/></strong>
         <Flow down={bytes(sum((n) => n.day_rx))} up={bytes(sum((n) => n.day_tx))} className="mt-1 text-sm font-semibold"/>
       </Tile>}
 
       {prefs.modules.speed && <Tile icon={Gauge} label={tr("实时网速")} notice={unavailable>0?tr("{0} 个节点暂无实时数据",unavailable):undefined}>
-        <strong className="summary-total">{fresh.length?rate(now.rx+now.tx):'—'}</strong>
+        <strong className="summary-total"><MetricReading value={fresh.length?rate(now.rx+now.tx):'—'}/></strong>
         <Flow down={fresh.length?rate(now.rx):"—"} up={fresh.length?rate(now.tx):"—"} className="mt-1 text-sm font-semibold"/>
         {fresh.length>0 && <div className="mt-auto pt-1">
           <Spark series={[
