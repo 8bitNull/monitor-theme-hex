@@ -29,4 +29,4 @@ http.createServer(async (req, res) => {
     }
     res.end(data)
   } catch { res.writeHead(404); res.end('Not found') }
-}).listen(Number(process.env.THEME_DEMO_PORT || 4173), '127.0.0.1', () => console.log(`Demo (sample data only): http://127.0.0.1:${process.env.THEME_DEMO_PORT || 4173}`))
+}).listen(Number(process.env.THEME_DEMO_PORT || 4173), process.env.THEME_DEMO_HOST || '0.0.0.0', () => console.log(`Demo (sample data only): http://127.0.0.1:${process.env.THEME_DEMO_PORT || 4173}`))
