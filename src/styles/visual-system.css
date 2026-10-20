@@ -300,31 +300,30 @@
     gap: 8px;
   }
   .next-theme .node-card[data-card-density=detailed] .node-supplementary {
-    padding-block: 4px 6px;
+    padding-block: 2px 4px;
     gap: 4px;
   }
   .next-theme .node-card .node-supplementary .node-connections {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    gap: 8px;
+    justify-content: center;
+    gap: 16px;
+    padding: 3px 10px;
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--muted) 35%, var(--card));
+    border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
     font-size: 11px;
-    padding-bottom: 2px;
   }
   .next-theme .node-card .node-supplementary .node-connections > div {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 2px 7px;
-    border-radius: 6px;
-    background: color-mix(in srgb, var(--muted) 45%, var(--card));
-    border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+    gap: 6px;
     line-height: 1.35;
   }
   .next-theme .node-card .node-supplementary .node-connections span {
     font-size: 10px;
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
     color: var(--muted-foreground);
     text-transform: uppercase;
   }
@@ -334,12 +333,53 @@
     font-variant-numeric: tabular-nums;
     color: var(--foreground);
   }
-  .next-theme .node-card .node-supplementary .card-billing { gap: 6px 12px; }
-  .next-theme .node-card .node-supplementary .card-billing > div { align-items: flex-start; text-align: left; }
-  .next-theme .node-card .card-billing .billing-label { font-size: 11px; font-weight: 500; color: var(--muted-foreground); }
+  .next-theme .node-card .node-supplementary .card-billing {
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--muted) 28%, var(--card));
+    border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+    padding-block: 4px 3px;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.02);
+  }
+  .next-theme .node-card .card-billing > :is(.card-expiry, .card-uptime)::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 4px;
+    height: 32px;
+    width: 1px;
+    background: color-mix(in srgb, var(--border) 60%, transparent);
+    opacity: 0.8;
+  }
+  .next-theme .node-card .card-billing .billing-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted-foreground);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 100%;
+  }
+  .next-theme .node-card .card-billing .billing-label svg {
+    width: 12px;
+    height: 12px;
+    color: var(--muted-foreground);
+    opacity: 0.85;
+  }
   .next-theme .node-card .card-billing .billing-label small { font-size: inherit; }
-  .next-theme .node-card .card-billing :is(.billing-used,.card-expiry b,.card-uptime b) { font-size: 12px; line-height: 1.5; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap !important; }
-  .next-theme .node-card .node-supplementary .billing-notes { gap: 0; }
+  .next-theme .node-card .card-billing :is(.billing-used,.card-expiry b,.card-uptime b) {
+    font-size: 12px;
+    line-height: 1.45;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap !important;
+  }
+  .next-theme .node-card .node-supplementary .billing-notes {
+    border-top: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
+    margin-top: 3px;
+    padding-top: 3px;
+    gap: 0;
+  }
   .next-theme .node-card .node-supplementary .billing-notes small { font-size: 11px; color: var(--muted-foreground); }
   .next-theme .node-card .node-footer {
     display: flex;
