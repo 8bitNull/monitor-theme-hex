@@ -301,29 +301,57 @@
   }
   .next-theme .node-card[data-card-density=detailed] .node-supplementary {
     padding-block: 2px 4px;
-    gap: 4px;
+    gap: 0;
+  }
+  .next-theme .node-card[data-card-density=detailed] .node-supplementary > .node-secondary {
+    margin-top: 6px;
   }
   .next-theme .node-card .node-supplementary .node-connections {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 16px;
-    padding: 3px 10px;
-    border-radius: 7px;
-    background: color-mix(in srgb, var(--muted) 35%, var(--card));
+    gap: 0;
+    padding: 3px 12px;
+    border-radius: 8px 8px 0 0;
+    background: color-mix(in srgb, var(--muted) 38%, var(--card));
     border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
     font-size: 11px;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.02);
+  }
+  .next-theme .node-card .node-supplementary .node-connections:only-child {
+    border-radius: 8px;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
   }
   .next-theme .node-card .node-supplementary .node-connections > div {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     line-height: 1.35;
+    padding: 0 14px;
+  }
+  .next-theme .node-card .node-supplementary .node-connections > div::before {
+    content: "";
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 5px rgba(16, 185, 129, 0.55);
+    flex-shrink: 0;
+  }
+  .next-theme .node-card.node-offline .node-supplementary .node-connections > div::before {
+    background: var(--muted-foreground);
+    box-shadow: none;
+    opacity: 0.5;
+  }
+  .next-theme .node-card .node-supplementary .node-connections > div + div {
+    border-left: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
   }
   .next-theme .node-card .node-supplementary .node-connections span {
     font-size: 10px;
     font-weight: 600;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     color: var(--muted-foreground);
     text-transform: uppercase;
   }
@@ -335,23 +363,27 @@
   }
   .next-theme .node-card .node-supplementary .card-billing {
     border-radius: 8px;
-    background: color-mix(in srgb, var(--muted) 28%, var(--card));
+    background: color-mix(in srgb, var(--muted) 25%, var(--card));
     border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
-    padding-block: 4px 3px;
+    padding-block: 5px 3px;
     box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.02);
+  }
+  .next-theme .node-card .node-supplementary .node-connections + .card-billing {
+    border-radius: 0 0 8px 8px;
+    border-top: 0;
   }
   .next-theme .node-card .card-billing > :is(.card-expiry, .card-uptime)::before {
     content: "";
     position: absolute;
     left: 0;
-    top: 4px;
-    height: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 26px;
     width: 1px;
-    background: color-mix(in srgb, var(--border) 60%, transparent);
-    opacity: 0.8;
+    background: color-mix(in srgb, var(--border) 50%, transparent);
   }
   .next-theme .node-card .card-billing .billing-label {
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 500;
     color: var(--muted-foreground);
     display: flex;
@@ -364,7 +396,8 @@
     width: 12px;
     height: 12px;
     color: var(--muted-foreground);
-    opacity: 0.85;
+    opacity: 0.8;
+    stroke-width: 2.2px;
   }
   .next-theme .node-card .card-billing .billing-label small { font-size: inherit; }
   .next-theme .node-card .card-billing :is(.billing-used,.card-expiry b,.card-uptime b) {
@@ -380,7 +413,7 @@
     padding-top: 3px;
     gap: 0;
   }
-  .next-theme .node-card .node-supplementary .billing-notes small { font-size: 11px; color: var(--muted-foreground); }
+  .next-theme .node-card .node-supplementary .billing-notes small { font-size: 10.5px; color: var(--muted-foreground); }
   .next-theme .node-card .node-footer {
     display: flex;
     align-items: center;
