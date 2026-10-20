@@ -289,7 +289,7 @@
   .next-theme .node-card .route-matrix .latency-link { font-weight: 600; font-variant-numeric: tabular-nums; }
   .next-theme .node-card.compact-network-card .route-matrix .latency-bars { height: 32px; }
   .next-theme .node-card[data-card-density=compact].compact-network-card .route-matrix { padding-block: 6px; margin-bottom: 10px; }
-  .next-theme .node-card .route-matrix .latency-baseline { stroke-dasharray: 2 3; opacity: .3; }
+  .next-theme .node-card .route-matrix .latency-baseline { stroke: color-mix(in srgb, var(--border) 80%, transparent); stroke-width: 1px; stroke-dasharray: none; opacity: .45; }
   .next-theme .node-card .node-supplementary {
     margin: 0 var(--card-pad);
     padding: 10px 0 14px;
@@ -305,6 +305,7 @@
     align-items: center;
     gap: 8px;
     font-size: 11px;
+    padding-bottom: 2px;
   }
   .next-theme .node-card .node-supplementary .node-connections > div {
     display: inline-flex;
@@ -333,7 +334,7 @@
   .next-theme .node-card .node-supplementary .card-billing > div { align-items: flex-start; text-align: left; }
   .next-theme .node-card .card-billing .billing-label { font-size: 11px; font-weight: 500; color: var(--muted-foreground); }
   .next-theme .node-card .card-billing .billing-label small { font-size: inherit; }
-  .next-theme .node-card .card-billing :is(.billing-used,.card-expiry b,.card-uptime b) { font-size: 13px; line-height: 1.5; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .next-theme .node-card .card-billing :is(.billing-used,.card-expiry b,.card-uptime b) { font-size: 12px; line-height: 1.5; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap !important; }
   .next-theme .node-card .node-supplementary .billing-notes { gap: 0; }
   .next-theme .node-card .node-supplementary .billing-notes small { font-size: 11px; color: var(--muted-foreground); }
   .next-theme .node-card .node-footer {
