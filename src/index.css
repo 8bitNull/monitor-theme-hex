@@ -23,6 +23,7 @@
 @import "./styles/card-readability.css";
 @import "./styles/visual-system.css";
 @import "./styles/mobile-visual-system.css";
+@import "./styles/layout-v3.css";
 
 @source "../index.html";
 @source "../src";

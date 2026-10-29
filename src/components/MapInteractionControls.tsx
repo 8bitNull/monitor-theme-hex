@@ -36,7 +36,15 @@ export function MapRegionChooser({groupId,members,x,y,width,top=8,bottom,onChoos
   return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',key)}
  },[groupId])
  const panelWidth=Math.min(224,Math.max(100,width-16)),height=Math.min(40+members.length*44,Math.max(44,bottom-top))
- return <div ref={root} className="map-region-chooser" role="dialog" aria-label={tr('选择地区')} style={{left:Math.max(8,Math.min(width-panelWidth-8,x-panelWidth/2)),top:Math.max(top,Math.min(bottom-height,y+24)),width:panelWidth,maxHeight:height}}>
+ let left=Math.max(8,Math.min(width-panelWidth-8,x-panelWidth/2)),panelTop=Math.max(top,Math.min(bottom-height,y+24))
+ // A short overview can clamp the dialog over its own toggle. Prefer the space
+ // above or beside the anchor so clicking the geographic group still closes it.
+ if(panelTop<y+18&&panelTop+height>y-18){
+  if(y-height-24>=top)panelTop=y-height-24
+  else if(x-panelWidth-24>=8)left=x-panelWidth-24
+  else if(x+panelWidth+24<=width-8)left=x+24
+ }
+ return <div ref={root} className="map-region-chooser" role="dialog" aria-label={tr('选择地区')} style={{left,top:panelTop,width:panelWidth,maxHeight:height}}>
   <div><strong>{tr('选择地区')}</strong><button aria-label={tr('关闭地区选择')} onClick={onClose}><X size={16}/></button></div>
   {members.map(m=><button key={m.code} data-member onClick={()=>onChoose(m.code)}>{countryName(m.code)}<span>{tr('{0} 个节点',m.total)}</span></button>)}
  </div>

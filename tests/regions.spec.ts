@@ -23,6 +23,8 @@ test('desktop region selector exposes all regions and retains narrow-screen sele
  await page.goto('/')
  const selector=page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true})
  await selector.click();await expect(page.getByRole('option')).toHaveCount(14);await page.keyboard.press('Escape')
+ await expect(page.getByRole('listbox')).toHaveCount(0)
+ await expect(selector).toBeFocused()
  await chooseOption(selector,'US');await expect(page.locator('.node-card')).toHaveCount(1)
  for(const width of [721,768,1440]){
   await page.setViewportSize({width,height:900});await expect(selector).toBeVisible();await expect(selector).toHaveAttribute('data-value','US')

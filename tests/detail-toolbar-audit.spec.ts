@@ -14,11 +14,12 @@ for(const width of [768,800])test(`compact desktop history status and controls f
   const control=tab==='resources'?toolbar.locator('.detail-resource-metric-desktop'):toolbar.getByRole('checkbox',{name:'抑制尖峰'})
   await expect(control).toBeVisible()
   if(tab==='resources')for(const name of ['CPU','内存','硬盘'])await expect(control.getByRole('button',{name,exact:true}).locator('span')).toBeVisible()
-  const selection=(await toolbar.locator('.detail-toolbar-selection').boundingBox())!,actions=(await toolbar.locator('.detail-toolbar-actions').boundingBox())!,top=(await toolbar.locator('.detail-tabs').boundingBox())!,right=(await control.boundingBox())!,time=(await status.boundingBox())!
+  const actions=(await toolbar.locator('.detail-toolbar-actions').boundingBox())!,top=(await toolbar.locator('.detail-tabs').boundingBox())!,right=(await control.boundingBox())!,time=(await status.boundingBox())!
   const ranges=(await toolbar.locator('.detail-ranges').boundingBox())!,refresh=(await toolbar.getByRole('button',{name:'刷新历史'}).boundingBox())!,bar=(await toolbar.boundingBox())!
-  expect(right.x).toBeGreaterThanOrEqual(top.x+top.width)
-  expect(right.x+right.width).toBeLessThanOrEqual(selection.x+selection.width+1)
-  expect(actions.y).toBeGreaterThanOrEqual(selection.y+selection.height)
+  expect(right.y).toBeGreaterThanOrEqual(top.y+top.height)
+  expect(right.x).toBeGreaterThanOrEqual(bar.x)
+  expect(right.x+right.width).toBeLessThanOrEqual(bar.x+bar.width+1)
+  expect(actions.x).toBeGreaterThanOrEqual(top.x+top.width)
   expect(time.x).toBeGreaterThanOrEqual(actions.x)
   expect(refresh.x+refresh.width).toBeLessThanOrEqual(actions.x+actions.width+1)
   expect(time.x).toBeGreaterThanOrEqual(ranges.x+ranges.width)
@@ -48,10 +49,11 @@ test('English last-success status fits compact desktop toolbar',async({page})=>{
  const toolbar=page.locator('.detail-chart-toolbar'),status=toolbar.locator('.detail-update')
  await expect(status).toContainText('Updated')
  await page.getByRole('button',{name:'Network latency',exact:true}).click()
- const checkbox=(await toolbar.getByRole('checkbox',{name:'Suppress spikes'}).boundingBox())!,route=(await page.locator('.latency-route-controls').getByLabel('View route',{exact:true}).boundingBox())!,toolbarBox=(await toolbar.boundingBox())!,selection=(await toolbar.locator('.detail-toolbar-selection').boundingBox())!,actions=(await toolbar.locator('.detail-toolbar-actions').boundingBox())!,ranges=(await toolbar.locator('.detail-ranges').boundingBox())!
+ const checkbox=(await toolbar.getByRole('checkbox',{name:'Suppress spikes'}).boundingBox())!,route=(await page.locator('.latency-route-controls').getByLabel('View route',{exact:true}).boundingBox())!,toolbarBox=(await toolbar.boundingBox())!,tabs=(await toolbar.locator('.detail-tabs').boundingBox())!,actions=(await toolbar.locator('.detail-toolbar-actions').boundingBox())!,ranges=(await toolbar.locator('.detail-ranges').boundingBox())!
  expect(route.y).toBeGreaterThanOrEqual(toolbarBox.y+toolbarBox.height)
- expect(checkbox.x+checkbox.width).toBeLessThanOrEqual(selection.x+selection.width+1)
- expect(actions.y).toBeGreaterThanOrEqual(selection.y+selection.height)
+ expect(checkbox.x+checkbox.width).toBeLessThanOrEqual(toolbarBox.x+toolbarBox.width+1)
+ expect(checkbox.y).toBeGreaterThanOrEqual(tabs.y+tabs.height)
+ expect(actions.x).toBeGreaterThanOrEqual(tabs.x+tabs.width)
  expect(ranges.x).toBeGreaterThanOrEqual(actions.x)
  expect(route.x+route.width).toBeLessThanOrEqual(toolbarBox.x+toolbarBox.width)
  await page.unroute('**/api/nodes/*/metrics?*')
@@ -61,7 +63,7 @@ test('English last-success status fits compact desktop toolbar',async({page})=>{
  const bar=(await toolbar.boundingBox())!,text=(await status.boundingBox())!
  expect(text.x).toBeGreaterThanOrEqual(bar.x)
  expect(text.x+text.width).toBeLessThanOrEqual(bar.x+bar.width)
- expect(text.x).toBeGreaterThanOrEqual(actions.x)
+ expect(text.x).toBeGreaterThanOrEqual((await toolbar.locator('.detail-toolbar-actions').boundingBox())!.x)
  expect(text.y+text.height).toBeLessThanOrEqual(bar.y+bar.height)
  expect(await toolbar.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
 })

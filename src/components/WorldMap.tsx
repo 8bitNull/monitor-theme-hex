@@ -45,7 +45,8 @@ export const WorldMap=memo(function WorldMap({layer,onLayer,abnormalCount,onAbno
  const panel=useRef<HTMLElement>(null),svg=useRef<SVGSVGElement>(null),expandButton=useRef<HTMLButtonElement>(null),scene=useRef<HTMLDivElement>(null),stage=useRef<HTMLDivElement>(null)
  const [full,setFull]=useState(false),[error,setError]=useState(false),[panning,setPanning]=useState(false)
  const [hovered,setHovered]=useState<string|null>(null),[focused,setFocused]=useState<string|null>(null)
- const motion=useMapMotion(),theme=useMapTheme(),[ready,setReady]=useState(false)
+ // The overview is a dark instrument panel; expanded maps follow site appearance.
+ const motion=useMapMotion(),theme=useMapTheme(full?undefined:'dark'),[ready,setReady]=useState(false)
  const {view,set:setView,stop:stopView}=useMapView(()=>fitRegions(points),motion)
  const {view:navigation,set:setNavigation,stop:stopNavigation}=useMapView(()=>({x:0,y:0,k:defaultHomeScale}),motion)
  const regionQuality=useMemo(()=>new Map(summaries.map(r=>[r.code,r.probeState])),[summaries])
@@ -66,8 +67,9 @@ export const WorldMap=memo(function WorldMap({layer,onLayer,abnormalCount,onAbno
   update({width:el.clientWidth,height:el.clientHeight});const observer=new ResizeObserver(entries=>update(entries[0].contentRect));observer.observe(el);return()=>observer.disconnect()
  },[stopView,stopNavigation])
  const homeHeight=1000*homeSize.height/homeSize.width
- const fitted=fitMapWorld(homeSize.width,Math.max(1,homeSize.height-92),10,{top:28,bottom:332})
- fitted.y+=46
+ // Leave the geographic targets below the quick filters and layer controls.
+ const fitted=fitMapWorld(homeSize.width,Math.max(1,homeSize.height-160),10,{top:28,bottom:332})
+ fitted.y+=108
  const homeView={x:fitted.x*1000/homeSize.width,y:fitted.y*1000/homeSize.width,k:fitted.k*1000/homeSize.width}
  const renderedView=full?view:{k:homeView.k*navigation.k,x:homeView.x*navigation.k+navigation.x+500*(1-navigation.k),y:homeView.y*navigation.k+navigation.y+homeHeight/2*(1-navigation.k)},viewHeight=full?480:homeHeight
  const screenScale=Math.min(size.width/1000,size.height/viewHeight)

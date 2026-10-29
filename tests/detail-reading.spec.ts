@@ -19,7 +19,8 @@ test('compact desktop latency controls provide one selector and comparison above
  const smooth=(await toolbar.locator('.detail-smooth').boundingBox())!,selector=(await route.boundingBox())!,tabs=(await toolbar.locator('.detail-tabs').boundingBox())!,bar=(await toolbar.boundingBox())!,plot=(await page.locator('.detail-chart-frame').boundingBox())!
  expect(selector.y).toBeGreaterThanOrEqual(bar.y+bar.height)
  expect(plot.y).toBeGreaterThanOrEqual(selector.y+selector.height)
- expect(Math.abs(smooth.y+smooth.height/2-tabs.y-tabs.height/2)).toBeLessThanOrEqual(2)
+ expect(smooth.y).toBeGreaterThanOrEqual(tabs.y+tabs.height)
+ expect(smooth.y+smooth.height).toBeLessThanOrEqual(bar.y+bar.height)
  await expect(toolbar.locator('.detail-probe-legend')).toHaveCount(0)
  await expect(page.locator('.route-chips button[aria-pressed]')).toHaveCount(3)
 })
@@ -35,18 +36,20 @@ for(const width of [768,800,850,899,900,1024,1440,1920])test(`detail reading and
   }
   for(const tab of ['resources','latency']){
    await page.getByRole('button',{name:language==='zh'?(tab==='resources'?'资源':'网络延迟'):(tab==='resources'?'Resources':'Network latency'),exact:true}).click()
-   const toolbar=page.locator('.detail-chart-toolbar'),tabs=(await page.locator('.detail-tabs').boundingBox())!,ranges=(await page.locator('.detail-ranges').boundingBox())!,refresh=(await page.locator('.detail-refresh').boundingBox())!,selection=(await toolbar.locator('.detail-toolbar-selection').boundingBox())!,actions=(await toolbar.locator('.detail-toolbar-actions').boundingBox())!,bar=(await toolbar.boundingBox())!
+    const toolbar=page.locator('.detail-chart-toolbar'),tabs=(await page.locator('.detail-tabs').boundingBox())!,ranges=(await page.locator('.detail-ranges').boundingBox())!,refresh=(await page.locator('.detail-refresh').boundingBox())!,actions=(await toolbar.locator('.detail-toolbar-actions').boundingBox())!,bar=(await toolbar.boundingBox())!
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
-   expect(selection.y).toBeGreaterThanOrEqual(bar.y-1)
-   expect(actions.y+actions.height).toBeGreaterThan(selection.y)
-   expect(actions.y).toBeLessThanOrEqual(selection.y+selection.height+20)
+    expect(tabs.y).toBeGreaterThanOrEqual(bar.y-1)
+    expect(actions.y+actions.height).toBeGreaterThan(tabs.y)
+    expect(actions.y).toBeLessThanOrEqual(tabs.y+tabs.height)
+    expect(actions.x).toBeGreaterThanOrEqual(tabs.x+tabs.width)
    expect(actions.y+actions.height).toBeLessThanOrEqual(bar.y+bar.height+1)
    expect(actions.x+actions.width).toBeLessThanOrEqual(bar.x+bar.width+1)
    expect(Math.abs(refresh.y+refresh.height/2-(ranges.y+ranges.height/2))).toBeLessThanOrEqual(2)
    if(tab==='latency'){
     const smooth=(await toolbar.locator('.detail-smooth').boundingBox())!
-    expect(Math.abs(smooth.y+smooth.height/2-(tabs.y+tabs.height/2))).toBeLessThanOrEqual(2)
-    expect(smooth.x).toBeGreaterThanOrEqual(tabs.x+tabs.width)
+     expect(smooth.y).toBeGreaterThanOrEqual(Math.max(tabs.y+tabs.height,actions.y+actions.height))
+     expect(smooth.x).toBeGreaterThanOrEqual(bar.x)
+     expect(smooth.x+smooth.width).toBeLessThanOrEqual(bar.x+bar.width+1)
    }
    const all=await page.locator('.detail-ranges button').evaluateAll(buttons=>buttons.map(button=>{const box=button.getBoundingClientRect();return {top:box.top,x:box.x,right:box.right}}));expect(new Set(all.map(box=>Math.round(box.top))).size).toBe(1)
    expect(all.length).toBe(tab==='resources'?4:3);if(tab==='resources')expect(all[3].x).toBeGreaterThan(all[2].x)
@@ -54,8 +57,9 @@ for(const width of [768,800,850,899,900,1024,1440,1920])test(`detail reading and
    if(width<900){await expect(page.locator('.detail-tabs button>span')).toHaveCount(2);for(const span of await page.locator('.detail-tabs button>span').all())await expect(span).toBeVisible()}
    if(tab==='resources'){
     await expect(page.locator('.detail-resource-metric-mobile')).toBeHidden()
-    const metrics=toolbar.locator('.detail-resource-metric-desktop')
-    await expect(metrics).toBeVisible()
+     const metrics=toolbar.locator('.detail-resource-metric-desktop')
+     await expect(metrics).toBeVisible()
+     expect((await metrics.boundingBox())!.y).toBeGreaterThanOrEqual(Math.max(tabs.y+tabs.height,actions.y+actions.height))
     for(const button of await metrics.locator('button').all()){
      await expect(button.locator('span')).toBeVisible()
      const box=(await button.boundingBox())!
@@ -63,7 +67,7 @@ for(const width of [768,800,850,899,900,1024,1440,1920])test(`detail reading and
      expect(box.height).toBeGreaterThanOrEqual(44)
     }
    }
-   expect(tabs.x).toBeGreaterThanOrEqual(selection.x-1)
+    expect(tabs.x).toBeGreaterThanOrEqual(bar.x-1)
    expect(await page.locator('.detail-history').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBeTruthy()
   }
   await expect(page.locator('.detail-facts-toggle')).toHaveCount(0);await expect(page.locator('#detail-fact-groups')).toBeVisible()

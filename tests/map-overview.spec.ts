@@ -22,7 +22,7 @@ test('overview supports navigation gestures and expanded view restores overview 
  await page.goto('/')
  const land=page.locator('.map-land'),svg=page.getByLabel('世界节点分布地图',{exact:true})
  await expect(land).toBeVisible()
- await expect(page.locator('.map-cluster')).toHaveCount(6)
+ await expect.poll(()=>page.locator('.map-cluster,.map-region-group').evaluateAll(elements=>elements.flatMap(el=>(el.getAttribute('data-members')??el.getAttribute('data-region')!).split(',')).sort())).toEqual(nodes().map(n=>n.country).sort())
  await expect.poll(()=>svg.evaluate(el=>Math.abs(el.viewBox.baseVal.height-1000*el.getBoundingClientRect().height/el.getBoundingClientRect().width)<.01)).toBe(true)
  const initial=await land.getAttribute('transform')
  await svg.focus();await page.keyboard.press('+');await expect(land).not.toHaveAttribute('transform',initial!)

@@ -90,11 +90,14 @@ for(const width of [721,900,1199])test(`named desktop metric controls at ${width
   await button.click()
   await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric',metric)
  }
- const selection=(await page.locator('.detail-toolbar-selection').boundingBox())!
+ const tabs=(await page.locator('.detail-tabs').boundingBox())!
+ const metrics=(await controls.boundingBox())!
  const actions=(await page.locator('.detail-toolbar-actions').boundingBox())!
  const range=(await page.locator('.detail-chart-toolbar .detail-ranges').boundingBox())!
  const status=(await page.locator('.detail-chart-toolbar .detail-update').boundingBox())!
- expect(actions.y).toBeGreaterThanOrEqual(selection.y+selection.height)
+ expect(actions.x).toBeGreaterThanOrEqual(tabs.x+tabs.width)
+ expect(metrics.y).toBeGreaterThanOrEqual(tabs.y+tabs.height)
+ expect(metrics.y).toBeGreaterThanOrEqual(actions.y+actions.height)
  expect(range.x+range.width).toBeLessThanOrEqual(status.x)
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
 })

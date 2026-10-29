@@ -35,14 +35,15 @@ test('compact desktop detail groups, alignment and history ranges are bounded',a
  await page.getByRole('button',{name:'网络延迟',exact:true}).click();await expect(toolbar).toHaveAttribute('data-range-count','3');const latencyRanges=await toolbar.locator('.detail-ranges button').evaluateAll(bs=>bs.map(b=>{const box=b.getBoundingClientRect();return {top:box.top,bottom:box.bottom,right:box.right}}));expect(new Set(latencyRanges.map(box=>Math.round(box.top))).size).toBe(1);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy()
 })
 
-test('compact desktop resource selector stays beside chart tabs',async({page})=>{
+test('compact desktop resource selector stays below chart tabs',async({page})=>{
  for(const width of [768,800]){
   await page.setViewportSize({width,height:844});await setup(page);await page.goto('/node/1')
   const toolbar=page.locator('.detail-chart-toolbar[data-history-tab=resources]')
   const selector=toolbar.locator('.detail-resource-metric-desktop')
-  const selectionBox=(await toolbar.locator('.detail-toolbar-selection').boundingBox())!,tabsBox=(await toolbar.locator('.detail-tabs').boundingBox())!,selectorBox=(await selector.boundingBox())!
-  expect(selectorBox.x).toBeGreaterThanOrEqual(tabsBox.x+tabsBox.width)
-  expect(selectorBox.x+selectorBox.width).toBeLessThanOrEqual(selectionBox.x+selectionBox.width+1)
+  const toolbarBox=(await toolbar.boundingBox())!,tabsBox=(await toolbar.locator('.detail-tabs').boundingBox())!,selectorBox=(await selector.boundingBox())!
+  expect(selectorBox.y).toBeGreaterThanOrEqual(tabsBox.y+tabsBox.height)
+  expect(selectorBox.x).toBeGreaterThanOrEqual(toolbarBox.x)
+  expect(selectorBox.x+selectorBox.width).toBeLessThanOrEqual(toolbarBox.x+toolbarBox.width+1)
   await expect(selector.getByRole('button')).toHaveCount(4)
   await selector.getByRole('button',{name:'内存',exact:true}).click()
   await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric','mem_used')
@@ -54,19 +55,19 @@ test('compact desktop latency controls stay within their toolbar groups',async({
   await page.setViewportSize({width,height:844});await setup(page);await page.goto('/node/1')
   await page.getByRole('button',{name:'网络延迟',exact:true}).click()
   const toolbar=page.locator('.detail-chart-toolbar[data-history-tab=latency]')
-  const selection=(await toolbar.locator('.detail-toolbar-selection').boundingBox())!,actions=(await toolbar.locator('.detail-toolbar-actions').boundingBox())!
+  const bar=(await toolbar.boundingBox())!,actions=(await toolbar.locator('.detail-toolbar-actions').boundingBox())!
   const tabs=(await toolbar.locator('.detail-tabs').boundingBox())!
   const smooth=(await toolbar.locator('.detail-smooth').boundingBox())!
   const refresh=(await toolbar.locator('.detail-refresh').boundingBox())!
-  expect(smooth.x).toBeGreaterThanOrEqual(tabs.x+tabs.width)
+  expect(smooth.y).toBeGreaterThanOrEqual(tabs.y+tabs.height)
   const probe=toolbar.locator('.detail-probe-legend')
   if(await probe.count()){
    const probeBox=(await probe.boundingBox())!
    expect(probeBox.x).toBeGreaterThanOrEqual(tabs.x+tabs.width)
    expect(smooth.x).toBeGreaterThanOrEqual(probeBox.x+probeBox.width)
   }
-  expect(smooth.x+smooth.width).toBeLessThanOrEqual(selection.x+selection.width+1)
-  expect(actions.y).toBeGreaterThanOrEqual(selection.y)
+  expect(smooth.x+smooth.width).toBeLessThanOrEqual(bar.x+bar.width+1)
+  expect(actions.x).toBeGreaterThanOrEqual(tabs.x+tabs.width)
   expect(Math.abs(refresh.y+refresh.height/2-actions.y-actions.height/2)).toBeLessThan(2)
   const toggle=toolbar.getByRole('checkbox',{name:'抑制尖峰'})
   await toggle.check();await expect(toggle).toBeChecked()

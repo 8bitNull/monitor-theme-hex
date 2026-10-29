@@ -72,6 +72,9 @@ for(const [width,height,language,appearance,count] of [
  [1440,900,'zh','light',1], [1440,900,'en','dark',24],
  [1024,768,'zh','light',24], [390,844,'zh','light',24], [320,844,'en','dark',24],
 ] as const)test(`fleet composition ${count} nodes at ${width} ${language} ${appearance}`,async({page})=>{
+ // The 24-node screenshot + navigation workflow takes ~25s in software-rendered
+ // runs. Allow runner contention without changing individual assertion limits.
+ if(count>1)test.setTimeout(60000)
  await page.setViewportSize({width,height})
  await page.addInitScript(({language,appearance})=>{
   localStorage.setItem('monitor-next-language',language)

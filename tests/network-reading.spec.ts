@@ -130,7 +130,7 @@ test('live activity distinguishes zero, slow, missing, stale and offline reading
  await page.route('**/api/nodes',r=>{const n=nodes()[0];return r.fulfill({json:{nodes:[{...n,online:state!=='offline',last_seen:state==='stale'?now-120:now,metrics:state==='missing'?null:{...n.metrics,net_tx:0,net_rx:1}}]}})})
  await page.goto('/');const speed=page.locator('.node-card .speed-indicators')
  await expect(speed.locator('.upload .speed-amount')).toHaveText('0.0');await expect(speed.locator('.download .speed-amount')).toHaveText('<0.1')
- await expect(speed.locator('.micro-empty')).toHaveCount(2)
+ await expect(speed.locator('.micro-empty')).toHaveCount(1)
  for(state of ['missing','stale']){
   await page.clock.runFor(5100);await expect(speed.locator('.speed-amount')).toHaveText(['—','—']);await expect(speed.locator('.micro-trend circle')).toHaveCount(0);await expect(speed).toHaveAttribute('data-state',state)
  }

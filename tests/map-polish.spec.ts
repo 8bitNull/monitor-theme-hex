@@ -63,11 +63,13 @@ test('default compact cards fit the intended density without hiding core reading
  // Keep the original core-reading budget independent of that content.
  const supplementaryHeight=(await card.locator('.node-supplementary').boundingBox())!.height
  expect(compactHeight-supplementaryHeight).toBeLessThanOrEqual(320)
- for(const selector of ['.resource-label','.resource small','.speed-trend','.latency-bars'])await expect(card.locator(selector).first()).toBeVisible()
+ for(const selector of ['.resource-label','.bar-number','.speed-amount','.latency-bars'])for(const item of await card.locator(selector).all())await expect(item).toBeVisible()
+ for(const selector of ['.resource small','.speed-trend'])for(const item of await card.locator(selector).all())await expect(item).toBeHidden()
  await chooseOption(page.getByRole('combobox',{name:'卡片密度'}),'detailed')
  expect((await card.boundingBox())!.height).toBeGreaterThan(400)
  expect((await card.boundingBox())!.height-compactHeight).toBeGreaterThanOrEqual(60)
  await expect(card.locator('.node-supplementary')).toBeVisible()
+ for(const selector of ['.resource small','.speed-trend'])for(const item of await card.locator(selector).all())await expect(item).toBeVisible()
 })
 
 test('map zoom eases, remains anchored and dragging interrupts without a jump',async({page})=>{

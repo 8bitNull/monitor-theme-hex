@@ -25,8 +25,9 @@ for(const width of [768,800,900,1024,1440])test(`latency chart and route control
   expect(box.x+box.width).toBeLessThanOrEqual(controls.x+controls.width+1)
   if(width>=900){
    const tabs=(await page.locator('.detail-tabs').boundingBox())!,smooth=(await page.locator('.detail-smooth').boundingBox())!,ranges=(await page.locator('.detail-ranges').boundingBox())!,status=await page.locator('.detail-update').boundingBox(),refresh=(await page.locator('.detail-refresh').boundingBox())!
-   expect(tabs.x+tabs.width).toBeLessThanOrEqual(smooth.x)
-   expect(smooth.x+smooth.width).toBeLessThanOrEqual(ranges.x)
+    expect(smooth.y).toBeGreaterThanOrEqual(Math.max(tabs.y+tabs.height,ranges.y+ranges.height))
+    expect(smooth.x).toBeGreaterThanOrEqual(toolbar.x)
+    expect(smooth.x+smooth.width).toBeLessThanOrEqual(toolbar.x+toolbar.width)
    expect(ranges.x+ranges.width).toBeLessThanOrEqual(status?.x??refresh.x)
    if(status)expect(status.x+status.width).toBeLessThanOrEqual(refresh.x)
   }

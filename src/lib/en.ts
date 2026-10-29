@@ -1,4 +1,5 @@
 export const english: Record<string, string> = {
+"实时网络":"Live network",
 "地图图层":"Map layers",
 "流量":"Traffic",
 "探测":"Probe",
