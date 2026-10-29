@@ -28,7 +28,8 @@ test('compact desktop search and visible network facts preserve the primary scan
 
 test('compact desktop detail groups, alignment and history ranges are bounded',async({page})=>{
  await page.setViewportSize({width:800,height:844});await setup(page);await page.goto('/node/1');await expect(page.locator('#detail-fact-groups')).toBeVisible()
- for(const label of ['硬件配置','系统环境','网络地址','流量统计'])await expect(page.getByRole('region',{name:label}).locator('.detail-fact-section-body')).toBeVisible()
+  for(const label of ['硬件配置','系统环境','网络地址'])await expect(page.getByRole('region',{name:label}).locator('.detail-fact-section-body')).toBeVisible()
+  await expect(page.locator('.account-traffic-totals')).toBeVisible()
  await expect(page.locator('#detail-fact-groups details')).toHaveCount(0)
  const hardware=page.locator('section[aria-label="硬件配置"]');await expect(hardware.getByRole('button',{name:'复制：CPU',exact:true})).toHaveCount(0);await expect(hardware.locator('.fact-value').filter({hasText:'AMD EPYC'}).first()).toHaveCSS('text-align','left');await expect(page.getByRole('button',{name:'复制：IPv6',exact:true}).locator('xpath=ancestor::dd').locator('.fact-value')).toHaveCSS('text-align','left')
  const toolbar=page.locator('.detail-chart-toolbar');await expect(toolbar).toHaveAttribute('data-range-count','4');const tabs=await toolbar.locator('.detail-tabs button').evaluateAll(bs=>bs.map(b=>{const box=b.getBoundingClientRect();return {top:box.top,bottom:box.bottom,x:box.x,right:box.right}}));const ranges=await toolbar.locator('.detail-ranges button').evaluateAll(bs=>bs.map(b=>{const box=b.getBoundingClientRect();return {top:box.top,bottom:box.bottom,x:box.x,right:box.right}}));expect(new Set([...tabs,...ranges].map(box=>Math.round(box.top))).size).toBe(2);expect(ranges[3].x).toBeGreaterThan(ranges[2].x);expect(ranges[3].top).toBe(ranges[2].top);const toolbarBox=await toolbar.boundingBox(),refreshBox=(await toolbar.locator('.detail-refresh').boundingBox())!;expect(refreshBox.y).toBeLessThan(ranges[0].top);expect(ranges[3].right).toBeLessThanOrEqual(toolbarBox!.x+toolbarBox!.width);await expect(toolbar.locator('.detail-refresh')).toBeVisible()
@@ -75,5 +76,5 @@ test('compact desktop latency controls stay within their toolbar groups',async({
 })
 
 test('desktop billing warning is visible in the overview',async({page})=>{
- await page.setViewportSize({width:1440,height:900});await setup(page);await page.goto('/node/1');await expect(page.locator('.overview-expiry')).toHaveClass(/expiring/);await expect(page.locator('.detail-fact-groups>section')).toHaveCount(4);const box=await page.locator('.overview-account').boundingBox();expect(box).not.toBeNull()
+  await page.setViewportSize({width:1440,height:900});await setup(page);await page.goto('/node/1');await expect(page.locator('.overview-expiry')).toHaveClass(/expiring/);await expect(page.locator('.detail-fact-groups>section')).toHaveCount(3);const box=await page.locator('.overview-account').boundingBox();expect(box).not.toBeNull()
 })

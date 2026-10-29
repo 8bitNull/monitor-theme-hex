@@ -48,7 +48,8 @@ export function DetailToolbar({busy,updated,failed,tab,hours,onTab,onHours,onRef
  if(mobile)return <div id="latency" className="ma-history-tools">
    <div className="ma-history-tools-row"><div className="detail-ranges" role="group" aria-label={tr('当前查看范围')}>{RANGES_FOR[tab].map(r=><Tab key={r.hours} label={tr(r.label)} active={hours===r.hours} onClick={()=>onHours(r.hours)}>{r.hours===168?'7d':`${r.hours}h`}</Tab>)}</div>
    <button type="button" className="ma-icon" disabled={busy} aria-busy={busy} aria-label={tr('刷新历史')} title={updateText} onClick={onRefresh}><RefreshCw size={17}/></button>
-   {tab==='latency'&&<label className="ma-inline-smoothing" title={tr('抑制尖峰仅改变图线显示，不修改原始数据。')}><input type="checkbox" aria-label={tr('抑制尖峰')} checked={smooth} onChange={e=>onSmooth(e.target.checked)}/><span>{tr('抑制尖峰')}</span></label>}</div>
+    {tab==='latency'&&<label className="ma-inline-smoothing" title={tr('抑制尖峰仅改变图线显示，不修改原始数据。')}><input type="checkbox" aria-label={tr('抑制尖峰')} checked={smooth} onChange={e=>onSmooth(e.target.checked)}/><span>{tr('抑制尖峰')}</span></label>}</div>
+    {tab==='resources'&&<ResourceMetricControl metric={resourceMetric} onMetric={onResourceMetric}/>}
  </div>;
  return <div id="latency" className="detail-chart-toolbar" data-history-tab={tab} data-range-count={RANGES_FOR[tab].length}>
         <div className="detail-toolbar-selection"><div className="detail-tabs" role="group" aria-label={tr("图表类型")}>{TABS.map(t=><Tab key={t.key} label={tr(t.label)} active={tab===t.key} onClick={()=>onTab(t.key)}>{t.key==="resources" ? <Activity size={15}/> : <Network size={15}/>}<span>{tr(t.key==="resources" ? "资源" : "延迟")}</span></Tab>)}</div>

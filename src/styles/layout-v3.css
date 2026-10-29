@@ -31,6 +31,9 @@ body { font-family: "HEX Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", 
   .next-theme > main, .next-theme .desktop-app-header > div { max-width: 1344px; }
   .next-theme .desktop-app-header > div { min-height: 66px; }
   .next-theme > main { padding-top: 25px; }
+  /* Match the loaded detail shell before the lazy detail chunk arrives. */
+  .next-theme main[data-detail=true] { padding-top: 0; }
+  .next-theme main[data-detail=true] > .detail-navigation { margin-bottom: 0; }
   .next-theme main.space-y-5 > :not(:last-child) { margin-block-end: 24px; }
   .next-theme .overview-heading { min-height: 54px; margin-bottom: 20px; }
   .next-theme .page-heading { gap: 16px; }

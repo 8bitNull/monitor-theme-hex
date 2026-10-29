@@ -7,15 +7,15 @@ async function fixture(page:Page){
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[nodes()[0]]}}))
 }
 test('repeated detail visits do not multiply homepage history requests or pollers',async({page})=>{
- await fixture(page);let requests=0
- await page.route('**/api/nodes/*/metrics?*',r=>{requests++;return r.fulfill({json:metrics()})})
+ await fixture(page);let requests=0,resourceRequests=0
+ await page.route('**/api/nodes/*/metrics?*',r=>{if(new URL(r.request().url()).searchParams.get('series')==='metrics')resourceRequests++;else requests++;return r.fulfill({json:metrics()})})
  await page.goto('/');await expect(page.locator('.ma-network-link')).toBeVisible();expect(requests).toBe(1)
  for(let i=0;i<8;i++){
-  await page.locator('.ma-node button[data-node-id]').click();await expect(page.locator('.ma-detail-header')).toBeVisible()
+  await page.locator('.ma-node button[data-node-id]').click();await expect(page.locator('.ma-detail-header')).toBeVisible();await expect.poll(()=>resourceRequests).toBe(i+1)
   await page.getByRole('button',{name:'返回总览',exact:true}).click();await expect(page.locator('.ma-network-link')).toBeVisible()
  }
- expect(requests).toBe(1)
- await page.clock.runFor(61000);await expect.poll(()=>requests).toBe(2)
+ expect(requests).toBe(1);expect(resourceRequests).toBe(8)
+ await page.clock.runFor(61000);await expect.poll(()=>requests).toBe(2);expect(resourceRequests).toBe(8)
 })
 test('hidden history polling pauses and repeated resume events produce one refresh',async({page})=>{
  await fixture(page);let requests=0

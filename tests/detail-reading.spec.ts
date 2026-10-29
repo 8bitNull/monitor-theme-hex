@@ -132,7 +132,8 @@ test('long identity notes expand and copy feedback does not move facts',async({p
 for(const width of [320,390])test(`mobile resource chart tap shows bounded tooltip with units at ${width}`,async({page})=>{
  await page.setViewportSize({width,height:844});await setup(page)
  for(const [metric,unit] of [['cpu','%'],['mem_used','GB'],['disk_used','GB']]){
- const frame=page.locator(`[data-resource-card="${metric}"] .resource-chart-panel .detail-chart-frame`);await frame.scrollIntoViewIfNeeded();await frame.click({position:{x:180,y:80}})
+ await page.locator('.detail-resource-metric-desktop').getByRole('button',{name:metric==='cpu'?'CPU':metric==='mem_used'?'内存':'硬盘',exact:true}).click()
+ const frame=page.locator(`.detail-resource-charts[data-metric="${metric}"] .resource-chart-panel .detail-chart-frame`);await frame.scrollIntoViewIfNeeded();await frame.click({position:{x:180,y:80}})
  const tip=frame.locator('.recharts-tooltip-wrapper');await expect(tip).toBeVisible();await expect(tip).toContainText(unit)
  const b=(await tip.boundingBox())!;expect(b.x).toBeGreaterThanOrEqual(0);expect(b.x+b.width).toBeLessThanOrEqual(width)
  }
