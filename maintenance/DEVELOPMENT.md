@@ -41,7 +41,7 @@ npm run test:e2e
 
 ## GitHub Actions
 
-`CI` 在 `main`、`dev` 的 push 与 PR 上自动运行，使用 Node.js 24，依次执行 `npm ci`、lint、单测和构建。也可从 Actions 页手动运行。
+`CI` 在任意分支的 push 和面向 `main` 的 PR 上自动运行，使用 Node.js 24，依次执行 `npm ci`、lint、单测和构建。也可从 Actions 页手动运行。
 
 `Browser regression` 单独手动运行：在 Actions 页选择 **Run workflow**，选择待验收分支，然后选择 `full`（完整 Chromium 回归）或 `compatibility`（Chromium、Firefox、WebKit 兼容性套件）。流程先构建，再安装所需浏览器及系统依赖，运行两并发测试，并上传报告与截图，保留 14 天。
 

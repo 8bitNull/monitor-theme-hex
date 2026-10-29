@@ -7,9 +7,9 @@
 ## 分支与发布
 
 - `main` 保存稳定代码，当前功能版本为 v1.2.2；文档与归档维护可单独通过 PR 更新，不移动已发布标签。
-- `dev` 保存正在开发和验证的改动。版本字段与历史提交中的版本号不表示正式发布。
-- 日常修改提交到 `dev`。完成验收后，通过 Pull Request 合并到 `main`；合并前不要在 `main` 引入未完成的开发。
-- `main` 的所有更新必须通过 PR，且 GitHub Actions 的 `Lint, tests and build` 检查通过、分支与最新 `main` 同步后才能合并；管理员同样适用。`dev` 可直接提交开发改动。
+- 仅长期保留 `main`；开发从最新 `main` 创建临时分支（如 `feat/...`、`fix/...`、`docs/...` 或 `chore/...`），完成验收后通过 Pull Request 合并，随后删除临时分支。
+- 未完成的开发保留在临时分支或草稿 PR 中；分支中的版本字段不表示正式发布。
+- `main` 的所有更新必须通过 PR，且 GitHub Actions 的 `Lint, tests and build` 检查通过、分支与最新 `main` 同步后才能合并；管理员同样适用。
 - 浏览器回归与发布验收由维护者核对；CI 通过不等于开发功能已完成。待验收的开发 PR 保持草稿，完成清单后再转为可合并状态。
 - 正式发布从验收后的 `main` 创建版本标签，并在 GitHub Releases 上传安装包及校验文件。安装包不提交到源码仓库。
 - 临时功能分支按需创建，合并后删除；无需为每次发布长期保留 release 分支。
@@ -41,7 +41,9 @@
 使用 Node.js 24 与 npm：
 
 ```sh
-git switch dev
+git switch main
+git pull --ff-only
+git switch -c feat/your-change
 npm ci
 npm run dev
 ```
@@ -63,7 +65,7 @@ npm run test:e2e
 
 多浏览器检查见开发说明。测试结果与限制记录在 [验收记录](maintenance/ACCEPTANCE.md)；历史记录描述当时版本，不作为当前开发分支的通过证明。
 
-向 `main`、`dev` 推送及提出 PR 时，GitHub Actions 自动执行 lint、单测和构建。浏览器回归通过 Actions 页的 **Browser regression → Run workflow** 手动运行；可选择目标分支、完整 Chromium 回归或三引擎兼容性检查。报告保留 14 天。
+向任意分支推送或向 `main` 提出 PR 时，GitHub Actions 自动执行 lint、单测和构建。浏览器回归通过 Actions 页的 **Browser regression → Run workflow** 手动运行；可选择目标分支、完整 Chromium 回归或三引擎兼容性检查。报告保留 14 天。
 
 提交 PR 时填写改动目的、验证结果和相关截图，说明未执行的检查与剩余问题。报告问题时使用问题模板，提供版本、环境、复现步骤及预期和实际行为。
 
