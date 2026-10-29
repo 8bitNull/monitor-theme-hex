@@ -35,7 +35,9 @@ test('mobile route summaries use raw P95 and explicit whole-window loss',async({
  await expect(page.getByRole('button',{name:'统计口径',exact:true})).toBeFocused()
  await expect(page.locator('.ma-detail-header')).toContainText('日本')
  const header=(await page.locator('.ma-detail-header').boundingBox())!,tabs=(await page.locator('.ma-detail-tabs').boundingBox())!
- expect(Math.abs(header.y+header.height-tabs.y)).toBeLessThanOrEqual(1)
+ const status=(await page.locator('.ma-detail-status').boundingBox())!
+ expect(status.y).toBeGreaterThanOrEqual(header.y+header.height)
+ expect(tabs.y).toBeGreaterThanOrEqual(status.y+status.height)
  expect((await page.locator('.ma-chart-heading').boundingBox())!.y).toBeGreaterThanOrEqual(tabs.y+tabs.height)
  expect((await page.getByRole('button',{name:'切换节点',exact:true}).boundingBox())!.height).toBeGreaterThanOrEqual(44)
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
@@ -83,7 +85,11 @@ test('mobile zoom disclosure preserves selected domain and raw statistics',async
 
 test('desktop retains its original inline smoothing and Brush controls',async({page})=>{
  await setup(page,false)
- await expect(page.locator('.ma-route-statistics')).toHaveCount(0)
+ await expect(page.locator('.desktop-route-summary .ma-route-statistics')).toBeVisible()
+ await page.locator('.desktop-route-summary .ma-chart-scope button').click()
+ await expect(page.getByRole('dialog')).toContainText('不平均各采样桶的百分比')
+ await page.keyboard.press('Escape')
+ await expect(page.locator('.desktop-route-summary .ma-chart-scope button')).toBeFocused()
  await expect(page.locator('.ma-history-tools')).toHaveCount(0)
  await expect(page.locator('.detail-chart-toolbar .detail-smooth')).toBeVisible()
  await expect(page.locator('.latency-view .recharts-brush')).toBeVisible()

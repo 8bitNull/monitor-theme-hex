@@ -4,14 +4,15 @@ import {bytes,rate} from '@/lib/format'
 import {tr,locale} from '@/lib/i18n'
 import type {ResourceMetricKey} from './ResourceHistory'
 
-export function ResourceSummary({rows,metric,hours,card=false}:{card?:boolean;rows:readonly ResourceSample[];metric:ResourceMetricKey;hours:number}){
+export function ResourceSummary({rows,metric,hours}:{rows:readonly ResourceSample[];metric:ResourceMetricKey;hours:number}){
  const groups=useMemo(()=>{
   const keys:ResourceSampleKey[]=metric==='network'?['net_tx','net_rx']:[metric]
   return keys.map(key=>({key,...summarizeResource(rows,key)}))
  },[rows,metric])
  const format=(value:number|null,key:ResourceSampleKey)=>value===null?'—':key==='cpu'?`${value.toFixed(1)}%`:key==='net_tx'||key==='net_rx'?rate(value):bytes(value)
  const values=(group:(typeof groups)[number])=>[group.latest,group.mean,group.peak].map(value=>format(value,group.key))
- const labels=[tr('最新采样'),tr('样本均值'),tr('采样峰值')]
+ const reading=(value:string)=>{const split=value.match(/^(.*?)(%| [A-Za-z/]+)$/);return split?<>{split[1]}<small>{split[2]}</small></>:value}
+ const labels=[tr('最近采样'),tr('区间平均'),tr('区间峰值')]
  return <section className="resource-summary" aria-label={tr('历史采样摘要')}>
   {metric==='network'?<table className="resource-summary-network">
    <thead><tr><th scope="col"><span className="sr-only">{tr('网速')}</span></th>{labels.map(label=><th scope="col" key={label}>{label}</th>)}</tr></thead>
@@ -19,10 +20,10 @@ export function ResourceSummary({rows,metric,hours,card=false}:{card?:boolean;ro
     const [amount,unit]=value.split(' ')
     return <td key={i}><span>{amount}</span>{unit&&<small> {unit}</small>}</td>
    })}</tr>)}</tbody>
-  </table>:<dl>{labels.map((label,i)=>card&&i===0?null:<div key={label}><dt>{label}</dt><dd>{values(groups[0])[i]}</dd></div>)}</dl>}
+  </table>:<dl>{labels.map((label,i)=><div key={label}><dt>{label}</dt><dd>{reading(values(groups[0])[i])}</dd></div>)}</dl>}
   <details key={`${metric}:${hours}`} className="resource-summary-details">
    <summary>{tr('统计说明')}</summary>
-   {card&&<p>{tr('最新采样')}：{format(groups[0].latest,groups[0].key)}</p>}
+   <p>{tr('统计：完整 {0} 小时范围',hours)}</p>
    {groups.map(group=><p key={group.key}>{metric==='network'&&<>{group.key==='net_tx'?tr('上行'):tr('下行')} · </>}{tr('有效样本：{0}',group.count)} · {tr('样本时间：{0}',group.latestAt===null?'—':new Date(group.latestAt).toLocaleString(locale()))}</p>)}
    <p>{tr('基于返回样本，非连续时间加权统计。')}</p>
   </details>

@@ -3,6 +3,13 @@ import {tr} from '@/lib/i18n'
 import {bytes,daysUntil,money,CYCLES} from '@/lib/format'
 import {trafficUsage,trafficPeriodLabel} from '@/lib/traffic'
 
+function TrafficTotals({node}:{node:Node}){
+ return <dl className="account-traffic-totals">{[
+  {label:tr('今日流量'),tx:node.day_tx,rx:node.day_rx},
+  {label:tr('累计流量'),tx:node.total_tx,rx:node.total_rx},
+ ].map(({label,tx,rx})=><div key={label}><dt>{label}</dt><dd><span>{tr('上传')} {bytes(tx)}</span><span>{tr('下载')} {bytes(rx)}</span></dd></div>)}</dl>
+}
+
 export function TrafficUsageCard({node}:{node:Node}){
  const traffic=trafficUsage(node)
  const mode=node.traffic_mode==='up'?tr('仅上传'):node.traffic_mode==='down'?tr('仅下载'):node.traffic_mode==='max'?tr('上传与下载取较大值'):tr('上传与下载合计')
@@ -14,7 +21,8 @@ export function TrafficUsageCard({node}:{node:Node}){
    <span>{tr(trafficPeriodLabel(node))}</span><b>{bytes(traffic.value)} <small>/ {node.traffic_limit>0?bytes(node.traffic_limit):tr('不限量')}</small></b>
    {node.traffic_limit>0&&<progress aria-label={tr('流量额度使用率')} max={node.traffic_limit} value={Math.min(node.traffic_limit,Math.max(0,traffic.value))}/>}
   </div>
-  <p className="account-note">{reset} · {mode}</p>
+   <p className="account-note">{reset} · {mode}</p>
+   <TrafficTotals node={node}/>
  </section>
 }
 export function CostCard({node,authed}:{node:Node;authed:boolean}){
@@ -41,8 +49,8 @@ export function ExpiryCard({node,mobile=false}:{node:Node;mobile?:boolean}){
  </section>
 }
 export function DetailAccount({node,authed,mobile=false}:{node:Node;authed:boolean;mobile?:boolean}){
- return <section className={`detail-account${mobile?' ma-billing-panel':''}`} aria-label={tr('用量与账期')}>
-  <h2 className="detail-section-title">{tr('用量与账期')}</h2>
+  return <section id="detail-account" tabIndex={-1} className={`detail-account${mobile?' ma-billing-panel':''}`} aria-label={tr('流量与账期')}>
+   <h2 className="detail-section-title">{tr('流量与账期')}</h2>
   <div className="overview-account" data-price-visible={authed} id={mobile?'ma-billing-details':undefined}>
    <TrafficUsageCard node={node}/><CostCard node={node} authed={authed}/><ExpiryCard node={node} mobile={mobile}/>
   </div>

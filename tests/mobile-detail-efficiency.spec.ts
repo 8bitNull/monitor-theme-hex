@@ -10,10 +10,10 @@ async function setup(page:Page){
 test('overview resource actions preserve independent resource and network ranges',async({page})=>{
  await setup(page);await page.goto('/node/1?rh=24&lh=1')
  await expect(page.getByRole('button',{name:'查看 CPU 历史趋势',exact:true})).toHaveAccessibleDescription(/28\.0.*%.*4 核/)
- await expect(page.getByRole('button',{name:'查看上行网速历史',exact:true})).toHaveAccessibleDescription(/Kbps/)
- for(const [kind,metric]of [['cpu','cpu'],['mem_used','mem_used'],['disk_used','disk_used'],['upload','network'],['download','network']]){
-  await page.locator(`button.ma-big-metric[data-kind=${kind}]`).click()
-  await expect(page.locator(`[data-resource-card="${metric}"]`)).toBeInViewport()
+  await expect(page.getByRole('button',{name:'网速历史',exact:true})).toHaveAccessibleDescription(/Kbps/)
+  for(const [kind,metric]of [['cpu','cpu'],['mem_used','mem_used'],['disk_used','disk_used'],['network','network']]){
+   await page.locator(kind==='network'?'.ma-speed-history':`.ma-big-metric[data-kind=${kind}] .ma-metric-action`).click()
+   await expect(page.locator(`.detail-resource-charts[data-metric="${metric}"]`)).toBeInViewport()
   await expect(page).toHaveURL(new RegExp(`rh=24.*lh=1.*metric=${metric}`))
   await expect(page.getByRole('navigation',{name:'详情分区'}).getByRole('button',{name:'资源',exact:true})).toHaveAttribute('aria-pressed','true')
   await page.getByRole('navigation',{name:'详情分区'}).getByRole('button',{name:'总览',exact:true}).click()

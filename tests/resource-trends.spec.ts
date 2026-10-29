@@ -50,11 +50,14 @@ test('empty history stays empty and latency entry does not prefetch resources',a
  await expect(cpu.locator('path')).toHaveCount(0);expect(resourceRequests).toBe(0)
  await cpu.click();await expect(cpu).toContainText('暂无历史');await expect(cpu.locator('path')).toHaveCount(0);expect(resourceRequests).toBe(1)
 })
-test('mobile overview has no resource preview or hidden history fetch',async({page})=>{
+test('mobile overview shares resource previews with the resource tab',async({page})=>{
  await page.setViewportSize({width:390,height:844});let resourceRequests=0
  await setup(page,r=>{if(new URL(r.request().url()).searchParams.get('series')==='metrics')resourceRequests++;return r.fulfill({json:metrics()})})
  await page.goto('/node/1');await expect(page.locator('.ma-detail-header')).toBeVisible()
- await expect(page.locator('.resource-trend')).toHaveCount(0);expect(resourceRequests).toBe(0)
+  await expect(page.locator('.resource-trend svg')).toHaveCount(3);expect(resourceRequests).toBe(1)
+  await page.getByRole('button',{name:'查看内存历史趋势',exact:true}).click()
+  await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric','mem_used')
+  expect(resourceRequests).toBe(1)
 })
 test('initial history failure is not an empty series and retry restores previews',async({page})=>{
  let fail=true
@@ -66,7 +69,7 @@ test('initial history failure is not an empty series and retry restores previews
  fail=false;await page.getByRole('button',{name:'重试',exact:true}).click()
  await expect(cpu.locator('path')).toHaveAttribute('d',/L/);await expect(cpu).not.toContainText('读取失败')
  await page.getByRole('button',{name:'网络延迟',exact:true}).click()
- await expect(cpu.locator('path')).toHaveCount(0);await expect(cpu).toContainText('查看历史')
+  await expect(cpu.locator('path')).toHaveAttribute('d',/L/);await expect(cpu).toHaveAttribute('title',/上次成功更新/)
 })
 for(const width of [721,900,1440])test(`previews fit ${width}px in English and stay below current readings`,async({page})=>{
  await page.setViewportSize({width,height:1000});await page.addInitScript(()=>localStorage.setItem('monitor-next-language','en'))

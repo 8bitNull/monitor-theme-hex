@@ -1,4 +1,8 @@
 export const english: Record<string, string> = {
+"流量与账期":"Traffic & billing",
+"最近采样":"Latest sample",
+"区间平均":"Sample average",
+"区间峰值":"Sample peak",
 "实时网络":"Live network",
 "地图图层":"Map layers",
 "流量":"Traffic",

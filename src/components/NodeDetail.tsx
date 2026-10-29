@@ -10,7 +10,8 @@ import '@/styles/detail-aesthetics.css'
 import {DetailFacts} from './DetailFacts'
 import {DetailRemarks} from './DetailRemarks'
 import '@/styles/detail-grouped-layout.css'
-import {MobileResourceCards} from './MobileResourceCards'
+import {DetailAccount} from './DetailAccount'
+import '@/styles/detail-optimization.css'
 import {ResourceHistory,type ResourceMetricKey} from './ResourceHistory'
 import {DetailToolbar,type HistoryTab} from './DetailToolbar'
 import { probeCatalog, windowLoss } from '@/lib/ping'
@@ -99,6 +100,7 @@ import {NodePicker} from './NodePicker'
 import {ArrowLeft} from 'lucide-react'
 import {MobileSheet} from './ui/mobile-sheet'
 import {Status} from './NodeIdentity'
+import {normalizeResourceSamples} from '@/lib/resourceSummary'
 
 function ChartStatisticsSheet({onClose}:{onClose:()=>void}){
     return <MobileSheet title={tr('统计口径')} onClose={onClose}>
@@ -121,9 +123,9 @@ export function NodeDetail({ node, authed, probe = "auto", nodes, onSwitch, deta
     const [mobile,setMobile]=useState(()=>matchMedia('(max-width:720px)').matches);
     useEffect(()=>{const media=matchMedia('(max-width:720px)');const update=()=>setMobile(media.matches);media.addEventListener('change',update);update();return()=>media.removeEventListener('change',update)},[]);
     type MobileSection='overview'|'resources'|'latency'|'info';
-    const [mobileSection,setMobileSection]=useState<MobileSection>(()=>{const p=new URLSearchParams(location.search),section=p.get('section');return location.hash==='#latency'?'latency':p.has('eventStart')?'resources':['overview','resources','info'].includes(section??'')?section as MobileSection:'overview'});
+    const [mobileSection,setMobileSection]=useState<MobileSection>(()=>{const p=new URLSearchParams(location.search),section=p.get('section');return location.hash==='#latency'?'latency':p.has('eventStart')?'resources':['overview','resources','latency','info'].includes(section??'')?section as MobileSection:'overview'});
     useEffect(()=>{const media=matchMedia('(max-width:899px)');const update=()=>setCompact(media.matches);media.addEventListener('change',update);update();return()=>media.removeEventListener('change',update)},[]);
-    const [tab, setTab] = useState<HistoryTab>(()=>location.hash === "#latency" ? "latency" : "resources");
+    const [tab, setTab] = useState<HistoryTab>(()=>mobileSection==='latency' ? 'latency' : 'resources');
     // Each tab keeps its own range: a 7-day trend and a 1-hour trace answer
     // different questions.
     const params=new URLSearchParams(location.search);
@@ -134,7 +136,7 @@ export function NodeDetail({ node, authed, probe = "auto", nodes, onSwitch, deta
     const [resourceMetric,setResourceMetric]=useState<ResourceMetricKey>(['cpu','mem_used','disk_used','network'].includes(initialMetric)?initialMetric:'cpu');
     const [ranges, setRanges] = useState({ resources:eventStart?eventRange:([1,6,24,168].includes(Number(params.get("rh")))?Number(params.get("rh")):(mobile?mobilePreferences.hours:6)), latency:[1,6,24].includes(Number(params.get("lh")))?Number(params.get("lh")):(mobile?mobilePreferences.hours:6) });
     const hours = ranges[tab];
-    const historyVisible=!mobile||mobileSection==='resources'||mobileSection==='latency';
+    const historyVisible=!mobile||mobileSection!=='info';
     const {frame:tooltipFrame,dismiss:tooltipDismiss,onChartClick:tooltipClick,onChartPointerMove:tooltipMove,onChartKeyDown:tooltipKey}=useChartTooltip(`${node.id}:${hours}:${tab}`,compact);
     const legend=useRef<HTMLDivElement>(null);
     const [retry, setRetry] = useState(0);
@@ -148,13 +150,15 @@ export function NodeDetail({ node, authed, probe = "auto", nodes, onSwitch, deta
     const chooseRange=()=>document.querySelector<HTMLElement>('.detail-ranges button')?.focus();
     const [highlightProbe, setHighlightProbe] = useState<number | null>(null);
     const [selectedProbes, setSelectedProbes] = useState<RouteSelection>(()=>readRouteSelection(params.get("routes")));
-    const [data, setData] = useState<{
+    const [historyData, setData] = useState<{
         key: string;
         metrics: Point[];
         ping: PingPoint[];
         probes: Probes;
         loss?: Loss;
+        updated:number|null;
     } | null>(null);
+    const data=historyData?.key===`${node.id}:${hours}:${tab}`?historyData:null;
     // Retained rather than folded into an empty result: a refused request and an
     // empty window are different answers, and the hub has reason to refuse this one
     // -- it caps how many history windows it builds concurrently, since each holds
@@ -163,16 +167,20 @@ export function NodeDetail({ node, authed, probe = "auto", nodes, onSwitch, deta
     const [failed, setFailed] = useState("");
     const [loading,setLoading]=useState(true);
     const busy=useRef(true);
-    const retained=useRef<{key:string;value:NonNullable<typeof data>}|null>(null);
+    // Per-node, bounded cache: four resource windows and three network windows.
+    // Cached content is only reused for the exact query; every revisit revalidates.
+    const retained=useRef(new Map<string,NonNullable<typeof data>>());
+    const [resourceSnapshot,setResourceSnapshot]=useState<typeof data>(null);
     const refresh=()=>{if(!busy.current){busy.current=true;setLoading(true);setRetry(n=>n+1);}};
-    const [updated,setUpdated]=useState<number|null>(null);
-    useEffect(()=>{const q=new URLSearchParams(location.search);q.set('rh',String(ranges.resources));q.set('lh',String(ranges.latency));q.set('metric',resourceMetric);if(mobile)q.set('section',mobileSection);if(selectedProbes===null)q.delete('routes');else q.set('routes',selectedProbes==='all'?'all':selectedProbes.join(','));history.replaceState(history.state,'',location.pathname+'?'+q+((mobile?mobileSection==='latency':tab==='latency')?'#latency':''))},[ranges,resourceMetric,selectedProbes,tab,mobile,mobileSection]);
+    const updated=data?.key===`${node.id}:${hours}:${tab}`?data.updated:null;
+    useEffect(()=>{const q=new URLSearchParams(location.search);q.set('rh',String(ranges.resources));q.set('lh',String(ranges.latency));q.set('metric',resourceMetric);q.set('section',mobileSection);if(selectedProbes===null)q.delete('routes');else q.set('routes',selectedProbes==='all'?'all':selectedProbes.join(','));history.replaceState(history.state,'',location.pathname+'?'+q+((mobile?mobileSection==='latency':tab==='latency')?'#latency':''))},[ranges,resourceMetric,selectedProbes,tab,mobile,mobileSection]);
     // Where the brush has been dragged, so the axis reticks for the visible span
     // rather than retaining the whole window's ticks.
     const [zoomWindow, setZoomWindow] = useState<[
         number,
         number
     ] | null>(null);
+    const zoomQuery=useRef('');
     useEffect(() => {
         if(!historyVisible)return;
         let active = true;
@@ -182,12 +190,13 @@ export function NodeDetail({ node, authed, probe = "auto", nodes, onSwitch, deta
         // flight.
         // oxlint-disable-next-line react/set-state-in-effect
         const key=`${node.id}:${hours}:${tab}`;
-        const previous=retained.current?.key===key?retained.current.value:null;
+        const previous=retained.current.get(key)??null;
         setData(previous);
-        if(!previous)setUpdated(null);
+        if(tab==='resources')setResourceSnapshot(previous);
         busy.current=true;setLoading(true);
         // oxlint-disable-next-line react/set-state-in-effect
-        if(!previous)setZoomWindow(null);
+        if(!previous||zoomQuery.current!==key)setZoomWindow(null);
+        zoomQuery.current=key;
         // oxlint-disable-next-line react/set-state-in-effect
         setFailed("");
         // What this screen can resolve, in device pixels, which is the unit the line
@@ -206,7 +215,13 @@ export function NodeDetail({ node, authed, probe = "auto", nodes, onSwitch, deta
             probes: Probes;
             loss?: Loss;
         }>(`/nodes/${node.id}/metrics?hours=${hours}&points=${points}&series=${series}`, { signal: controller.signal, cache: 'no-store' })
-            .then((next) => { clearTimeout(timeout); if (active) {const snapshot={...next,key};retained.current={key,value:snapshot};setData(snapshot);setUpdated(Date.now());busy.current=false;setLoading(false);} })
+            .then((next) => { clearTimeout(timeout); if (active) {
+                const snapshot={...next,key,updated:Date.now()};
+                retained.current.delete(key);retained.current.set(key,snapshot);
+                if(retained.current.size>7)retained.current.delete(retained.current.keys().next().value!);
+                setData(snapshot);if(tab==='resources')setResourceSnapshot(snapshot);
+                busy.current=false;setLoading(false);
+            } })
             .catch((e: Error) => {
             // `|| "..."` as in App.tsx: HTTP/2 dropped statusText, so a bodiless
             // failure from a proxy arrives as the empty string and renders as no
@@ -214,7 +229,7 @@ export function NodeDetail({ node, authed, probe = "auto", nodes, onSwitch, deta
             clearTimeout(timeout);
             if (active) {
                 setFailed(historyError(e));
-                setData(previous || { key, metrics: [], ping: [], probes: {} });
+                setData(previous || { key, metrics: [], ping: [], probes: {},updated:null });
                 busy.current=false;setLoading(false);
             }
         });
@@ -239,7 +254,7 @@ export function NodeDetail({ node, authed, probe = "auto", nodes, onSwitch, deta
         id, name, points: (data.ping ?? []).filter(p=>p.task_id===id).sort((a,b)=>a.ts-b.ts)
     })) : [], [data]);
     // The hub answers in seconds; the time axis requires milliseconds.
-    const metricRows = useMemo(() => (data?.metrics ?? []).map((m) => ({ ...m, ts: m.ts * 1000 })), [data]);
+    const metricRows = useMemo(() => normalizeResourceSamples((data?.metrics ?? []).map(m=>({...m,ts:m.ts*1000}))), [data]);
     const defaultProbe = probe === "auto" ? pingSeries.find(s=>s.points.length)?.id : Number(probe);
     const visibleIds = selectedRouteIds(selectedProbes,pingSeries.map(s=>s.id),defaultProbe);
     const shownProbes = pingSeries.filter(s=>visibleIds.includes(s.id));
@@ -332,25 +347,28 @@ export function NodeDetail({ node, authed, probe = "auto", nodes, onSwitch, deta
       {routeValue==='custom'&&<option value="custom" disabled>{tr("自定义")} · {visibleIds.length}</option>}
       {Array.isArray(selectedProbes)&&selectedProbes.length===1&&!pingSeries.some(s=>s.id===selectedProbes[0])&&<option value={selectedProbes[0]} disabled>{tr("无该线路记录")} · {selectedProbes[0]}</option>}
     </Select>;
-    const changeSection=(section:MobileSection)=>{setMobileSection(section);if(section==='resources'||section==='latency')setTab(section);tooltipDismiss();};
+    const changeSection=(section:MobileSection)=>{setMobileSection(section);if(section!=='info')setTab(section==='latency'?'latency':'resources');tooltipDismiss();};
     const mobileStats=shownProbes.map(route=>{
         const latest=route.points.at(-1),values=route.points.flatMap(p=>p.latency!==null&&Number.isFinite(p.latency)&&p.latency>=0?[p.latency]:[]).sort((a,b)=>a-b);
         return {...route,latest,p95:values.length?values[Math.ceil(values.length*.95)-1]:null,loss:data?windowLoss(data,route.id):null};
     });
     const previewActive=tab==='resources';
     const previewMatches=data?.key===`${node.id}:${ranges.resources}:resources`;
+    const cachedPreview=resourceSnapshot?.key===`${node.id}:${ranges.resources}:resources`?resourceSnapshot:null;
+    const previewRows=useMemo(()=>normalizeResourceSamples((cachedPreview?.metrics??[]).map(m=>({...m,ts:m.ts*1000}))),[cachedPreview]);
+    const resourcePreview={rows:previewActive?(previewMatches?metricRows:[]):previewRows,hours:ranges.resources,loading:previewActive&&(loading||!previewMatches),failed:previewActive&&previewMatches&&!!failed,active:previewActive||!!cachedPreview,updated:previewActive?(previewMatches?updated:null):cachedPreview?.updated??null,cached:!previewActive&&!!cachedPreview};
     const selectPreview=(metric:ResourceTrendMetric)=>{
-        setTab('resources');setResourceMetric(metric);
+        changeSection('resources');setResourceMetric(metric);
         requestAnimationFrame(()=>{const section=document.querySelector<HTMLElement>('.detail-history');section?.focus({preventScroll:true});section?.scrollIntoView({block:'start'});});
     };
     const mobileUpdate=loading?tr('正在更新'):failed?tr('更新失败'):updated?new Date(updated).toLocaleTimeString(locale(),{hour:'2-digit',minute:'2-digit',hour12:false}):tr('等待数据');
-    return (<div className="node-detail detail-grouped" data-mobile-section={mobileSection}>
+    return (<div className="node-detail detail-grouped detail-optimized" data-mobile-section={mobileSection}>
       {mobile?<div className="ma-detail-header"><button className="ma-icon" onClick={onBack??(()=>history.back())} aria-label={tr('返回总览')}><ArrowLeft size={20}/></button><div><NodePicker node={node} nodes={nodes} onSwitch={onSwitch}/></div></div>:<DetailIdentity node={node} nodes={nodes} onSwitch={onSwitch}/>}
       {mobile&&<DetailRemarks key={`${node.id}:${node.remark}`} text={node.remark??''} mobile/>}
+      {mobile&&<div className="ma-detail-status"><Status node={node}/><small>{node.last_seen>0?tr('上次上报：{0}',new Date(node.last_seen*1000).toLocaleTimeString(locale())):tr('等待首次上报')}</small></div>}
       {mobile&&<nav className="ma-detail-tabs" aria-label={tr('详情分区')}>{([{key:'overview',label:tr('总览')},{key:'resources',label:tr('资源')},{key:'latency',label:tr('网络')},{key:'info',label:tr('资料')}] as const).map(({key,label})=><button key={key} aria-pressed={mobileSection===key} onClick={()=>changeSection(key)}>{label}</button>)}</nav>}
       <div className="detail-workspace">
-      {mobile&&mobileSection==='overview'&&<div className="ma-detail-status"><Status node={node}/><small>{node.last_seen>0?tr('上次上报：{0}',new Date(node.last_seen*1000).toLocaleTimeString(locale())):tr('等待首次上报')}</small></div>}
-      {!mobile?<DetailLiveOverview node={node} authed={authed} preview={{rows:previewActive&&previewMatches?metricRows:[],hours:ranges.resources,loading:previewActive&&(loading||!previewMatches),failed:previewActive&&previewMatches&&!!failed,active:previewActive,updated:previewMatches?updated:null}} onSelectResource={selectPreview}/>:mobileSection==='overview'?<MobileDetailOverview node={node} authed={authed} totals={mobilePreferences.totals} onNetwork={()=>changeSection('latency')} onResource={metric=>{setResourceMetric(metric);changeSection('resources');requestAnimationFrame(()=>{document.querySelector<HTMLElement>('.detail-history')?.focus({preventScroll:true});window.scrollTo(0,0)})}}/>:null}
+      {!mobile?<DetailLiveOverview node={node} preview={resourcePreview} onSelectResource={selectPreview}/>:mobileSection==='overview'?<MobileDetailOverview node={node} authed={authed} totals={mobilePreferences.totals} preview={resourcePreview} onNetwork={()=>changeSection('latency')} onResource={metric=>{setResourceMetric(metric);changeSection('resources');requestAnimationFrame(()=>{document.querySelector<HTMLElement>('.detail-history')?.focus({preventScroll:true});window.scrollTo(0,0)})}}/>:null}
       {(!mobile||mobileSection==='resources'||mobileSection==='latency')&&<section className="detail-history" tabIndex={-1} aria-label={tr("历史图表")}>
        {!mobile&&<h2 className="detail-section-title">{tr('历史分析')}</h2>}
        {mobile&&<div className="ma-chart-heading"><h2>{tr(tab==='latency'?'网络质量':'资源历史')}</h2><small title={updated?new Date(updated).toLocaleString(locale()):undefined} data-failed={!!failed}>{mobileUpdate}</small></div>}
@@ -359,13 +377,14 @@ export function NodeDetail({ node, authed, probe = "auto", nodes, onSwitch, deta
 
          <div className="ma-chart-scope"><span>{tr('统计：完整 {0} 小时范围',hours)}</span>{mobileStats.length===1&&<button className="ma-statistics-help" aria-label={tr('统计口径')} onClick={()=>setChartSheet('statistics')}>ⓘ</button>}</div>
        </div>}
-       <DetailToolbar mobile={mobile} busy={loading} updated={updated} failed={!!failed} tab={tab} hours={hours} onTab={setTab} onHours={value=>setRanges(all=>({...all,[tab]:value}))} onRefresh={refresh} resourceMetric={resourceMetric} onResourceMetric={setResourceMetric} smooth={smooth} onSmooth={setSmooth}/>
+        <DetailToolbar mobile={mobile} busy={loading} updated={updated} failed={!!failed} tab={tab} hours={hours} onTab={changeSection} onHours={value=>setRanges(all=>({...all,[tab]:value}))} onRefresh={refresh} resourceMetric={resourceMetric} onResourceMetric={setResourceMetric} smooth={smooth} onSmooth={setSmooth}/>
       {eventStart>0&&<p className="event-context">{tr('告警时段：{0} — {1}',new Date(eventStart).toLocaleString(locale()),new Date(eventEnd).toLocaleString(locale()))}{age>168||hours<age?<span>{tr('当前历史范围无法覆盖完整告警时段。')}</span>:data&&!(data.metrics??[]).some(p=>p.ts*1000>=eventStart&&p.ts*1000<=eventEnd)?<span>{tr('此告警时段没有返回历史样本。')}</span>:null}</p>}
       {failed && <div className="history-notice" role="alert"><span>{data && (data.metrics?.length || data.ping?.length)?tr("更新失败，保留上次历史记录。"):tr("读取历史数据失败：")}{failed}{updated!==null && data && (data.metrics?.length || data.ping?.length)?<small className="history-retained-time">{tr("上次成功更新：{0}",new Date(updated).toLocaleString(locale()))}</small>:null}</span><button disabled={loading} onClick={refresh}>{tr("重试")}</button></div>}
       <div className="detail-history-body" data-history={tab}>
       {!data ? (<HistoryState loading={!failed} failed={!!failed} message={failed?tr("暂无可用历史数据"):tr("正在读取历史数据")}/>) : failed && !data.metrics?.length && !data.ping?.length ? (<HistoryState failed message={tr("暂无可用历史数据")}/>) : tab === "latency" ? (pingSeries.length === 0 ? (<HistoryState message={tr("这段时间没有延迟数据")} action={tr("调整时间范围")} onAction={chooseRange}/>) : (
          <div className="latency-view">
             {!mobile&&<div className="latency-route-controls">{routeControl}</div>}
+            {!mobile&&<div className="desktop-route-summary"><MobileRouteStats routes={mobileStats} comparing={mobileStats.length>1} color={id=>style(id).stroke} onStatistics={()=>setChartSheet('statistics')}/><div className="ma-chart-scope"><span>{tr('统计：完整 {0} 小时范围',hours)}</span><button onClick={()=>setChartSheet('statistics')}>{tr('统计口径')}</button></div></div>}
             {(!mobile&&expandedRoutes||mobile&&pingSeries.length>1)&&<div ref={legend} className="route-chips" role="group" aria-label={tr("线路图例")} data-expanded={expandedRoutes}>
               <div className="route-chip-list">
                 {pingSeries.map(s=>{const latest=s.points.at(-1),shown=visibleIds.includes(s.id);return <button key={s.id} aria-label={s.name} aria-pressed={shown} title={`${s.name} · ${latest?tr("采样：{0}",new Date(latest.ts*1000).toLocaleString(locale())):tr("暂无探测记录")}`} onMouseEnter={()=>setHighlightProbe(s.id)} onMouseLeave={()=>setHighlightProbe(null)} onFocus={e=>{if(e.currentTarget.matches(':focus-visible'))setHighlightProbe(s.id)}} onBlur={()=>setHighlightProbe(null)} onClick={()=>{setSelectedProbes(shown?visibleIds.filter(id=>id!==s.id):[...visibleIds,s.id])}}><i className="route-chip-check" aria-hidden="true">{shown?'✓':''}</i><svg width="20" height="8" aria-hidden="true"><line x1="0" y1="4" x2="20" y2="4" stroke={style(s.id).stroke} strokeWidth="2"/></svg><span>{s.name}</span><b>{!latest?'—':latest.latency===null?tr("超时"):`${Math.round(latest.latency)} ms`}</b></button>})}
@@ -417,11 +436,12 @@ export function NodeDetail({ node, authed, probe = "auto", nodes, onSwitch, deta
             {compact&&pingRows.length>0&&<div className="latency-range-caption"><span>{clockFor(hours)(rangeStart)} – {clockFor(hours)(rangeEnd)}</span>{!mobile&&zoomed&&<button onClick={()=>{setZoom(null);tooltipDismiss()}}>{tr("恢复范围")}</button>}</div>}
             {mobile&&pingRows.length>1&&shownProbes.length>0&&<><div className="ma-chart-zoom-actions">{zoomed&&<button onClick={()=>{setZoom(null);tooltipDismiss()}}>{tr('恢复全范围')}</button>}</div><details className="ma-chart-viewport" key={`${node.id}:${hours}`}><summary>{tr('调整视野')}</summary><div id="ma-chart-zoom" className="ma-chart-zoom"><p>{tr('仅调整当前图表视野；摘要统计仍使用完整查询范围。')}</p><div className="ma-chart-zoom-presets">{[15,30].map(minutes=><button key={minutes} type="button" disabled={quickStart(minutes)>=pingRows.length-1} onClick={()=>{setZoom([quickStart(minutes),pingRows.length-1]);tooltipDismiss()}}>{tr('最近 {0} 分钟',minutes)}</button>)}</div><label>{tr('开始时间')}<output>{new Date(rangeStart).toLocaleString(locale())}</output><input aria-label={tr('开始时间')} type="range" min={0} max={pingRows.length-2} value={zoom?.[0]??0} aria-valuetext={new Date(rangeStart).toLocaleString(locale())} onChange={e=>{const start=Number(e.target.value);setZoom([start,Math.max(start+1,zoom?.[1]??pingRows.length-1)]);tooltipDismiss()}}/></label><label>{tr('结束时间')}<output>{new Date(rangeEnd).toLocaleString(locale())}</output><input aria-label={tr('结束时间')} type="range" min={1} max={pingRows.length-1} value={zoom?.[1]??pingRows.length-1} aria-valuetext={new Date(rangeEnd).toLocaleString(locale())} onChange={e=>{const end=Number(e.target.value);setZoom([Math.min(end-1,zoom?.[0]??0),end]);tooltipDismiss()}}/></label></div></details></>}
             {shownProbes.length>0&&pingRows.length>0&&<LossTrack showRoute={mobile} selected={activeRoute?.id} key={`${node.id}:${hours}:${activeRoute?.id}`} series={shownProbes} preferred={defaultProbe} start={pingRows[Math.min(zoom?.[0]??0,pingRows.length-1)].ts} end={pingRows[Math.min(zoom?.[1]??pingRows.length-1,pingRows.length-1)].ts}/>}
-          </div>)) : mobile ? (<MobileResourceCards compact={compact} rows={metricRows} node={node} hours={hours} metric={resourceMetric} onMetric={setResourceMetric}/>) : (data.metrics ?? []).length === 0 ? (<HistoryState message={tr("这段时间没有历史数据")} action={tr("调整时间范围")} onAction={chooseRange}/>) : (<ResourceHistory compact={compact} rows={metricRows} node={node} hours={hours} metric={resourceMetric}/>)}
+          </div>)) : (data.metrics ?? []).length === 0 ? (<HistoryState message={tr("这段时间没有历史数据")} action={tr("调整时间范围")} onAction={chooseRange}/>) : (<ResourceHistory compact={compact} mobile={mobile} rows={metricRows} node={node} hours={hours} metric={resourceMetric}/>)}
       </div></section>}
 
+      {!mobile&&<DetailAccount node={node} authed={authed}/>}
       {(!mobile||mobileSection==='info')&&<DetailFacts node={node} compact={mobile?false:compact} mobile={mobile} mode={detailInfoMode} onMode={onDetailInfoMode}/>}
       </div>
-      {mobile&&chartSheet&&<ChartStatisticsSheet onClose={()=>setChartSheet(null)}/>}
+      {chartSheet&&<ChartStatisticsSheet onClose={()=>setChartSheet(null)}/>}
     </div>);
 }

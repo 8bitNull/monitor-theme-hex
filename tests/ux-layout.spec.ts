@@ -79,7 +79,7 @@ test('grouped mobile list shows its first card near the top and detail billing i
  console.log(`Grouped first card y=${firstCardY}`)
  expect(firstCardY).toBeLessThanOrEqual(300)
  await card.locator('>button').click()
- await expect(page.getByRole('heading',{name:'用量与账期'})).toBeVisible()
+  await expect(page.getByRole('heading',{name:'流量与账期'})).toBeVisible()
  await expect(page.locator('#ma-billing-details')).toBeVisible()
  await expect(page.locator('.ma-detail-overview')).toContainText('费用')
 })

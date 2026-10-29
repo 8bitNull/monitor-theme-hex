@@ -8,8 +8,8 @@ test('daily traffic reads upload before download',async({page})=>{
  const node={...nodes()[0],day_tx:1048576,day_rx:9437184}
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[node]}}))
  await page.goto('/node/1')
- const row=page.locator('.detail-facts>div').filter({has:page.locator('dt',{hasText:'今日流量'})})
- await expect(row.locator('.transfer-values b')).toHaveText([bytes(node.day_tx),bytes(node.day_rx)])
+  const row=page.locator('.account-traffic-totals>div').filter({has:page.locator('dt',{hasText:'今日流量'})})
+  await expect(row.locator('dd span')).toHaveText([`上传 ${bytes(node.day_tx)}`,`下载 ${bytes(node.day_rx)}`])
 })
 
 test('history preview exposes an action on keyboard focus',async({page})=>{

@@ -43,21 +43,14 @@ function SystemFacts({node,mobile}:{node:Node;mobile:boolean}){
  </dl></FactSection>
 }
 function AddressFacts({node}:{node:Node}){
- return <FactSection label={tr('网络地址')} Icon={Network}><dl className="detail-facts address-facts"><Fact copy label="IPv4" value={node.ipv4}/><Fact copy label="IPv6" value={node.ipv6}/></dl></FactSection>
-}
-function TransferValues({tx,rx}:{tx:number;rx:number}){
- return <div className="transfer-values"><div><span>{tr('上传')}</span><b>{bytes(tx)}</b></div><div><span>{tr('下载')}</span><b>{bytes(rx)}</b></div></div>
-}
-function TrafficFacts({node,mobile}:{node:Node;mobile:boolean}){
- return <FactSection label={tr('流量统计')} Icon={Network}><dl className="detail-facts traffic-facts">
-  {mobile?<><Fact label={tr('累计流量')} value={`↑ ${bytes(node.total_tx)} · ↓ ${bytes(node.total_rx)}`}/><Fact label={tr('今日流量')} value={`↑ ${bytes(node.day_tx)} · ↓ ${bytes(node.day_rx)}`}/></>:<><div><dt>{tr('累计流量')}</dt><dd><TransferValues tx={node.total_tx} rx={node.total_rx}/></dd></div><div><dt>{tr('今日流量')}</dt><dd><TransferValues tx={node.day_tx} rx={node.day_rx}/></dd></div></>}
- </dl></FactSection>
+ if(!node.ipv4?.trim()&&!node.ipv6?.trim())return null
+  return <FactSection label={tr('网络地址')} Icon={Network}><dl className="detail-facts address-facts"><Fact copy label="IPv4" value={node.ipv4?.trim()}/><Fact copy label="IPv6" value={node.ipv6?.trim()}/></dl></FactSection>
 }
 export function DetailFacts({node,mobile=false}:{node:Node;mode:Preferences['detailInfoMode'];compact:boolean;mobile?:boolean;onMode:(mode:Preferences['detailInfoMode'])=>void}){
  return <div className="detail-information">
   {!mobile&&<h2 className="detail-section-title">{tr('节点资料')}</h2>}
   <div id="detail-fact-groups" className="detail-fact-groups">
-   <HardwareFacts node={node} mobile={mobile}/><SystemFacts node={node} mobile={mobile}/><AddressFacts node={node}/><TrafficFacts node={node} mobile={mobile}/>
+    <HardwareFacts node={node} mobile={mobile}/><SystemFacts node={node} mobile={mobile}/><AddressFacts node={node}/>
   </div>
  </div>
 }
