@@ -92,7 +92,7 @@ export const WorldMap=memo(function WorldMap({layer,onLayer,abnormalCount,onAbno
  const activeTraffic=active?traffic.get(active.code):undefined
  const trafficText=activeTraffic?.samples?`${adaptiveRate(activeTraffic.tx)} / ${adaptiveRate(activeTraffic.rx)}`:tr('流量数据暂不可用')
  const flowRegions=useMemo(()=>markers.map(marker=>{const rate=traffic.get(marker.code);return {id:marker.code,x:marker.x,y:marker.y,tx:rate?.samples?rate.tx:null,rx:rate?.samples?rate.rx:null,online:marker.online>0,probeState:regionQuality.get(marker.code)??'unknown',attention:marker.online>0&&(marker.online<marker.total||marker.nodes.some(node=>node.attention))}}),[markers,traffic,regionQuality])
- const hexFrame=useMemo(()=>({width:size.width,height:size.height,view:{x:renderedView.x*screenScale+offsetX,y:renderedView.y*screenScale+offsetY,k:renderedView.k*screenScale},nodes:flowRegions,connections:[],selected:region,theme,layer}),[size,renderedView.x,renderedView.y,renderedView.k,screenScale,offsetX,offsetY,flowRegions,region,theme,layer])
+ const hexFrame=useMemo(()=>({width:size.width,height:size.height,view:{x:renderedView.x*screenScale+offsetX,y:renderedView.y*screenScale+offsetY,k:renderedView.k*screenScale},nodes:flowRegions,connections:[],selected:region,theme,layer,overview:!full}),[size,renderedView.x,renderedView.y,renderedView.k,screenScale,offsetX,offsetY,flowRegions,region,theme,layer,full])
  const tooltipText=active?tr('{0}：{1} / {2} 在线',countryName(active.code),active.online,active.total):''
  useLayoutEffect(()=>{
   const marker=markers.find(r=>r.code===active?.code),el=tooltipRef.current
@@ -151,7 +151,7 @@ export const WorldMap=memo(function WorldMap({layer,onLayer,abnormalCount,onAbno
   const rate=traffic.get(f.code),heat=trafficPower((rate?.tx??0)+(rate?.rx??0))
   return <path key={i} d={f.d} style={layer==='traffic'&&r&&rate?.samples&&region!==r.code?{fill:`color-mix(in srgb,var(--tone) ${12+heat*20}%,var(--card))`}:undefined} className={r?'populated-region':''} data-tone={r?tone(r):undefined} data-region={r?.code} data-probe-quality={r?regionQuality.get(r.code):undefined} data-selected={r&&region===r.code?true:undefined}/>
  }),[byCode,region,traffic,layer,regionQuality])
- const openControl=<button ref={expandButton} className="map-expand" onClick={fullscreen}><Maximize size={16} aria-hidden="true"/>{tr('放大查看')}</button>
+ const openControl=<button ref={expandButton} className="map-expand" aria-label={tr('放大查看')} title={tr('放大查看')} onClick={fullscreen}><Maximize size={16} aria-hidden="true"/><span>{tr('放大查看')}</span></button>
  const transform=`translate(${renderedView.x} ${renderedView.y}) scale(${renderedView.k})`
  return <section ref={panel} className={`world-panel explorer-map region-atlas ${full?'is-fullscreen':''}`} data-layer={layer} data-map-style="hex" data-theme={theme} data-webgl={ready} data-filtered={region!=='all'}>
   {full&&<div className="section-heading"><h2>{tr('全球节点分布')}</h2></div>}
@@ -178,7 +178,7 @@ export const WorldMap=memo(function WorldMap({layer,onLayer,abnormalCount,onAbno
     </g>})}
     {groups.filter(g=>g.members.length>1).map(g=><g key={g.id} className="map-region-group" data-members={g.id} data-unmatched={g.members.every(unmatched)||undefined} transform={`translate(${(g.x-offsetX)*unit} ${(g.y-offsetY)*unit}) scale(${unit})`} role="button" tabIndex={0} aria-label={tr('{0} 个地区，选择地区',g.members.length)} aria-expanded={chooser?.id===g.id} onClick={()=>setChooser(old=>old?.id===g.id?null:{id:g.id,view:chooserView})} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setChooser({id:g.id,view:chooserView})}}}><circle r={14}/><text textAnchor="middle" dominantBaseline="central">{g.members.length}</text></g>)}
    </svg>
-   <div className="map-desktop-quick"><MapQuickSelect nodes={nodes} region={region} onSelect={locate}/></div>
+   <div className="map-desktop-quick"><MapQuickSelect compact nodes={nodes} region={region} onSelect={locate}/></div>
    {chosenGroup&&<MapRegionChooser groupId={chosenGroup.id} members={chosenGroup.members} x={chosenGroup.x} y={chosenGroup.y} width={size.width} top={94} bottom={Math.max(140,size.height-50)} onChoose={locate} onClose={()=>setChooser(null)}/>}
    <ThreeMapCanvas frame={hexFrame} motion={motion} onStatus={setReady}/>
    </div>

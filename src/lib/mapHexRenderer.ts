@@ -4,12 +4,13 @@ import {hexes,radius,land as landPath,graticule} from '../data/map-flat.json'
 import {trafficPower} from './worldMapModel'
 import type {MapLayer,MapTheme,MapView,ProjectedMapNode,ResolvedMapConnection} from './worldMapModel'
 
-export type HexMapFrame={layer?:MapLayer;width:number;height:number;view:MapView;nodes:ProjectedMapNode[];connections:ResolvedMapConnection[];selected?:string;theme:MapTheme;maxPixelRatio?:number}
+export type HexMapFrame={layer?:MapLayer;width:number;height:number;view:MapView;nodes:ProjectedMapNode[];connections:ResolvedMapConnection[];selected?:string;theme:MapTheme;maxPixelRatio?:number;overview?:boolean}
 export type HexMapRenderer={update:(frame:HexMapFrame)=>void;dispose:()=>void}
 export const mapColors={
- dark:{sea:'#111c28',land:'#243647',accent:'#91afe0',online:'#4ade80',warning:'#d6a35d',offline:'#637386',danger:'#e68e9a',unknown:'#8796a8'},
+  dark:{sea:'#111c28',land:'#243647',accent:'#91afe0',online:'#4ade80',warning:'#d6a35d',offline:'#637386',danger:'#e68e9a',unknown:'#8796a8'},
  light:{sea:'#f3f6fa',land:'#ccd7e3',accent:'#557cb5',online:'#229966',warning:'#aa741d',offline:'#96a2af',danger:'#b83e50',unknown:'#8796a8'},
 }
+const overviewColors={sea:'#172538',land:'#314965',accent:'#afc9ee',online:'#8bcab5',warning:'#e0be85',offline:'#8a9bb1',danger:'#e68e9a',unknown:'#8796a8'}
 const planeVertex='varying vec2 uv0;void main(){uv0=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}'
 const pulseFragment=`uniform float time,enabled,up,down,chosen,traffic,probe;uniform vec3 color;varying vec2 uv0;
 float ring(float r,float target,float width){return exp(-pow((r-target)/width,2.));}
@@ -69,7 +70,7 @@ void main(){float wave=pow(.5+.5*sin(time*(.5+power*1.5)-phase),8.);gl_FragColor
   }
   return new BufferGeometry().setAttribute('position',new Float32BufferAttribute(vertices,3))
  }
- const coast=new LineSegments(lineGeometry(landPath),new LineBasicMaterial({transparent:true,opacity:.28,depthWrite:false}))
+ const coast=new LineSegments(lineGeometry(landPath),new LineBasicMaterial({transparent:true,opacity:.14,depthWrite:false}))
  const grid=new LineSegments(lineGeometry(graticule),new LineBasicMaterial({transparent:true,opacity:.065,depthWrite:false}))
  grid.position.z=-2
  land.instanceMatrix.needsUpdate=true;land.frustumCulled=false;mapGroup.add(foundation,land,coast,grid);scene.add(mapGroup)
@@ -186,8 +187,9 @@ void main(){float wave=pow(.5+.5*sin(time*(.5+power*1.5)-phase),8.);gl_FragColor
     renderer.setPixelRatio(pixelRatio);renderer.setSize(next.width,next.height,false)
     camera.right=next.width;camera.top=next.height;camera.updateProjectionMatrix()
    }
-   const colors=mapColors[next.theme]
-   if(theme!==next.theme){theme=next.theme;renderer.setClearColor(colors.sea);baseColor.set(colors.land);accent.set(colors.accent);online.set(colors.online);warning.set(colors.warning);offline.set(colors.offline);danger.set(colors.danger);unknown.set(colors.unknown)
+   const colors=next.overview?overviewColors:mapColors[next.theme]
+   coast.material.opacity=next.overview?.14:.28
+   if(theme!==next.theme||old?.overview!==next.overview){theme=next.theme;renderer.setClearColor(colors.sea);baseColor.set(colors.land);accent.set(colors.accent);online.set(colors.online);warning.set(colors.warning);offline.set(colors.offline);danger.set(colors.danger);unknown.set(colors.unknown)
     foundationMaterial.color.copy(baseColor).lerp(new Color(colors.sea),.4);coast.material.color.copy(accent);grid.material.color.copy(accent);landMaterial.uniforms.accent.value.copy(accent)
    }
    mapGroup.position.set(next.view.x,next.height-next.view.y,0);mapGroup.scale.set(next.view.k,-next.view.k,1)
