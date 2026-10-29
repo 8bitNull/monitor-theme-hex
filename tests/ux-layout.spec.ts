@@ -3,12 +3,13 @@ import {expect,test,type Page} from '@playwright/test'
 import {metrics,nodes} from '../scripts/fixtures.mjs'
 
 async function fixture(page:Page,{grouped=false,warnings=false,longName=false}:{grouped?:boolean;warnings?:boolean;longName?:boolean}={}){
+ const expiry=await page.evaluate(()=>{const date=new Date();date.setDate(date.getDate()+1);return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`})
  const items=nodes().map((node,index)=>({
   ...node,
   group:grouped?'Production':node.group,
   name:longName&&index===0?'Tokyo · VeryLongProductionGatewayNameWithIPv6AndRegionalFailover '+node.name:node.name,
   ipv6:longName&&index===0?'2001:0db8:85a3:0000:0000:8a2e:0370:7334':node.ipv6,
-  ...(warnings&&index===0?{metrics:{...node.metrics!,cpu:94},traffic_limit:1,expires_at:new Date(Date.now()+86400000).toISOString().slice(0,10),remark:'2.5Gbps;国际线路;Anti-DDoS'}:{}),
+  ...(warnings&&index===0?{metrics:{...node.metrics!,cpu:94},traffic_limit:1,expires_at:expiry,remark:'2.5Gbps;国际线路;Anti-DDoS'}:{}),
  }))
  await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:items}}))
  await page.route('**/api/nodes/*/metrics?*',route=>route.fulfill({json:metrics()}))

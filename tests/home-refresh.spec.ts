@@ -2,7 +2,7 @@ import {test,expect} from './desktopTest'
 import {nodes} from '../scripts/fixtures.mjs'
 
 test('mobile cards retain resources and freshness without warning notices',async({page})=>{
- const expiry=new Date(Date.now()+3*86400000).toISOString().slice(0,10)
+ const expiry=await page.evaluate(()=>{const date=new Date();date.setDate(date.getDate()+3);return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`})
  let stale=false
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],last_seen:Math.floor(Date.now()/1000)-(stale?120:0),expires_at:expiry,metrics:{...nodes()[0].metrics,cpu:92}}]}}))
  for(const width of [390,320]){
@@ -22,7 +22,7 @@ test('mobile cards retain resources and freshness without warning notices',async
 })
 
 test('desktop expiry tag is concise and sits on the right of the OS row',async({page})=>{
- const expiry=new Date(Date.now()+3*86400000).toISOString().slice(0,10)
+ const expiry=await page.evaluate(()=>{const date=new Date();date.setDate(date.getDate()+3);return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`})
  await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:[{...nodes()[0],name:'Netcup RS1000 - 黑五',os:'Debian 12',expires_at:expiry}]}}))
  for(const width of [1440,900,721]){
   await page.setViewportSize({width,height:900})
