@@ -20,6 +20,10 @@
 @import "./styles/mobile-app.css";
 @import "./styles/desktop-refinement.css";
 @import "./styles/top-map-layout.css";
+@import "./styles/card-readability.css";
+@import "./styles/visual-system.css";
+@import "./styles/mobile-visual-system.css";
+@import "./styles/layout-v3.css";
 
 @source "../index.html";
 @source "../src";
@@ -57,4 +61,17 @@
 }
 
 
-@layer base { * { @apply border-border outline-ring/50; } html {scrollbar-gutter:stable} body { @apply bg-background text-foreground; } }
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  html {
+    scrollbar-gutter: stable;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    letter-spacing: -0.011em;
+  }
+}

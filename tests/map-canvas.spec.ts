@@ -25,7 +25,10 @@ test('homepage canvas can pan beyond the map without filtering and resets withou
  const before=await land.getAttribute('transform'),box=(await svg.boundingBox())!
  const center=await land.evaluate(el=>new DOMPoint(500,180).matrixTransform((el as SVGGraphicsElement).getScreenCTM()!).toJSON())
  expect(Math.abs(center.x-box.x-box.width/2)).toBeLessThan(.1)
- expect(Math.abs(center.y-box.y-box.height/2)).toBeLessThan(.1)
+ const tools=(await page.locator('.map-layer-tools').boundingBox())!,zoom=(await page.locator('.map-canvas-controls').boundingBox())!
+ // The overview reserves its top strip for controls, not geographic content.
+ expect(center.y).toBeGreaterThan(tools.y+tools.height)
+ expect(center.y).toBeLessThan(zoom.y)
  const count=await page.locator('.node-card').count()
  await page.mouse.move(box.x+12,box.y+box.height/2);await page.mouse.down()
  await page.mouse.move(box.x+box.width-12,box.y+box.height/2,{steps:8});await page.mouse.up()

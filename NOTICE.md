@@ -8,6 +8,8 @@ HEX 是为 monitor-probe 编写的独立适配主题，不是 Komari Next 官方
 
 - 平面流量动效使用 Three.js（MIT），其版权与许可随安装包保留在 LICENSE.three。
 
+- 本地拉丁字母和数字字体使用 Inter（Rasmus Andersson，SIL Open Font License 1.1），变量 WOFF2 拉丁子集来自 Google Fonts。字体与许可位于 `public/fonts/`，随前端分发；页面运行时不请求外部字体服务。
+
 第三方依赖的各自许可证保留在 npm 安装的依赖包中。
 
 - v1.3 的国旗和系统图标资源来自上述 Komari Next 提交的 public/assets/flags 与 public/assets/logo，保留上游 LICENSE.komari-next；相关名称与标志归各自权利人所有。内置山峦背景为本主题原创 SVG。

@@ -21,7 +21,8 @@ test('short desktop keeps map visible and retains region filtering',async({page}
  await expect(map.locator('.home-map-toggle')).toHaveCount(0)
  await chooseOption(page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true}),'JP')
  await expect(page.locator('.node-card')).toHaveCount(1)
- await expect(map.locator('.map-cluster')).toHaveCount(6)
+ // Nearby regions can share a geographic group at this compact map height.
+ await expect.poll(()=>map.evaluate(el=>el.querySelectorAll('.map-cluster').length+[...el.querySelectorAll('.map-region-group text')].reduce((n,text)=>n+Number(text.textContent),0))).toBe(6)
  await page.reload()
  await expect(map.locator('.region-atlas')).toBeVisible()
  await expect(page.locator('.desktop-results-toolbar').getByRole('combobox',{name:'地区',exact:true})).toHaveAttribute('data-value','JP')
@@ -148,7 +149,8 @@ test('desktop supplementary information stays visible below routes without movin
  const routeBefore=await routeOffset()
  await expect(card.locator('.node-secondary-toggle')).toHaveCount(0)
  const panel=card.locator('.node-supplementary')
- for(const selector of ['.node-connections','.card-billing','.node-price'])await expect(panel.locator(selector)).toBeVisible()
+ await expect(card.locator('.card-network-heading .node-connections')).toBeVisible()
+ for(const selector of ['.card-billing','.node-price'])await expect(panel.locator(selector)).toBeVisible()
  const routeAfter=(await card.locator('.route-matrix').boundingBox())!
  expect(await routeOffset()).toBeCloseTo(routeBefore,0)
  expect((await panel.boundingBox())!.y).toBeGreaterThanOrEqual(routeAfter.y+routeAfter.height)

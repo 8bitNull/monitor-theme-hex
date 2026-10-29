@@ -53,11 +53,14 @@ for(const width of [320,1440])test(`changing live units retain speed geometry at
 })
 
 test('refresh retains chart on failure, disables duplicate requests and recovers',async({page})=>{
- await page.clock.install() // Isolate explicit retries from the periodic history refresh.
+ await page.clock.install()
  await setup(page,1);await page.goto('/node/1')
  const chart=page.locator('.resource-chart-panel .recharts-area-curve'),refresh=page.getByRole('button',{name:'刷新历史',exact:true})
- await expect(chart).toBeVisible();const path=await chart.getAttribute('d')
- await page.clock.pauseAt(new Date())
+ await expect(chart).toBeVisible()
+ // Let lazy loading/RAF settle first; then pause ahead of the browser clock,
+ // not the host clock (which can lag behind WebKit's virtual time).
+ await page.clock.pauseAt(new Date(await page.evaluate(()=>Date.now())+5000))
+ const path=await chart.getAttribute('d')
  await page.unroute('**/api/nodes/*/metrics?*')
  let pending:any,calls=0;await page.route('**/api/nodes/*/metrics?*',r=>{pending=r;calls++})
  await refresh.click();await expect(refresh).toBeDisabled();await expect(chart).toHaveAttribute('d',path!)

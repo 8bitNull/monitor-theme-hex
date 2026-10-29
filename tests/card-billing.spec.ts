@@ -26,10 +26,10 @@ test('billing rows align, preserve quota states and fit narrow cards',async({pag
    const layout=await card.evaluate(el=>{const a=el.querySelector('.traffic-summary b')!.getBoundingClientRect(),b=el.querySelector('.card-expiry b')!.getBoundingClientRect();return {delta:Math.abs(a.y-b.y),overflow:el.scrollWidth>el.clientWidth+1}})
    expect(layout.delta).toBeLessThanOrEqual(1);expect(layout.overflow).toBeFalsy()
    const halves=await card.evaluate(el=>{
-    const billing=el.querySelector('.card-billing')!.getBoundingClientRect()
+    const traffic=el.querySelector('.traffic-summary')!.getBoundingClientRect(),expiry=el.querySelector('.card-expiry')!.getBoundingClientRect()
     const quota=el.querySelector('.billing-allowance')!.getBoundingClientRect()
     const remaining=el.querySelector('.billing-remaining,.card-expiry small')!.getBoundingClientRect()
-    return {left:Math.abs(quota.x+quota.width/2-(billing.x+billing.width/4)),right:Math.abs(remaining.x+remaining.width/2-(billing.x+billing.width*3/4)),row:Math.abs(quota.y-remaining.y)}
+     return {left:Math.abs(quota.x-traffic.x),right:Math.abs(remaining.x-expiry.x),row:Math.abs(quota.y-remaining.y)}
    })
    expect(halves.left).toBeLessThanOrEqual(1);expect(halves.right).toBeLessThanOrEqual(1);expect(halves.row).toBeLessThanOrEqual(1)
   }
@@ -58,10 +58,9 @@ for(const cardInfo of [{traffic:false,expiry:true,uptime:false},{traffic:true,ex
  await page.goto('/')
  const card=page.locator('.node-card');await expect(card).toHaveCount(1)
  await expect(card.locator('.traffic-summary')).toHaveCount(Number(cardInfo.traffic));await expect(card.locator('.card-uptime')).toHaveCount(Number(cardInfo.uptime))
- const delta=await card.evaluate((el,info)=>{
-  const billing=el.querySelector('.card-billing')!.getBoundingClientRect(),note=el.querySelector('.billing-remaining')!.getBoundingClientRect()
-  const fraction=info.traffic?.75:info.uptime?.25:.5
-  return Math.abs(note.x+note.width/2-(billing.x+billing.width*fraction))
- },cardInfo)
+ const delta=await card.evaluate(el=>{
+  const field=el.querySelector('.card-expiry')!.getBoundingClientRect(),note=el.querySelector('.billing-remaining')!.getBoundingClientRect()
+   return Math.abs(note.x-field.x)
+ })
  expect(delta).toBeLessThanOrEqual(1)
 })

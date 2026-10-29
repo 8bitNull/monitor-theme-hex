@@ -6,6 +6,7 @@ import mapPoints from '@/data/map-flat-points.json'
 import {regionKey} from '@/lib/groups'
 import {mapTrafficSnapshot} from '@/lib/mapTraffic'
 import {BillingReminders} from './components/BillingReminders';
+import {HexMark} from './components/HexMark';
 import {MapPanel} from './components/MapPanel';
 import {MobileApp} from './components/MobileApp';
 import {useMobilePreferences} from './lib/mobilePreferences';
@@ -303,10 +304,11 @@ export default function App({ siteDefaults = defaults }: {
         <div className="mx-auto flex max-w-[1400px] items-center gap-3 px-4 py-3 sm:px-6">
           {/* The brand and explicit detail navigation share scroll restoration. */}
           <button className="brand" onClick={() => go(null)}>
+            <HexMark/>
             <span>{me.site_name || "HEX"}</span>
           </button>
           <div className="flex-1"/>
-          {!compactViewport && (open===null?searchField("desktop-header-search"):<DetailSearch nodes={sorted} onSelect={id=>{const q=new URLSearchParams(location.search);q.delete('eventStart');q.delete('eventEnd');q.delete('routes');go(id,location.hash.slice(1),q.size?'?'+q:'')}}/>)}
+          {open!==null && <DetailSearch nodes={sorted} onSelect={id=>{const q=new URLSearchParams(location.search);q.delete('eventStart');q.delete('eventEnd');q.delete('routes');go(id,location.hash.slice(1),q.size?'?'+q:'')}}/>}
           {compactViewport && <div className="mobile-header-search-shell"><button type="button" className="mobile-header-search-toggle" aria-label={tr("搜索节点")} title={tr("搜索节点")} aria-expanded={mobileSearchOpen} onClick={()=>setMobileSearchOpen(value=>!value)}><Search size={17}/></button></div>}
           <Button variant="ghost" size="icon" onClick={() => setLanguage(language === 'zh' ? 'en' : 'zh')} title="中文 / English" aria-label="Language / 语言"><Globe /></Button>
           {/* The panel is a separate app built into the hub, not part of this
@@ -354,13 +356,14 @@ export default function App({ siteDefaults = defaults }: {
                 {!compactViewport&&browse.view==='cards'&&<label className="desktop-card-density desktop-control-card">{tr('卡片密度')}<Select aria-label={tr('卡片密度')} value={desktop.cardDensity} onChange={event=>setDesktop(current=>({...current,cardDensity:event.target.value as 'compact'|'detailed'}))}><option value="compact">{tr('紧凑')}</option><option value="detailed">{tr('详细')}</option></Select></label>}
                 {!compactViewport&&browse.view==='table'&&<div className="table-tools-host desktop-control-card"/>}{viewSwitch}
               </div>
-            </div><section hidden={!showSystemFilters && !showActiveFilters} className="node-browser streamlined-browser" aria-label={tr("节点浏览")}>
+            </div><div className="desktop-browse-controls">{searchField("desktop-header-search desktop-results-search")}<label className="desktop-status-filter">{tr('状态')}<Select aria-label={tr('状态')} value={status} onChange={event=>setStatus(event.target.value)}><option value="all">{tr('全部')}</option><option value="online">{tr('在线')}</option><option value="offline">{tr('离线')}</option><option value="pending">{tr('待更新')}</option></Select></label></div><section hidden={!showSystemFilters && !showActiveFilters} className="node-browser streamlined-browser" aria-label={tr("节点浏览")}>
             <div className="filters" hidden={!showSystemFilters}><div className="filter-categories"><div className="system-pills" role="group" aria-label={tr("系统快速筛选")}>{['all',...systems].map(key=><button key={key} aria-pressed={system===key} onClick={()=>setSystem(key)}>{key==='all'?tr("所有系统"):key==='other'?tr("其他 / 未知系统"):key}</button>)}</div>
 </div>
 </div>
             <div className="active-filters" hidden={!showActiveFilters}>
 {mapVisible&&mapStatus!=='all'&&<button aria-label={tr('清除地图状态筛选')} onClick={()=>setMapStatus('all')}>{tr('地图状态')} ×</button>}
 {status!=='all'&&<button aria-label={tr("清除状态筛选")} onClick={()=>setStatus('all')}>{tr(status==='offline'?"离线":status==='pending'?"待更新":"在线")} ×</button>}
+{region!=='all'&&<button aria-label={`${tr('清除地区筛选')}：${countryName(region)}`} onClick={()=>setRegion('all')}>{countryName(region)} ×</button>}
 {activeConditionCount>1&&<span className="filter-composition">{tr("同时满足已选条件")}</span>}
 {showFilterFeedback&&<span className="filter-match-count">{tr("匹配 {0} 个节点",filtered.length)}</span>}
 {system !== 'all' && <button aria-label={tr("清除系统筛选")} onClick={()=>setSystem('all')}>{system} ×</button>}

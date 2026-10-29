@@ -15,8 +15,8 @@ test('desktop trends reuse history and select the main chart without another req
  await expect(disk.locator('path')).toHaveAttribute('d',/L/)
  await expect(cpu).toContainText('6h');await expect(memory).toContainText('历史用量')
  expect(requests).toBe(1)
- const track=(await page.locator('.detail-metric-card[data-metric="cpu"] .detail-metric-track').boundingBox())!
- expect((await cpu.boundingBox())!.y).toBeGreaterThanOrEqual(track.y+track.height)
+ const reading=(await page.locator('.detail-metric-card[data-metric="cpu"] .detail-metric-note').boundingBox())!
+ expect((await cpu.boundingBox())!.y).toBeGreaterThanOrEqual(reading.y+reading.height)
  await memory.click();await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric','mem_used')
  await expect(page.getByRole('region',{name:'历史图表'})).toBeFocused()
  await cpu.focus();await cpu.press('Enter');await expect(page.locator('.detail-resource-charts')).toHaveAttribute('data-metric','cpu')
@@ -79,8 +79,8 @@ for(const width of [721,900,1440])test(`previews fit ${width}px in English and s
   expect(await p.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true)
  }
  for(const p of await previews.all()){
-  const track=await p.locator('xpath=..').locator('.detail-metric-track').boundingBox()
-  expect((await p.boundingBox())!.y).toBeGreaterThanOrEqual(track!.y+track!.height)
+   const reading=await p.locator('xpath=..').locator('.detail-metric-note').boundingBox()
+   expect((await p.boundingBox())!.y).toBeGreaterThanOrEqual(reading!.y+reading!.height)
  }
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
 })
