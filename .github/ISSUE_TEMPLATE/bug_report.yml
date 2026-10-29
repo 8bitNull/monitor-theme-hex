@@ -10,7 +10,7 @@ body:
     attributes:
       label: 主题版本或提交
       description: 正式版填写版本号；开发版填写分支和提交号。
-      placeholder: v0.3.6，或 dev / 提交号
+      placeholder: v1.2.2，或功能分支 / 提交号
     validations:
       required: true
   - type: textarea
