@@ -134,7 +134,7 @@ test('multi-node fixed detail keeps real current and historical readings in its 
  await page.goto('/')
  await expect(page.locator('.latency-link').first()).toBeVisible()
  for(const code of ['JP','US']){
-  await page.getByRole('group',{name:'地区速选',exact:true}).getByRole('button',{name:code==='JP'?/日本/:/美国/}).click()
+  await chooseOption(page.getByRole('group',{name:'地区速选',exact:true}).getByRole('combobox'),code)
   const detail=page.getByRole('region',{name:'地区详情',exact:true})
   await expect(detail.locator('.map-detail-nodes button')).toHaveCount(2)
   await expect(detail).toContainText('24h 丢包')

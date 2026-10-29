@@ -128,6 +128,7 @@ test('dense regions stay near anchors and remain selectable at different overvie
    await expect(page.locator('.node-card')).toHaveCount(1)
   }
   await chooseOption(select,'all')
+  await expect(page.getByRole('listbox')).toHaveCount(0)
   // Wait for the menu's focus restoration before moving focus to a map marker.
   await expect(select).toBeFocused()
   for(const code of ['HK','MO']){
@@ -170,9 +171,9 @@ test('full-card map keeps overlays readable without blocking the empty canvas',a
   }
   await page.keyboard.press('Escape')
   const land=page.locator('.map-land'),before=await land.getAttribute('transform')
-  // The empty center of the title row must pass pointer input to the map.
-  await page.mouse.move(canvas.x+canvas.width/2,canvas.y+25);await page.mouse.down()
-  await page.mouse.move(canvas.x+canvas.width/2+65,canvas.y+30,{steps:5});await page.mouse.up()
+   // The title row now owns the region menu; drag the empty sea below it.
+   await page.mouse.move(canvas.x+12,canvas.y+canvas.height/2);await page.mouse.down()
+   await page.mouse.move(canvas.x+77,canvas.y+canvas.height/2+5,{steps:5});await page.mouse.up()
   await expect(land).not.toHaveAttribute('transform',before!)
   await page.getByRole('button',{name:'重置地图视图',exact:true}).click()
   await expect(land).toHaveAttribute('transform',before!)

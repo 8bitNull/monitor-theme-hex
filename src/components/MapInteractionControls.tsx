@@ -1,5 +1,6 @@
 import {useEffect,useRef} from 'react'
 import {X} from 'lucide-react'
+import {Select} from './ui/select'
 import {tr} from '@/lib/i18n'
 import {countryName} from '@/lib/regionNames'
 import {groupRegions} from '@/lib/groups'
@@ -13,7 +14,8 @@ export function MapStatusLegend({filter,onChange,mobile=false}:{filter:MapStatus
   {filter!=='all'&&<button className="map-filter-clear" aria-label={tr('清除地图状态筛选')} onClick={()=>onChange('all')}><X size={12}/></button>}
  </div>
 }
-export function MapQuickSelect({nodes,region,onSelect}:{nodes:MapTrafficNode[];region:string;onSelect:(code:string)=>void}){
+export function MapQuickSelect({nodes,region,onSelect,compact=false}:{nodes:MapTrafficNode[];region:string;onSelect:(code:string)=>void;compact?:boolean}){
+ if(compact)return <div className="map-quick-select map-region-dropdown" data-map-overlay role="group" aria-label={tr('地区速选')}><Select aria-label={tr('地图地区')} value={region} onChange={e=>onSelect(e.target.value)}><option value="all">{tr('所有地区')} · {nodes.length}</option>{groupRegions(nodes).map(r=><option key={r.code} value={r.code}>{countryName(r.code)} · {r.total}</option>)}</Select></div>
  return <div className="map-quick-select" data-map-overlay role="group" aria-label={tr('地区速选')}>
   <button aria-pressed={region==='all'} onClick={()=>onSelect('all')}>{tr('所有地区')} · {nodes.length}</button>
   {groupRegions(nodes).map(r=><button key={r.code} aria-pressed={region===r.code} onClick={()=>onSelect(r.code)}>{countryName(r.code)} · {r.total}</button>)}

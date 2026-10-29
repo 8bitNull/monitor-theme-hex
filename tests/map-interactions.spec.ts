@@ -10,7 +10,7 @@ async function fixture(page:Page){
   return r.fulfill({json:{ping:[{task_id:1,ts:Date.now()/1000-(id===6?150:0),latency,loss:id===7?4:0}],probes:{1:'Interaction route'},loss:{1:42}}})
  })
 }
-const chip=(page:Page,code:string)=>page.getByRole('group',{name:'地区速选',exact:true}).getByRole('button',{name:new RegExp(`${code==='HK'?'香港':code==='MO'?'澳门':code==='JP'?'日本':code==='DE'?'德国':code==='US'?'美国':code} ·`)})
+const chip=(page:Page,code:string)=>({click:async()=>{const group=page.getByRole('group',{name:'地区速选',exact:true}),picker=group.getByRole('combobox');await expect(group).toBeVisible();if(await picker.count()){await picker.click();await page.getByRole('option').and(page.locator(`[data-value="${code}"]`)).click()}else await group.getByRole('button',{name:new RegExp(`${code==='HK'?'香港':code==='MO'?'澳门':code==='JP'?'日本':code==='DE'?'德国':code==='US'?'美国':code} ·`)}).click()}})
 const legend=(page:Page,name:string)=>page.getByRole('group',{name:'地图状态',exact:true}).getByRole('button',{name,exact:true})
 test.describe('mobile interactions',()=>{
  test.use({viewport:{width:390,height:844},hasTouch:true})

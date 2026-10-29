@@ -10,7 +10,7 @@ test.use({hasTouch:true,launchOptions:async({browserName},applyLaunchOptions)=>{
  await applyLaunchOptions(browserName==='chromium'?{args:['--enable-unsafe-swiftshader']}:{})
 }})
 const layers=(page:Page)=>page.getByRole('group',{name:'地图图层',exact:true})
-const quick=(page:Page,name:string)=>page.getByRole('group',{name:'地区速选',exact:true}).getByRole('button',{name:new RegExp(name)})
+const quick=(page:Page,name:string)=>({click:async()=>{const group=page.getByRole('group',{name:'地区速选',exact:true}),picker=group.getByRole('combobox');await expect(group).toBeVisible();if(await picker.count()){await picker.click();await page.getByRole('option',{name:new RegExp(name)}).click()}else await group.getByRole('button',{name:new RegExp(name)}).click()}})
 for(const appearance of ['dark','light'])for(const reducedMotion of ['reduce','no-preference'] as const)test(`selected probe alert leaves online core visible ${appearance} ${reducedMotion}`,async({page})=>{
  await page.emulateMedia({reducedMotion})
  await page.addInitScript(appearance=>localStorage.setItem('monitor-next',JSON.stringify({appearance})),appearance)
@@ -121,7 +121,8 @@ test('probe layer refreshes expiry offscreen without applying the probe filter',
  await page.goto('/');await layers(page).getByRole('button',{name:'探测',exact:true}).click()
  await expect(page.getByRole('button',{name:'异常地区 1',exact:true})).toBeEnabled()
  await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));await page.clock.fastForward(130000)
- await expect(page.getByRole('button',{name:'异常地区 0',exact:true})).toBeDisabled()
+  await expect(page.locator('.map-abnormal')).toBeDisabled()
+  await expect(page.locator('.map-abnormal')).toBeHidden()
  await expect(page.locator('.node-card')).toHaveCount(1)
  await expect(page.locator('.map-cluster[data-region=HK]')).toHaveAttribute('data-probe-quality','unknown')
 })
