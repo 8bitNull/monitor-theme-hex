@@ -9,7 +9,8 @@ import {createPortal} from 'react-dom'
 import geometry from '@/data/map-flat.json'
 import {groupRegions} from '@/lib/groups'
 import {countryName} from '@/lib/regionNames'
-import {fitMapWorld,placeMapBadges,placeMapTooltip} from '@/lib/worldMapModel'
+import {placeMapBadges,placeMapTooltip} from '@/lib/worldMapModel'
+import {fitHomeMap} from '@/lib/mapViewport'
 import {placeMapMarkers} from '@/lib/mapMarkers'
 import {aggregateMapTraffic,trafficPower,type MapTrafficNode} from '@/lib/mapTraffic'
 import {adaptiveRate} from '@/lib/format'
@@ -67,9 +68,10 @@ export const WorldMap=memo(function WorldMap({layer,onLayer,abnormalCount,onAbno
   update({width:el.clientWidth,height:el.clientHeight});const observer=new ResizeObserver(entries=>update(entries[0].contentRect));observer.observe(el);return()=>observer.disconnect()
  },[stopView,stopNavigation])
  const homeHeight=1000*homeSize.height/homeSize.width
- // Leave the geographic targets below the quick filters and layer controls.
- const fitted=fitMapWorld(homeSize.width,Math.max(1,homeSize.height-160),10,{top:28,bottom:332})
- fitted.y+=108
+ const [homeFrame,setHomeFrame]=useState(()=>({width:homeSize.width,height:homeSize.height,view:fitHomeMap(points,homeSize.width,homeSize.height,defaultHomeScale)}))
+ const resized=homeFrame.width!==homeSize.width||homeFrame.height!==homeSize.height
+ const fitted=resized?fitHomeMap(points,homeSize.width,homeSize.height,defaultHomeScale):homeFrame.view
+ if(resized)setHomeFrame({width:homeSize.width,height:homeSize.height,view:fitted})
  const homeView={x:fitted.x*1000/homeSize.width,y:fitted.y*1000/homeSize.width,k:fitted.k*1000/homeSize.width}
  const renderedView=full?view:{k:homeView.k*navigation.k,x:homeView.x*navigation.k+navigation.x+500*(1-navigation.k),y:homeView.y*navigation.k+navigation.y+homeHeight/2*(1-navigation.k)},viewHeight=full?480:homeHeight
  const screenScale=Math.min(size.width/1000,size.height/viewHeight)
