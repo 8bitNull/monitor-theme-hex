@@ -1,4 +1,7 @@
 export const english: Record<string, string> = {
+"密度":"Density",
+"搜索节点名称、地区、操作系统":"Search node name, region, operating system",
+"重置筛选":"Reset filters",
 "流量与账期":"Traffic & billing",
 "最近采样":"Latest sample",
 "区间平均":"Sample average",
