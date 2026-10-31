@@ -9,6 +9,35 @@ async function themeColor(locator:Locator,token:string){
  },token)
 }
 
+for(const appearance of ['light','dark'])for(const palette of ['default','ocean','sunset','forest','midnight','rose']){
+ test(`map layer controls retain visible keyboard focus in ${appearance}/${palette}`,async({page})=>{
+  await page.addInitScript(appearance=>localStorage.setItem('monitor-next',JSON.stringify({_storageVersion:2,appearance})),appearance)
+  await page.route('**/theme-config.json',r=>r.fulfill({json:{palette}}))
+  await page.route('**/api/themes/hex/config',r=>r.fulfill({status:404}))
+  await page.goto('/')
+  await expect(page.locator('.next-theme')).toHaveAttribute('data-palette',palette)
+  const controls=page.locator('.persistent-map .map-layer-buttons button')
+  await expect(controls.first()).toBeVisible()
+  await page.keyboard.press('Tab')
+  for(const control of await controls.all()){
+   await control.focus();await control.press('Space')
+   await expect(control).toHaveAttribute('aria-pressed','true')
+   const focus=await control.evaluate(el=>{
+    const style=getComputedStyle(el),canvas=document.createElement('canvas').getContext('2d')!
+    const luminance=(color:string)=>{
+     canvas.clearRect(0,0,1,1);canvas.fillStyle=color;canvas.fillRect(0,0,1,1)
+     const rgb=[...canvas.getImageData(0,0,1,1).data].slice(0,3).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4})
+     return rgb.reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0)
+    }
+    const foreground=luminance(style.outlineColor),background=luminance(getComputedStyle(el.parentElement!).backgroundColor)
+    return {visible:el.matches(':focus-visible')&&style.outlineStyle!=='none'&&parseFloat(style.outlineWidth)>=2,contrast:(Math.max(foreground,background)+.05)/(Math.min(foreground,background)+.05)}
+   })
+   expect(focus.visible).toBe(true)
+   expect(focus.contrast).toBeGreaterThanOrEqual(3)
+  }
+ })
+}
+
 for(const appearance of ['light','dark']){
  test(`minimal desktop disk and load retain warning colors in ${appearance}`,async({page})=>{
   const base=nodes()[0]

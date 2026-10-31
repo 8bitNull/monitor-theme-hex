@@ -79,7 +79,8 @@ body { font-family: "HEX Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", 
   .next-theme .persistent-map .region-atlas:not(.is-fullscreen) .map-layer-tools { position: static; }
   .next-theme .persistent-map .region-atlas:not(.is-fullscreen) .map-layer-buttons { position: absolute; top: 14px; right: 58px; padding: 2px; border: 1px solid var(--map-line); border-radius: 7px; background: var(--map-tooltip); }
   .next-theme .persistent-map .region-atlas:not(.is-fullscreen) .map-layer-buttons button { border: 0; min-height: 26px; padding: 3px 8px; }
-  .next-theme .persistent-map .region-atlas:not(.is-fullscreen) .map-layer-buttons button[aria-pressed=true] { background: color-mix(in srgb,var(--map-accent) 16%,var(--map-sea)); box-shadow: inset 0 1px 0 #ffffff12; outline: none; }
+  .next-theme .persistent-map .region-atlas:not(.is-fullscreen) .map-layer-buttons button[aria-pressed=true] { background: color-mix(in srgb,var(--map-accent) 16%,var(--map-sea)); box-shadow: inset 0 1px 0 #ffffff12; }
+  .next-theme .persistent-map :is(button,[data-slot=select]):focus-visible { outline: 2px solid var(--map-accent); }
   .next-theme .persistent-map .region-atlas:not(.is-fullscreen) .map-abnormal { position: absolute; right: 160px; bottom: 16px; font-size: 10px; }
   .next-theme .persistent-map .region-atlas:not(.is-fullscreen) .map-abnormal:disabled { display: none; }
   .next-theme .persistent-map .region-atlas:not(.is-fullscreen) .map-layer-tools > p { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
