@@ -1,17 +1,7 @@
-/* HEX visual system: award-winning craft, atmospheric depth and micro-precision hierarchy. */
+/* Shared typography, surfaces and interaction states. Final geometry lives in layout-v3. */
 .next-theme {
-  --surface-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px -4px rgba(15, 23, 42, 0.06);
-  --surface-hover: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 20px 40px -8px rgba(53, 99, 220, 0.12);
-  --home-card-surface: color-mix(in srgb, var(--background) 75%, var(--card));
   -webkit-font-smoothing: antialiased;
-  background-image: radial-gradient(ellipse 80% 50% at 50% -20%, color-mix(in srgb, var(--tone) 4%, transparent), transparent 70%);
   background-repeat: no-repeat;
-}
-.dark .next-theme {
-  --surface-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 20px -2px rgba(0, 0, 0, 0.55);
-  --surface-hover: 0 0 0 1px color-mix(in srgb, var(--tone) 45%, transparent), 0 10px 32px -4px rgba(0, 0, 0, 0.7), 0 0 24px -4px color-mix(in srgb, var(--tone) 20%, transparent);
-  --home-card-surface: color-mix(in srgb, var(--muted) 65%, var(--card));
-  background-image: radial-gradient(ellipse 80% 50% at 50% -20%, color-mix(in srgb, var(--tone) 8%, transparent), transparent 70%);
 }
 .metric-reading-unit { font-size: .52em; font-weight: 500; letter-spacing: 0.02em; color: var(--muted-foreground); opacity: 0.85; }
 .metric-reading-amount { font-variant-numeric: tabular-nums; }
@@ -148,7 +138,7 @@
     font-size: 12px;
     font-weight: 500;
     color: var(--muted-foreground);
-    transition: all 160ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition: color var(--motion-feedback) ease, background-color var(--motion-feedback) ease, box-shadow var(--motion-feedback) ease;
   }
   .next-theme #node-results .view-switch button.active {
     background: var(--card);
@@ -179,7 +169,7 @@
     box-shadow: var(--surface-shadow);
     overflow: clip;
     position: relative;
-    transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1), border-color 200ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition: border-color var(--motion-feedback) ease, box-shadow var(--motion-feedback) ease;
   }
   .next-theme[data-layout=compact] .node-card { --card-pad: 16px; }
   .next-theme .node-card > .node-open:focus-visible { outline-offset: -3px; }
@@ -235,25 +225,7 @@
     border-radius: 50%;
     position: relative;
   }
-  .next-theme .node-card .status-pill.is-online .dot {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--ok) 25%, transparent);
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .next-theme .node-card .status-pill.is-online .dot::after {
-      content: '';
-      position: absolute;
-      inset: -2px;
-      border-radius: 50%;
-      background: currentColor;
-      opacity: 0.5;
-      animation: hex-status-ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
-    }
-  }
-  @keyframes hex-status-ping {
-    0% { transform: scale(0.9); opacity: 0.7; }
-    60% { transform: scale(2.4); opacity: 0; }
-    100% { transform: scale(2.4); opacity: 0; }
-  }
+  .next-theme .node-card .status-pill.is-online .dot { box-shadow: none; }
   .next-theme .node-card .resources { gap: 16px 24px; padding-bottom: 16px; }
   .next-theme .node-card[data-card-density=detailed] .resources { gap: 14px 24px; padding-bottom: 16px; }
   .next-theme .node-card .resource-label > span { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted-foreground); }
@@ -445,8 +417,8 @@
 
   /* Tables retain the compact comparison task, with quieter grid lines. */
   .next-theme .table-scroll { border: 1px solid var(--border); border-radius: var(--radius-panel); box-shadow: var(--surface-shadow); }
-  .next-theme .node-table thead { background: var(--muted); }
-  .next-theme .node-table th { font-size: 11px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; }
+  .next-theme .node-table thead { background: var(--surface-inset); }
+  .next-theme .node-table th { font-size: 12px; font-weight: 500; letter-spacing: .01em; text-transform: none; }
   .next-theme .node-table td { border-bottom-color: color-mix(in srgb,var(--border) 60%,transparent); }
   .next-theme .table-node-name { font-weight: 600; }
 
@@ -470,9 +442,9 @@
   .next-theme .detail-grouped.node-detail .detail-metric-card .resource-trend { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 12px; }
   .next-theme .detail-grouped.node-detail .detail-status-band.with-load { margin-top: 12px; padding: 16px 0 24px; }
   .next-theme .detail-grouped.node-detail .detail-history { padding: 24px; border: 1px solid var(--border); border-radius: var(--radius-panel); box-shadow: var(--surface-shadow); }
-  .next-theme .detail-grouped.node-detail .detail-ranges { background: var(--muted); padding: 3px; border-radius: 8px; }
-  .next-theme .detail-grouped.node-detail .detail-ranges button { min-height: 40px; border-radius: 6px; }
-  .next-theme .detail-grouped.node-detail .detail-ranges button[aria-pressed=true] { background: var(--card); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); }
+  .next-theme .detail-grouped.node-detail .detail-ranges { background: var(--surface-inset); padding: 3px; border-radius: var(--radius-control); box-shadow: inset 0 1px 2px #19284208; }
+  .next-theme .detail-grouped.node-detail .detail-ranges button { min-height: 44px; border-radius: 6px; }
+  .next-theme .detail-grouped.node-detail .detail-ranges button[aria-pressed=true] { background: var(--card); box-shadow: var(--control-shadow); }
   .next-theme .detail-grouped.node-detail .detail-fact-groups > section h3 { font-size: 14px; }
   .next-theme .detail-grouped.node-detail .detail-facts { row-gap: 18px; }
 }
@@ -489,16 +461,19 @@
   .next-theme .node-card { --card-pad: 16px; }
   .next-theme .node-card .resources { gap: 14px 16px; }
 }
-/* Micro-interactions & transitions */
-@media (prefers-reduced-motion:no-preference) {
-  .next-theme .node-card { transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease; }
+/* Hover never changes the instrument's position; focus also works on touch keyboards. */
+@media (hover:hover) and (pointer:fine) {
   .next-theme .node-card:hover {
-    border-color: color-mix(in srgb,var(--tone) 35%,var(--border));
+    border-color: color-mix(in srgb,var(--tone) 32%,var(--border));
     box-shadow: var(--surface-hover);
-    transform: translateY(-2px);
   }
-  .next-theme :is(.view-switch button,.ma-nav button,.ma-detail-tabs button) {
-    transition: color 160ms cubic-bezier(0.4, 0, 0.2, 1), background-color 160ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion:no-preference) {
+  .next-theme :is(.node-card,.desktop-results-search,[data-slot=select],.resource-trend) {
+    transition: border-color var(--motion-feedback) ease, box-shadow var(--motion-feedback) ease, background-color var(--motion-feedback) ease;
+  }
+  .next-theme :is(.view-switch button,.ma-nav button,.ma-detail-tabs button,.detail-ranges button,.detail-tabs button,.detail-resource-metric-desktop button) {
+    transition: color var(--motion-feedback) ease, background-color var(--motion-feedback) ease, border-color var(--motion-feedback) ease, box-shadow var(--motion-feedback) ease;
   }
 }
 
