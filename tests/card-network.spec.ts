@@ -2,6 +2,27 @@
 import {test,expect} from './desktopTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
+test('TCP and UDP readings are centered as a group without overlapping the network title',async({page})=>{
+ await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],metrics:{...nodes()[0].metrics,tcp:12345678,udp:87654321}}]}}))
+ await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:metrics()}))
+ for(const language of ['zh','en'])for(const width of [768,1024,1440]){
+  await page.setViewportSize({width,height:1000})
+  await page.addInitScript(({language})=>localStorage.setItem('monitor-next-language',language),{language})
+  await page.goto('/')
+  const card=page.locator('.node-card').first()
+  const readings=card.locator('.card-network-heading .node-connections')
+  await expect(readings).toBeVisible()
+  await expect(readings.locator('span')).toHaveText(['TCP','UDP'])
+  const layout=await card.evaluate(el=>{
+   const card=el.getBoundingClientRect(),heading=el.querySelector('.card-network-heading')!,title=heading.firstElementChild!.getBoundingClientRect(),group=heading.querySelector('.node-connections')!.getBoundingClientRect()
+   return {offset:Math.abs(group.left+group.width/2-card.left-card.width/2),overlap:title.right>group.left+1&&title.bottom>group.top&&group.bottom>title.top,overflow:el.scrollWidth>el.clientWidth+1}
+  })
+  expect(layout.offset).toBeLessThanOrEqual(1)
+  expect(layout.overlap).toBe(false)
+  expect(layout.overflow).toBe(false)
+ }
+})
+
 test('compact card keeps billing below latency and three equal columns and remarks beside price',async({page})=>{
  await page.route('**/api/me',r=>r.fulfill({json:{authed:true,github:false,site_name:'HEX',public_page:true}}))
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[1],expires_at:'2026-10-07',remark:'国际线路;Backup;这是一段较长的备注用于验证标签自动换行',metrics:{...nodes()[1].metrics,tcp:12345678,udp:87654321}}]}}))
