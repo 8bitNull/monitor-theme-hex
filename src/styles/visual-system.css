@@ -285,7 +285,7 @@
   .next-theme .node-card[data-card-density=detailed] .speed-trend .micro-trend { height: 16px; }
   .next-theme .node-card .card-network-heading {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: baseline;
     gap: 4px 12px;
     margin-bottom: 6px;

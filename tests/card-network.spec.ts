@@ -2,7 +2,7 @@
 import {test,expect} from './desktopTest'
 import {nodes,metrics} from '../scripts/fixtures.mjs'
 
-test('TCP and UDP readings are centered as a group without overlapping the network title',async({page})=>{
+test('TCP and UDP readings are right aligned as a group without overlapping the network title',async({page})=>{
  await page.route('**/api/nodes',r=>r.fulfill({json:{nodes:[{...nodes()[0],metrics:{...nodes()[0].metrics,tcp:12345678,udp:87654321}}]}}))
  await page.route('**/api/nodes/*/metrics?*',r=>r.fulfill({json:metrics()}))
  for(const language of ['zh','en'])for(const width of [768,1024,1440]){
@@ -14,8 +14,8 @@ test('TCP and UDP readings are centered as a group without overlapping the netwo
   await expect(readings).toBeVisible()
   await expect(readings.locator('span')).toHaveText(['TCP','UDP'])
   const layout=await card.evaluate(el=>{
-   const card=el.getBoundingClientRect(),heading=el.querySelector('.card-network-heading')!,title=heading.firstElementChild!.getBoundingClientRect(),group=heading.querySelector('.node-connections')!.getBoundingClientRect()
-   return {offset:Math.abs(group.left+group.width/2-card.left-card.width/2),overlap:title.right>group.left+1&&title.bottom>group.top&&group.bottom>title.top,overflow:el.scrollWidth>el.clientWidth+1}
+   const heading=el.querySelector('.card-network-heading')!,title=heading.firstElementChild!.getBoundingClientRect(),group=heading.querySelector('.node-connections')!.getBoundingClientRect()
+   return {offset:Math.abs(group.right-heading.getBoundingClientRect().right),overlap:title.right>group.left+1&&title.bottom>group.top&&group.bottom>title.top,overflow:el.scrollWidth>el.clientWidth+1}
   })
   expect(layout.offset).toBeLessThanOrEqual(1)
   expect(layout.overlap).toBe(false)
