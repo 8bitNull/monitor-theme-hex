@@ -96,9 +96,12 @@ test.describe('actual WebGL traffic',()=>{
    await page.waitForTimeout(150)
    return await canvas.getAttribute('data-test-clears')===before
   },{timeout:10000}).toBe(true)
-  // Element screenshots also capture overlaid controls. Their subpixel outline
-  // rasterization is independent of the frozen GPU output; keep the map exposed.
-  const staticOptions={mask:[page.locator('.map-layer-tools')]}
+  // Element screenshots capture overlaid controls as well as GPU output.
+  // The positioned layer buttons overflow their zero-height tools wrapper;
+  // mask the buttons' painted bounds so outline rasterization stays excluded.
+  const staticControls=page.locator('.map-layer-buttons')
+  await expect(staticControls).toBeVisible()
+  const staticOptions={mask:[staticControls]}
   const stopped=await canvas.screenshot(staticOptions),clears=await canvas.getAttribute('data-test-clears')
   expect((await canvas.screenshot(staticOptions)).equals(stopped)).toBe(true)
   expect(await canvas.getAttribute('data-test-clears')).toBe(clears)
