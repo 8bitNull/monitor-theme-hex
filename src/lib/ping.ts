@@ -1,5 +1,8 @@
 import { tr, getLanguage } from './i18n.ts'
 import { isRecentPingSample } from './pingRecency.ts'
+// Fetch cadence does not change the backend's probe/history resolution.
+export const PING_REFRESH_INTERVAL = 5000;
+export const PING_RETRY_INTERVAL = 60000;
 export type PingPoint = {
     task_id: number;
     ts: number;
@@ -141,10 +144,16 @@ export function loadPing(id: number, force = false): Promise<PingHistory> {
         return data;
     }).then(data => {
         publish(id, { data, updatedAt: Date.now(), failed: false });
-        entry.expires = Date.now() + 60000;
+        entry.expires = Date.now() + PING_REFRESH_INTERVAL;
         trimSnapshots();
         return data;
-    }).catch(error => { cache.delete(id); publish(id, { ...snapshots.get(id), failed: true }); throw error; });
+    }).catch(error => {
+        // Share failure backoff too: other cards/sort/map watchers must not
+        // retry a failing node whenever their healthy nodes refresh.
+        entry.expires = Date.now() + PING_RETRY_INTERVAL;
+        publish(id, { ...snapshots.get(id), failed: true });
+        throw error;
+    });
     cache.set(id, entry);
     return entry.request;
 }
@@ -152,18 +161,20 @@ export function loadPing(id: number, force = false): Promise<PingHistory> {
 export function watchPing(ids: number[]): () => void {
     let stopped = false, pending = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const refresh = async () => {
+    const refresh = async (event?: Event) => {
         clearTimeout(timer);
         if (stopped || pending || document.hidden)
             return;
         pending = true;
-        await Promise.all(ids.map(id => loadPing(id).catch(() => { })));
+        // Resume signals may recover a failed connection before its automatic
+        // backoff expires; successful snapshots still respect their five-second TTL.
+        await Promise.all(ids.map(id => loadPing(id, !!event && !!snapshots.get(id)?.failed).catch(() => { })));
         pending = false;
         if (!stopped && !document.hidden) {
             const now = Date.now();
-            // A cache hit must wait only for its remaining TTL. A failed read
-            // has no cache entry and retains the one-minute retry delay.
-            const next = Math.min(now + 60000, ...ids.map(id => cache.get(id)?.expires ?? now + 60000));
+            // Cache hits wait only for their remaining TTL; failed requests
+            // keep their shared one-minute backoff rather than retrying at 5s.
+            const next = Math.min(now + PING_RETRY_INTERVAL, ...ids.map(id => cache.get(id)?.expires ?? now + PING_REFRESH_INTERVAL));
             timer = setTimeout(() => { void refresh(); }, Math.max(0, next - now));
         }
     };

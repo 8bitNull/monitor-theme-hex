@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { recentPingRows, summarizePing, loadPing } from './ping.ts'
+import { recentPingRows, summarizePing, loadPing, getPing } from './ping.ts'
 const data = { ping: [{ task_id: 1, ts: 3, latency: null, loss: 100 }, { task_id: 1, ts: 1, latency: 100 }, { task_id: 1, ts: 2, latency: 120, loss: 50 }, { task_id: 2, ts: 1, latency: 40 }], probes: { '1': 'Tokyo' }, loss: { '1': 4.2 } }
 const result = summarizePing(data)
 assert.equal(result[0].loss, 4.2) // Not (0 + 50 + 100) / 3.
@@ -42,3 +42,41 @@ assert.match(url,/points=1440/)
 assert.equal(summarizePing(await loadPing(1))[0].latest.latency,321)
 assert.equal(calls,9)
 console.log('manual refresh, in-flight sharing, minute-resolution request and HTTP cache bypass passed')
+
+// Request cadence is independent of the server's sample timestamps/resolution.
+const realNow=Date.now
+let clock=realNow(),reads=0,fail=false
+Date.now=()=>clock
+try {
+  globalThis.fetch=(async()=>{
+    reads++
+    return fail?new Response('',{status:503}):new Response(JSON.stringify(data))
+  }) as typeof fetch
+  await loadPing(3000)
+  const sample=getPing(3000)?.data
+  clock+=4999
+  await loadPing(3000)
+  assert.equal(reads,1,'share a successful result for five seconds')
+  clock++
+  await loadPing(3000)
+  assert.equal(reads,2,'read again when a five-second backend result can arrive')
+  assert.deepEqual(getPing(3000)?.data,sample,'a successful read must not rewrite sample timestamps')
+  clock+=5000
+  fail=true
+  await assert.rejects(loadPing(3000))
+  assert.equal(reads,3)
+  assert.deepEqual(getPing(3000)?.data,sample,'keep the previous data on failure')
+  clock+=59999
+  await assert.rejects(loadPing(3000))
+  assert.equal(reads,3,'other watchers must share the one-minute failure backoff')
+  clock++
+  await assert.rejects(loadPing(3000))
+  assert.equal(reads,4,'retry when the failure backoff expires')
+  fail=false
+  await loadPing(3000,true)
+  assert.equal(reads,5,'manual retry bypasses failure backoff')
+  assert.equal(getPing(3000)?.failed,false)
+} finally {
+  Date.now=realNow
+}
+console.log('five-second successful reads, shared failure backoff and truthful sample timestamps passed')
