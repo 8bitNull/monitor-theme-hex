@@ -14,7 +14,7 @@ import {DetailAccount} from './DetailAccount'
 import '@/styles/detail-optimization.css'
 import {ResourceHistory,type ResourceMetricKey} from './ResourceHistory'
 import {DetailToolbar,type HistoryTab} from './DetailToolbar'
-import { probeCatalog, selectPing, summarizePing, windowLoss } from '@/lib/ping'
+import { PING_REFRESH_INTERVAL, PING_RETRY_INTERVAL, probeCatalog, selectPing, summarizePing, windowLoss } from '@/lib/ping'
 import { tr, locale } from '../lib/i18n.ts'
 import { useEffect, useMemo, useState, useRef } from "react";
 import { median } from "d3-array";
@@ -235,17 +235,22 @@ export function NodeDetail({ node, authed, probe = "auto", nodes, onSwitch, deta
         });
         return () => { active = false; clearTimeout(timeout); controller.abort(); };
     }, [node.id, hours, tab, retry,historyVisible]);
-    // Keep one request in flight. Background tabs do not poll; returning starts
-    // a fresh 30-second cycle and immediately refreshes the visible history.
+    // Read visible latency every five seconds; back off failures and retain
+    // history/selection. This does not turn bucketed history into raw probes.
     useEffect(()=>{
         if(tab!=="latency"||!historyVisible)return;
         let timer:ReturnType<typeof setInterval>|undefined;
         const sync=()=>{if(!document.hidden&&!busy.current){busy.current=true;setLoading(true);setRetry(n=>n+1)}};
-        const schedule=()=>{clearInterval(timer);if(!document.hidden)timer=setInterval(sync,30000)};
-        const visibility=()=>{schedule();if(!document.hidden)sync()};
-        schedule();document.addEventListener('visibilitychange',visibility);
-        return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',visibility)};
-    },[node.id,hours,tab,historyVisible]);
+        const schedule=()=>{clearInterval(timer);if(!document.hidden)timer=setInterval(sync,failed?PING_RETRY_INTERVAL:PING_REFRESH_INTERVAL)};
+        const resume=()=>{schedule();if(!document.hidden)sync()};
+        const resumeEvents=['focus','online','pageshow'] as const;
+        schedule();document.addEventListener('visibilitychange',resume);
+        for(const event of resumeEvents)window.addEventListener(event,resume);
+        return()=>{
+            clearInterval(timer);document.removeEventListener('visibilitychange',resume);
+            for(const event of resumeEvents)window.removeEventListener(event,resume);
+        };
+    },[node.id,hours,tab,historyVisible,failed]);
     // One series per probe that reported, labelled from the names the samples
     // arrived with. Memoised, as are the two below: the node prop changes every few
     // seconds as live metrics arrive, and rebuilding the chart's data array on those

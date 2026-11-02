@@ -7,7 +7,7 @@ async function setup(page:Page,width=390){
  await page.clock.install({time:new Date(now)})
  await page.route('**/api/nodes',route=>route.fulfill({json:{nodes:[nodes()[0]]}}))
 }
-function history(ts:number,latency:number){
+function history(ts:number,latency:number|null){
  return {metrics:[],ping:[{task_id:1,ts,latency}],probes:{1:'Primary'},loss:{1:0}}
 }
 for(const width of [320,390,1440])test(`visible latency keeps updating automatically across three cycles at ${width}px`,async({page})=>{
@@ -15,14 +15,29 @@ for(const width of [320,390,1440])test(`visible latency keeps updating automatic
  let calls=0
  await page.route('**/api/nodes/*/metrics?*',route=>{
   calls++
-  return route.fulfill({json:history(now/1000+(calls-1)*60,20+calls)})
+  return route.fulfill({json:history(now/1000+(calls-1)*5,20+calls)})
  })
  await page.goto('/')
  const value=page.locator(width<720?'.ma-network-value':'.node-card .latency-link')
  await expect(value).toContainText('21')
  for(const expected of [22,23,24]){
-  await page.clock.fastForward(61000)
+  await page.clock.fastForward(5100)
   await expect(value).toContainText(String(expected))
+ }
+ expect(calls).toBe(4)
+})
+
+for(const width of [320,390,1440])test(`five-second reads accept changed bucket values and returned timeouts at ${width}px`,async({page})=>{
+ await setup(page,width)
+ let calls=0
+ const values=[21,47,null,23]
+ await page.route('**/api/nodes/*/metrics?*',route=>route.fulfill({json:history(now/1000,values[calls++])}))
+ await page.goto('/')
+ const value=page.locator(width<720?'.ma-network-value':'.node-card .latency-link')
+ await expect(value).toContainText('21')
+ for(const expected of ['47','超时','23']){
+  await page.clock.fastForward(5100)
+  await expect(value).toContainText(expected)
  }
  expect(calls).toBe(4)
 })
@@ -32,39 +47,41 @@ test('unchanged old samples stay stale after an automatic read and recover on ne
  let calls=0
  await page.route('**/api/nodes/*/metrics?*',route=>{
   calls++
-  return route.fulfill({json:history(calls<3?now/1000-300:now/1000+120,calls<3?21:42)})
+  return route.fulfill({json:history(calls<3?now/1000-300:now/1000+10,calls<3?21:42)})
  })
  await page.goto('/')
  const card=page.locator('.ma-node'),value=card.locator('.ma-network-value')
  await expect(card.locator('.ma-route-caption')).toContainText('5 分钟前')
- await page.clock.fastForward(61000)
- await expect(card.locator('.ma-route-caption')).toContainText('6 分钟前')
+ await page.clock.fastForward(5100)
+ await expect(card.locator('.ma-route-caption')).toContainText('5 分钟前')
  await expect(value).toContainText('—')
  expect(calls).toBe(2)
- await page.clock.fastForward(61000)
+ await page.clock.fastForward(5100)
  await expect(value).toContainText('42')
  await expect(card.locator('.ma-route-footer')).toHaveCount(0)
  expect(calls).toBe(3)
 })
 
-test('a manual refresh between polls does not postpone the next automatic update past a minute',async({page})=>{
+test('a manual refresh between polls does not postpone the next automatic update past five seconds',async({page})=>{
  await setup(page)
  let calls=0
  await page.route('**/api/nodes/*/metrics?*',route=>{
   calls++
-  return route.fulfill({json:history(calls===1?now/1000-300:now/1000+(calls-2)*60,20+calls)})
+  return route.fulfill({json:history(calls===1?now/1000-300:now/1000+(calls-2)*5,20+calls)})
  })
  await page.goto('/')
  const card=page.locator('.ma-node'),value=card.locator('.ma-network-value')
  await expect(card.locator('.ma-route-caption')).toContainText('5 分钟前')
- await page.clock.fastForward(30000)
+ await page.clock.fastForward(2000)
  await card.getByRole('button',{name:'刷新延迟数据',exact:true}).click()
  await expect(value).toContainText('22')
- await page.clock.fastForward(31000)
- await page.clock.fastForward(30000)
+ // The original t=5s timer hits the renewed cache, which expires at t≈7s.
+ await page.clock.fastForward(3100)
+ expect(calls).toBe(2)
+ await page.clock.fastForward(2100)
  await expect(value).toContainText('23')
  expect(calls).toBe(3)
- await page.clock.fastForward(61000)
+ await page.clock.fastForward(5100)
  await expect(value).toContainText('24')
  expect(calls).toBe(4)
 })
@@ -126,12 +143,30 @@ test('failed automatic refresh retains history and recovers at the next poll wit
  await page.goto('/')
  const card=page.locator('.ma-node'),value=card.locator('.ma-network-value')
  await expect(value).toContainText('21')
- await page.clock.fastForward(61000)
+ await page.clock.fastForward(5100)
  await expect(card.locator('.ma-route-caption')).toContainText('更新失败 · 上次数据')
  await expect(card.getByRole('button',{name:'查看线路：Primary',exact:true})).toBeVisible()
- await page.clock.runFor(1000)
+ await page.clock.runFor(50000)
  expect(calls).toBe(2)
- await page.clock.fastForward(60000)
+ await page.clock.fastForward(11000)
+ await expect(value).toContainText('23')
+ await expect(card.locator('.ma-route-footer')).toHaveCount(0)
+ expect(calls).toBe(3)
+})
+
+test('network recovery can retry a failed node before the automatic failure backoff expires',async({page})=>{
+ await setup(page)
+ let calls=0
+ await page.route('**/api/nodes/*/metrics?*',route=>{
+  calls++
+  return calls===2?route.fulfill({status:503}):route.fulfill({json:history(now/1000,20+calls)})
+ })
+ await page.goto('/')
+ const card=page.locator('.ma-node'),value=card.locator('.ma-network-value')
+ await expect(value).toContainText('21')
+ await page.clock.fastForward(5100)
+ await expect(card.locator('.ma-route-caption')).toContainText('更新失败 · 上次数据')
+ await page.evaluate(()=>window.dispatchEvent(new Event('online')))
  await expect(value).toContainText('23')
  await expect(card.locator('.ma-route-footer')).toHaveCount(0)
  expect(calls).toBe(3)
@@ -144,7 +179,7 @@ test('overlapping resume signals share the pending request and keep the next pol
  await page.route('**/api/nodes/*/metrics?*',async route=>{
   calls++
   if(calls===2)await held
-  return route.fulfill({json:history(now/1000+(calls===1?0:calls===2?180:240),20+calls)})
+  return route.fulfill({json:history(now/1000+(calls===1?0:calls===2?180:185),20+calls)})
  })
  await page.goto('/')
  const value=page.locator('.ma-network-value')
@@ -155,9 +190,42 @@ test('overlapping resume signals share the pending request and keep the next pol
  release()
  await expect(value).toContainText('22')
  expect(calls).toBe(2)
- await page.clock.fastForward(61000)
+ await page.clock.fastForward(5100)
  await expect(value).toContainText('23')
  expect(calls).toBe(3)
+})
+
+for(const width of [390,1440])test(`detail latency reads backend updates every five seconds at ${width}px`,async({page})=>{
+ await setup(page,width)
+ let calls=0
+ await page.route('**/api/nodes/*/metrics?*',route=>{
+  if(new URL(route.request().url()).searchParams.get('series')==='ping')calls++
+  return route.fulfill({json:history(now/1000+(calls-1)*5,20+calls)})
+ })
+ await page.goto('/node/1?section=latency&routes=1#latency')
+ const value=page.getByLabel('查看线路',{exact:true})
+ await expect(value).toContainText('21 ms')
+ for(const expected of [22,23,24]){
+  await page.clock.fastForward(5100)
+  await expect(value).toContainText(`${expected} ms`)
+ }
+ expect(calls).toBe(4)
+})
+
+for(const event of ['focus','online','pageshow'])test(`detail latency refreshes on ${event} after browser suspension`,async({page})=>{
+ await setup(page,1440)
+ let calls=0
+ await page.route('**/api/nodes/*/metrics?*',route=>{
+  if(new URL(route.request().url()).searchParams.get('series')==='ping')calls++
+  return route.fulfill({json:history(now/1000+(calls-1)*180,20+calls)})
+ })
+ await page.goto('/node/1?section=latency&routes=1#latency')
+ const value=page.getByLabel('查看线路',{exact:true})
+ await expect(value).toContainText('21 ms')
+ await page.clock.setSystemTime(new Date(now+180000))
+ await page.evaluate(event=>window.dispatchEvent(new Event(event)),event)
+ await expect(value).toContainText('22 ms')
+ expect(calls).toBe(2)
 })
 
 test('leaving the node list removes polling and resume listeners',async({page})=>{
