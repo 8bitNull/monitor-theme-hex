@@ -148,7 +148,7 @@ export function loadPing(id: number, force = false): Promise<PingHistory> {
     cache.set(id, entry);
     return entry.request;
 }
-/** Schedule from completion, so a poll cannot race its own response-based TTL. */
+/** Schedule at cache expiry, including when another watcher/manual read renewed it. */
 export function watchPing(ids: number[]): () => void {
     let stopped = false, pending = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -159,10 +159,24 @@ export function watchPing(ids: number[]): () => void {
         pending = true;
         await Promise.all(ids.map(id => loadPing(id).catch(() => { })));
         pending = false;
-        if (!stopped && !document.hidden)
-            timer = setTimeout(() => { void refresh(); }, 60000);
+        if (!stopped && !document.hidden) {
+            const now = Date.now();
+            // A cache hit must wait only for its remaining TTL. A failed read
+            // has no cache entry and retains the one-minute retry delay.
+            const next = Math.min(now + 60000, ...ids.map(id => cache.get(id)?.expires ?? now + 60000));
+            timer = setTimeout(() => { void refresh(); }, Math.max(0, next - now));
+        }
     };
     void refresh();
     document.addEventListener('visibilitychange', refresh);
-    return () => { stopped = true; clearTimeout(timer); document.removeEventListener('visibilitychange', refresh); };
+    // Mobile browsers can resume without a visibility transition; the shared
+    // cache/in-flight request still deduplicates overlapping wake-up signals.
+    const resumeEvents = ['focus', 'online', 'pageshow'] as const;
+    for (const event of resumeEvents) window.addEventListener(event, refresh);
+    return () => {
+        stopped = true;
+        clearTimeout(timer);
+        document.removeEventListener('visibilitychange', refresh);
+        for (const event of resumeEvents) window.removeEventListener(event, refresh);
+    };
 }
