@@ -175,6 +175,8 @@
 .node-card .node-timing b {min-width:0}
 .node-card .ping-empty {min-height:65px;display:flex;align-items:center;line-height:1.6}
 .node-card .ping-stale {font-size:11px;line-height:1.5;color:var(--muted-foreground)}
+.node-card .ping-refresh {min-height:44px;padding:8px;margin-left:8px;color:var(--foreground)}
+.node-card .ping-refresh:focus-visible {outline:2px solid var(--tone);outline-offset:2px}
 .node-card .latency-link {min-width:5.5ch}
 @media(min-width:721px){
  .node-grid {align-items:stretch}

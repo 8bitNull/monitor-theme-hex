@@ -2,7 +2,7 @@ import {liveMetrics, nodeState} from './freshness.ts'
 import {resolveProbe} from './nodeProbes.ts'
 import { regionKey } from './groups.ts'
 import type { Node } from './api.ts'
-import { getPing, summarizePing } from './ping.ts'
+import { getPing, summarizePing, selectPing } from './ping.ts'
 import { isRecentPingSample } from './pingRecency.ts'
 import { trafficUsed } from './traffic.ts'
 import { locale } from './i18n.ts'
@@ -53,7 +53,7 @@ export function primaryPing(id: number, probe: string) {
   const snapshot = getPing(id)
   if (!snapshot?.data) return undefined
   const stats = summarizePing(snapshot.data)
-  return probe === 'auto' ? stats[0] : stats.find(p => String(p.id) === probe)
+  return selectPing(stats, probe)
 }
 export function sortValue(n: Node, key: SortKey, probe: string): number | string | null {
   const m = liveMetrics(n)

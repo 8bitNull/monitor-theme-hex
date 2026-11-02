@@ -14,7 +14,7 @@ import {DetailAccount} from './DetailAccount'
 import '@/styles/detail-optimization.css'
 import {ResourceHistory,type ResourceMetricKey} from './ResourceHistory'
 import {DetailToolbar,type HistoryTab} from './DetailToolbar'
-import { probeCatalog, windowLoss } from '@/lib/ping'
+import { probeCatalog, selectPing, summarizePing, windowLoss } from '@/lib/ping'
 import { tr, locale } from '../lib/i18n.ts'
 import { useEffect, useMemo, useState, useRef } from "react";
 import { median } from "d3-array";
@@ -255,7 +255,8 @@ export function NodeDetail({ node, authed, probe = "auto", nodes, onSwitch, deta
     })) : [], [data]);
     // The hub answers in seconds; the time axis requires milliseconds.
     const metricRows = useMemo(() => normalizeResourceSamples((data?.metrics ?? []).map(m=>({...m,ts:m.ts*1000}))), [data]);
-    const defaultProbe = probe === "auto" ? pingSeries.find(s=>s.points.length)?.id : Number(probe);
+    const routeSummaries = useMemo(() => summarizePing({ping:data?.ping ?? [],probes:data?.probes,loss:data?.loss}), [data]);
+    const defaultProbe = probe === "auto" ? selectPing(routeSummaries, probe)?.id : Number(probe);
     const visibleIds = selectedRouteIds(selectedProbes,pingSeries.map(s=>s.id),defaultProbe);
     const shownProbes = pingSeries.filter(s=>visibleIds.includes(s.id));
     // The same probe ID retains its colour when the time window/catalog changes.

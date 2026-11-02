@@ -23,4 +23,21 @@ assert.equal(quality({updatedAt:now,data:{ping:[]}}).state,'unknown')
 assert.equal(quality(sample(30),'2').state,'unknown')
 assert.equal(quality(sample(30),'1').name,'Gateway')
 assert.equal(mapProbeQuality(sample(100),'auto',80,160,now).state,'slow')
-console.log('map probe quality: freshness, thresholds, missing routes and current/history loss passed')
+const routes:PingSnapshot={updatedAt:now,data:{ping:[
+ {task_id:1,ts:now/1000-600,latency:20},
+ {task_id:2,ts:now/1000-30,latency:null},
+ {task_id:3,ts:now/1000,latency:30},
+],probes:{1:'Retired route',2:'Current timeout',3:'Current success'}}}
+assert.equal(quality(routes).name,'Current timeout')
+assert.equal(quality(routes).state,'timeout')
+assert.equal(quality(routes,'1').name,'Retired route')
+assert.equal(quality(routes,'1').state,'unknown')
+assert.equal(quality(routes,'4').name,undefined)
+const oldRoutes:PingSnapshot={updatedAt:now,data:{ping:[
+ {task_id:1,ts:now/1000-600,latency:20},
+ {task_id:2,ts:now/1000-300,latency:30},
+]}}
+assert.equal(quality(oldRoutes).name,'探测 2')
+assert.equal(quality(oldRoutes).state,'unknown')
+assert.equal(quality({...routes,data:{ping:[{task_id:1,ts:now/1000+600,latency:20},{task_id:2,ts:now/1000,latency:40}]}}).latency,40)
+console.log('map probe quality: freshness, thresholds, missing routes, automatic route fallback and current/history loss passed')

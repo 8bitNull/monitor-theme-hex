@@ -1,4 +1,5 @@
 import { tr, getLanguage } from './i18n.ts'
+import { isRecentPingSample } from './pingRecency.ts'
 export type PingPoint = {
     task_id: number;
     ts: number;
@@ -57,6 +58,12 @@ export function summarizePing(data: PingHistory) {
     });
     summaries.set(data, {language:getLanguage(), value});
     return value;
+}
+/** Auto prefers a recent route in ID order, including timeouts; pinned routes never switch. */
+export function selectPing(stats: Summary[], probe: string, now = Date.now()): Summary | undefined {
+    if (probe !== 'auto') return stats.find(route => String(route.id) === probe);
+    return stats.find(route => isRecentPingSample(route.latest.ts, now))
+        ?? stats.reduce<Summary | undefined>((latest, route) => !latest || route.latest.ts > latest.latest.ts ? route : latest, undefined);
 }
 export function recentPingRows(rows: PingPoint[], hours: PingWindow) {
     const end = rows.at(-1)?.ts;
