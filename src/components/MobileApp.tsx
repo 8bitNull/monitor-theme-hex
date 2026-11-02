@@ -15,8 +15,9 @@ import {groupRegions,regionKey,UNKNOWN_REGION} from '@/lib/groups'
 import {trafficUsage} from '@/lib/traffic'
 import {usePing} from '@/lib/usePing'
 import {resolveProbe,useNodeProbe} from '@/lib/nodeProbes'
-import {getPing,pingRevision,subscribePing,watchPing,probeCatalog,summarizePing} from '@/lib/ping'
+import {getPing,pingRevision,subscribePing,watchPing,probeCatalog,summarizePing,selectPing} from '@/lib/ping'
 import {isRecentPingSample} from '@/lib/pingRecency'
+import {PingSampleTime} from './PingSampleTime'
 import {Flag} from './NodeIcons'
 import {Status} from './NodeIdentity'
 import {RemarkTags} from './RemarkTags'
@@ -45,7 +46,7 @@ function MobileFactValue({value,offline}:{value:string;offline:boolean}){
 function CompactNode({node,prefs,authed,detailed,onOpen}:{node:Node;prefs:Preferences;authed:boolean;detailed:boolean;onOpen:(id:number,section?:'latency',probe?:number)=>void}){
  const {ref,snapshot,retry}=usePing(node.id),choice=useNodeProbe(node.id,prefs.probe)
  const stats=snapshot?.data?summarizePing(snapshot.data):[]
- const selected=choice.probe==='auto'?stats[0]:stats.find(s=>String(s.id)===choice.probe)
+ const selected=selectPing(stats,choice.probe)
  const offline=!node.online
  const m=offline?{cpu:0,mem_used:0,mem_total:node.mem_total,uptime:0,tcp:0,udp:0,net_tx:0,net_rx:0}:liveMetrics(node),state=nodeState(node)
  const notice=state==='stale'||state==='missing'?state:null
@@ -55,7 +56,7 @@ function CompactNode({node,prefs,authed,detailed,onOpen}:{node:Node;prefs:Prefer
  const reported=node.last_seen>0?new Date(node.last_seen*1000):null
  const reportHint=reported&&Number.isFinite(reported.getTime())?`${tr('最近上报时间')}：${relativeTime(node.last_seen)} · ${reported.toLocaleString(locale())}`:tr('上次上报时间未知')
  const recent=!!selected&&isRecentPingSample(selected.latest.ts)&&!snapshot?.failed
- const routeCaption=selected?`${selected.name}${!recent?` · ${snapshot?.failed?tr('更新失败 · 上次数据'):tr('较旧记录')} · ${tr('延迟')}`:''}`:snapshot?.failed?tr('暂不可用 · 自动重试'):snapshot?.data?tr('无该线路记录'):tr('正在读取探测记录…')
+ const routeCaption=selected?`${selected.name}${snapshot?.failed?` · ${tr('更新失败 · 上次数据')}`:''}`:snapshot?.failed?tr('暂不可用 · 自动重试'):snapshot?.data?tr('无该线路记录'):tr('正在读取探测记录…')
  const info=prefs.mobileInfoMode==='custom'?(prefs.mobileCardInfo??prefs.cardInfo):prefs.cardInfo
  const notes=(info.remarks?node.remark??'':'').split(/[;；]/).map(text=>text.trim()).filter(Boolean)
  const showPrice=authed&&info.price&&node.price>0
@@ -64,7 +65,7 @@ function CompactNode({node,prefs,authed,detailed,onOpen}:{node:Node;prefs:Prefer
   <div className="ma-meters"><Meter label="CPU" value={m?.cpu??null}/><Meter label={tr('内存')} value={m?percent(m.mem_used,m.mem_total):null}/></div>
   {noticeSlot==='stale'&&<p className="ma-notice ma-status-notice muted" aria-hidden={offline||undefined}>{tr('数据已过期')}</p>}{noticeSlot==='missing'&&<p className="ma-notice ma-status-notice muted" aria-hidden={offline||undefined}>{tr('等待首次上报')}</p>}
   {detailed&&(info.traffic||info.uptime||info.connections)&&<div className="ma-extra">{info.traffic&&<span>{tr('本月用量')} <b>{bytes(trafficUsage(node).value)}</b></span>}{info.uptime&&<span>{tr('在线时长')} <MobileFactValue value={offline?tr('{0} 分',0):m?uptime(m.uptime):'—'} offline={offline}/></span>}{info.connections&&<span>TCP <MobileFactValue value={String(m?.tcp??'—')} offline={offline}/> · UDP <MobileFactValue value={String(m?.udp??'—')} offline={offline}/></span>}</div>}
- </button><div className="ma-net"><span><ArrowUp size={12}/><b>{m?adaptiveRate(m.net_tx):'—'}</b></span><span><ArrowDown size={12}/><b>{m?adaptiveRate(m.net_rx):'—'}</b></span>{selected?<button type="button" className="ma-network-link" title={selected.name} aria-label={tr('查看线路：{0}',selected.name)} onClick={()=>onOpen(node.id,'latency',selected.id)}><span className="ma-network-name">{selected.name}</span><span className="ma-network-value">{offline?<><b>0</b><small>ms</small></>:recent?(selected.latest.latency===null?tr('超时'):<><b>{Math.round(selected.latest.latency)}</b><small>ms</small></>):'—'}<ChevronRight size={12}/></span></button>:<span className="ma-network-placeholder"><small className="ma-network-pending" title={routeCaption}>{routeCaption}</small><span>—</span></span>}</div>{!recent&&(snapshot?.failed||snapshot?.data)&&<div className="ma-route-footer"><small className="ma-route-caption" role={snapshot?.failed?'alert':undefined}>{routeCaption}</small>{snapshot?.failed&&<button type="button" className="ma-route-retry" onClick={retry}>{tr('读取失败 · 重试')}</button>}</div>}
+ </button><div className="ma-net"><span><ArrowUp size={12}/><b>{m?adaptiveRate(m.net_tx):'—'}</b></span><span><ArrowDown size={12}/><b>{m?adaptiveRate(m.net_rx):'—'}</b></span>{selected?<button type="button" className="ma-network-link" title={selected.name} aria-label={tr('查看线路：{0}',selected.name)} onClick={()=>onOpen(node.id,'latency',selected.id)}><span className="ma-network-name">{selected.name}</span><span className="ma-network-value">{offline?<><b>0</b><small>ms</small></>:recent?(selected.latest.latency===null?tr('超时'):<><b>{Math.round(selected.latest.latency)}</b><small>ms</small></>):'—'}<ChevronRight size={12}/></span></button>:<span className="ma-network-placeholder"><small className="ma-network-pending" title={routeCaption}>{routeCaption}</small><span>—</span></span>}</div>{!recent&&(snapshot?.failed||snapshot?.data)&&<div className="ma-route-footer"><small className="ma-route-caption" role={snapshot?.failed?'alert':undefined}>{routeCaption}{selected&&<> · <PingSampleTime ts={selected.latest.ts}/></>}</small>{(snapshot?.failed||selected)&&<button type="button" className="ma-route-retry" aria-label={snapshot?.failed?tr('读取失败 · 重试'):tr('刷新延迟数据')} onClick={retry}>{snapshot?.failed?tr('读取失败 · 重试'):tr('刷新')}</button>}</div>}
  {(notes.length>0||showPrice)&&<div className="ma-node-notes">
   {notes.length>0&&<div className="ma-node-remarks" aria-label={tr('备注')}><RemarkTags texts={notes}/></div>}
   {showPrice&&<span className="tag node-price">{money(node.price,node.currency)} / {tr(Object.hasOwn(CYCLES,node.billing_cycle)?CYCLES[node.billing_cycle]:node.billing_cycle)}</span>}
@@ -107,13 +108,13 @@ export function MobileApp({active,page,onNavigate,nodes,prefs,onPrefs,mobile,onM
  let shown=sorted.filter(n=>matches(n,filter,query))
  if(filter.sort==='cpu')shown=shown.sort((a,b)=>(liveMetrics(b)?.cpu??-1)-(liveMetrics(a)?.cpu??-1))
  if(filter.sort==='name')shown=shown.sort((a,b)=>a.name.localeCompare(b.name,locale()))
- if(filter.sort==='latency'){const value=(n:Node)=>{const snapshot=getPing(n.id);if(!snapshot?.data||snapshot.failed)return Infinity;const stats=summarizePing(snapshot.data),probe=resolveProbe(n.id,prefs.probe),s=probe==='auto'?stats[0]:stats.find(s=>String(s.id)===probe);return s&&isRecentPingSample(s.latest.ts)&&s.latest.latency!==null?s.latest.latency:Infinity};shown=shown.sort((a,b)=>value(a)-value(b))}
+ if(filter.sort==='latency'){const value=(n:Node)=>{const snapshot=getPing(n.id);if(!snapshot?.data||snapshot.failed)return Infinity;const stats=summarizePing(snapshot.data),probe=resolveProbe(n.id,prefs.probe),s=selectPing(stats,probe);return s&&isRecentPingSample(s.latest.ts)&&s.latest.latency!==null?s.latest.latency:Infinity};shown=shown.sort((a,b)=>value(a)-value(b))}
  const navigate=(next:Page)=>{scroll.current[page]=window.scrollY;onNavigate(next)}
  const filterStatus=(status:string)=>{setFilter(f=>({...f,status:f.status===status?'all':status}));if(page!=='nodes')navigate('nodes')}
  const statuses=[['all',tr('全部')],['online',tr('在线')],['offline',tr('离线')],['high',tr('高负载')],['expiry',tr('到期提醒')],['quota',tr('流量提醒')]]
  const sorts=[['default',tr('后台默认')],['cpu',tr('负载优先')],['latency',tr('所选线路延迟')],['name',tr('名称')]]
  const activeFilters=([{key:'status',label:statuses.find(s=>s[0]===filter.status)?.[1]},{key:'region',label:regionLabel(filter.region)},{key:'group',label:filter.group.slice(1)||tr('未分组')},{key:'sort',label:sorts.find(s=>s[0]===filter.sort)?.[1]}] as const).filter(f=>filter[f.key]!==empty[f.key])
- const routeOptions=[['auto',tr('各节点首条线路')],...[...probes].map(([id,name])=>[String(id),name])].filter(([,name])=>name.toLocaleLowerCase().includes(routeQuery.trim().toLocaleLowerCase()))
+ const routeOptions=[['auto',tr('自动选择近期采样线路')],...[...probes].map(([id,name])=>[String(id),name])].filter(([,name])=>name.toLocaleLowerCase().includes(routeQuery.trim().toLocaleLowerCase()))
  const names=[filter.status!=='all'?statuses.find(s=>s[0]===filter.status)?.[1]:null,filter.region!=='all'?regionLabel(filter.region):null,filter.group!=='all'?(filter.group.slice(1)||tr('未分组')):null].filter(Boolean)
  const total=(key:'day_rx'|'day_tx')=>sorted.reduce((sum,n)=>sum+n[key],0)
  const net=(key:'net_rx'|'net_tx')=>fresh.reduce((sum,n)=>sum+liveMetrics(n)![key],0)
@@ -144,7 +145,7 @@ export function MobileApp({active,page,onNavigate,nodes,prefs,onPrefs,mobile,onM
     <label className="ma-row"><span>{tr('节点列表')}<small>{tr('详细模式增加用量、时长和连接数。')}</small></span><select aria-label={tr('节点列表')} value={mobile.detailed?'detailed':'compact'} onChange={e=>onMobile(p=>({...p,detailed:e.target.value==='detailed'}))}><option value="compact">{tr('紧凑')}</option><option value="detailed">{tr('详细')}</option></select></label>
     <label className="ma-row"><span>{tr('详情页显示资源容量')}<small>{tr('显示内存、硬盘的总容量。')}</small></span><input type="checkbox" aria-label={tr('详情页显示资源容量')} className="ma-toggle" checked={mobile.totals} onChange={e=>onMobile(p=>({...p,totals:e.target.checked}))}/></label>
    </section><div className="ma-heading"><h2>{tr('监控偏好')}</h2></div><section className="ma-panel ma-rows">
-    <button className="ma-row" onClick={()=>{setRouteQuery('');setSheet('routes')}}><span>{tr('主要探测线路')}</span><small>{prefs.probe==='auto'?tr('各节点首条线路'):probes.get(Number(prefs.probe))??prefs.probe}<ChevronRight size={16}/></small></button>
+    <button className="ma-row" onClick={()=>{setRouteQuery('');setSheet('routes')}}><span>{tr('主要探测线路')}</span><small>{prefs.probe==='auto'?tr('自动选择近期采样线路'):probes.get(Number(prefs.probe))??prefs.probe}<ChevronRight size={16}/></small></button>
     <div className="ma-row ma-history-preference"><div><label htmlFor="mobile-history-hours">{tr('新详情页默认历史范围')}</label><details className="ma-preference-help"><summary>{tr('适用范围')}</summary><p>{tr('仅保存在此浏览器；已有页面及链接指定范围保持不变。')}</p></details></div><select id="mobile-history-hours" value={mobile.hours} aria-label={tr('新详情页默认历史范围')} onChange={e=>onMobile(p=>({...p,hours:Number(e.target.value) as 1|6|24}))}>{[1,6,24].map(h=><option value={h} key={h}>{h}h</option>)}</select></div>
     {prefs.modules.busiest&&<button className="ma-row" onClick={()=>setSheet('records')}><span>{tr('本机负载记录')}<small>{tr('仅记录此浏览器的观测')}</small></span><small>{loadAlerts.events.length}<ChevronRight size={16}/></small></button>}
    </section><div className="ma-heading"><h2>{tr('应用')}</h2></div><section className="ma-panel ma-rows">

@@ -33,6 +33,16 @@ assert.deepEqual(tablePreset('network',true),{mobileColumns:['upload','download'
 assert.deepEqual(Object.keys(tablePreset('billing',false)),['columns','tableLayout'])
 assert.equal(normalizeBrowse(null).columnsVersion,5)
 const {loadPing}=await import('./ping.ts')
+globalThis.fetch=(async()=>new Response(JSON.stringify({ping:[
+ {task_id:1,ts:Date.now()/1000-600,latency:5},
+ {task_id:2,ts:Date.now()/1000-30,latency:80},
+ {task_id:3,ts:Date.now()/1000,latency:90},
+],loss:{2:3}}))) as typeof fetch
+await loadPing(95)
+assert.equal(sortValue(create(95,20),'latency','auto'),80)
+assert.equal(sortValue(create(95,20),'loss','auto'),3)
+assert.equal(sortValue(create(95,20),'latency','1'),null)
+assert.equal(sortValue(create(95,20),'latency','4'),null)
 globalThis.fetch=(async(input)=>{const id=Number(String(input).match(/nodes\/(\d+)/)![1]);return new Response(JSON.stringify({ping:[{task_id:1,ts:Date.now()/1000-(id===94?8000:0),latency:id===91?null:80}],loss:id===93?undefined:{1:id===91?10:0}}))}) as typeof fetch
 await Promise.all([91,92,93,94].map(id=>loadPing(id)))
 const qualityNodes=[91,92,93,94].map(id=>create(id,20))
